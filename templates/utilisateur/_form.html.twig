@@ -1,54 +1,91 @@
 <div class="d-flex justify-content-center mt-5">
     <div class="card shadow p-4" style="max-width: 500px; width: 100%;">
-        <h2 class="text-center mb-4">Créer un compte</h2>
 
-        {{ form_start(form) }}
+        <h1 class="text-center mb-4" id="form-title">{{ form_title|default('Créer un compte') }}</h1>
 
-            <div class="mb-3">
-                <label class="form-label">{{ form_label(form.prenom) }}</label>
-                <div class="input-group">
-                    <span class="input-group-text"><i class="bi bi-person"></i></span>
-                    {{ form_widget(form.prenom, {'attr': {'class': 'form-control'}}) }}
-                </div>
+        {{ form_start(form, {'attr': {'aria-labelledby': 'form-title'}}) }}
+
+        <div class="mb-3">
+            <label class="form-label" for="{{ form.prenom.vars.id }}">{{ form_label(form.prenom) }}</label>
+            <div class="input-group">
+                <span class="input-group-text" id="prenom-icon"><i class="bi bi-person"></i></span>
+                {{ form_widget(form.prenom, {
+                    'attr': {
+                        'class': 'form-control',
+                        'aria-describedby': 'prenom-icon ' ~ form.prenom.vars.id ~ '_error'
+                    }
+                }) }}
+            </div>
+            <div id="{{ form.prenom.vars.id }}_error" class="text-danger" role="alert">
                 {{ form_errors(form.prenom) }}
             </div>
+        </div>
 
-            <div class="mb-3">
-                <label class="form-label">{{ form_label(form.nom) }}</label>
-                <div class="input-group">
-                    <span class="input-group-text"><i class="bi bi-person-fill"></i></span>
-                    {{ form_widget(form.nom, {'attr': {'class': 'form-control'}}) }}
-                </div>
+        <div class="mb-3">
+            <label class="form-label" for="{{ form.nom.vars.id }}">{{ form_label(form.nom) }}</label>
+            <div class="input-group">
+                <span class="input-group-text" id="nom-icon"><i class="bi bi-person-fill"></i></span>
+                {{ form_widget(form.nom, {
+                    'attr': {
+                        'class': 'form-control',
+                        'aria-describedby': 'nom-icon ' ~ form.nom.vars.id ~ '_error'
+                    }
+                }) }}
+            </div>
+            <div id="{{ form.nom.vars.id }}_error" class="text-danger" role="alert">
                 {{ form_errors(form.nom) }}
             </div>
+        </div>
 
-            <div class="mb-3">
-                <label class="form-label">{{ form_label(form.email) }}</label>
-                <div class="input-group">
-                    <span class="input-group-text"><i class="bi bi-envelope"></i></span>
-                    {{ form_widget(form.email, {'attr': {'class': 'form-control'}}) }}
-                </div>
+        <div class="mb-3">
+            <label class="form-label" for="{{ form.email.vars.id }}">{{ form_label(form.email) }}</label>
+            <div class="input-group">
+                <span class="input-group-text" id="email-icon"><i class="bi bi-envelope"></i></span>
+                {{ form_widget(form.email, {
+                    'attr': {
+                        'class': 'form-control',
+                        'aria-describedby': 'email-icon ' ~ form.email.vars.id ~ '_error'
+                    }
+                }) }}
+            </div>
+            <div id="{{ form.email.vars.id }}_error" class="text-danger" role="alert">
                 {{ form_errors(form.email) }}
             </div>
+        </div>
 
-            <div class="mb-3">
-                <label class="form-label">{{ form_label(form.password) }}</label>
-                <div class="input-group">
-                    <span class="input-group-text"><i class="bi bi-lock"></i></span>
-                    {{ form_widget(form.password, {'attr': {'class': 'form-control'}}) }}
-                </div>
+        <div class="mb-3">
+            <label class="form-label" for="{{ form.password.vars.id }}">{{ form_label(form.password) }}</label>
+            <div class="input-group">
+                <span class="input-group-text" id="password-icon"><i class="bi bi-lock"></i></span>
+                {{ form_widget(form.password, {
+                    'attr': {
+                        'class': 'form-control',
+                        'aria-describedby': 'password-icon ' ~ form.password.vars.id ~ '_error'
+                    }
+                }) }}
+            </div>
+            <div id="{{ form.password.vars.id }}_error" class="text-danger" role="alert">
                 {{ form_errors(form.password) }}
             </div>
+        </div>
 
-            <div class="mb-3">
-                <label class="form-label">{{ form_label(form.preferences) }}</label>
-                {{ form_widget(form.preferences, {'attr': {'class': 'form-control', 'rows': '3'}}) }}
+        <div class="mb-3">
+            <label class="form-label" for="{{ form.preferences.vars.id }}">{{ form_label(form.preferences) }}</label>
+            {{ form_widget(form.preferences, {
+                'attr': {
+                    'class': 'form-control',
+                    'rows': '3',
+                    'aria-describedby': form.preferences.vars.id ~ '_error'
+                }
+            }) }}
+            <div id="{{ form.preferences.vars.id }}_error" class="text-danger" role="alert">
                 {{ form_errors(form.preferences) }}
             </div>
+        </div>
 
-            <button type="submit" class="btn btn-primary w-100">
-                {{ button_label|default('S\'inscrire') }}
-            </button>
+        <button type="submit" class="btn btn-primary w-100" aria-label="{{ button_label|default('Créer un compte') }}">
+            {{ button_label|default("S'inscrire") }}
+        </button>
 
         {{ form_end(form) }}
     </div>

@@ -9,6 +9,7 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: UtilisateurRepository::class)]
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_EMAIL', fields: ['email'])]
@@ -18,7 +19,9 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
-
+    
+    #[Assert\NotBlank(message: "L'email est obligatoire.")]
+    #[Assert\Email(message: "L'email '{{ value }}' n'est pas valide.")]
     #[ORM\Column(length: 180)]
     private ?string $email = null;
 
@@ -27,13 +30,19 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
      */
     #[ORM\Column]
     private array $roles = [];
-
+    
+    #[Assert\NotBlank(message: "Le mot de passe est obligatoire.")]
+    #[Assert\Regex(
+        pattern: "/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/",
+        message: "Le mot de passe doit contenir au moins 8 caractères, une majuscule, une minuscule et un chiffre." )]
     #[ORM\Column]
     private ?string $password = null;
-
+    
+    #[Assert\NotBlank(message: "Le nom est obligatoire.")]
     #[ORM\Column(length: 255)]
     private ?string $nom = null;
 
+    #[Assert\NotBlank(message: "Le prénom est obligatoire.")]
     #[ORM\Column(length: 255)]
     private ?string $prenom = null;
 

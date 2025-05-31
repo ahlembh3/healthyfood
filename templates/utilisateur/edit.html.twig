@@ -3,10 +3,7 @@
 {% block title %}Modifier Utilisateur{% endblock %}
 
 {% block body %}
-    <h1>Modifier Utilisateur</h1>
-
-    {{ include('utilisateur/_form.html.twig', {'button_label': 'Modifier'}) }}
-
+ {% include 'utilisateur/_form.html.twig' with {'button_label': 'Modifier', 'form_title': 'Modifier utilisateur'} %}
      <div class="d-flex gap-2 mt-4">
     <a href="{{ path('utilisateurs_liste') }}" class="btn btn-secondary"> Retour à la liste</a>
 

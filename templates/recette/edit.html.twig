@@ -1,0 +1,14 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier Recette{% endblock %}
+
+{% block body %}
+
+    {% include 'recette/_form.html.twig' with {'button_label': 'Mettre à jour', 'form_title': 'Modifier la recette'} %}
+
+<div class="d-flex gap-2 mt-4">
+    <a href="{{ path('recette_index') }}" class="btn btn-secondary">Retour à la liste</a>
+
+    {{ include('recette/_delete_form.html.twig') }}
+    </div>
+{% endblock %}

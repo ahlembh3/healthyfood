@@ -3,9 +3,7 @@
 {% block title %}Nouveau Utilisateur{% endblock %}
 
 {% block body %}
-    <h1>S'inscrire</h1>
-
-    {{ include('utilisateur/_form.html.twig') }}
+{% include 'utilisateur/_form.html.twig' with {'button_label': "S'inscrire", 'form_title': 'Inscription'} %}
 
 <div class="d-flex gap-2 mt-4">
     <a href="{{ path('utilisateurs_liste') }}" class="btn btn-secondary"> Retour à la liste</a>

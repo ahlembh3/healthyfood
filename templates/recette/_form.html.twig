@@ -1,0 +1,146 @@
+<div class="d-flex justify-content-center mt-5">
+    <div class="card shadow p-4" style="max-width: 500px; width: 100%;">
+        <h1 class="text-center mb-4" id="form-title">{{ form_title|default('Ajouter une recette') }}</h1>
+
+        {{ form_start(form, {'attr': {'class': 'needs-validation', 'novalidate': 'novalidate', 'aria-labelledby': 'form-title'}}) }}
+
+        <div class="mb-3">
+            <label class="form-label" for="{{ form.titre.vars.id }}">{{ form_label(form.titre) }}</label>
+            {{ form_widget(form.titre, {
+                'attr': {
+                    'class': 'form-control',
+                    'placeholder': 'Ex. : Salade composée légère',
+                    'aria-describedby': form.titre.vars.id ~ '_error'
+                }
+            }) }}
+            <div id="{{ form.titre.vars.id }}_error" class="text-danger" role="alert">
+                {{ form_errors(form.titre) }}
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label" for="{{ form.description.vars.id }}">{{ form_label(form.description) }}</label>
+            {{ form_widget(form.description, {
+                'attr': {
+                    'class': 'form-control',
+                    'rows': '3',
+                    'aria-describedby': form.description.vars.id ~ '_error'
+                }
+            }) }}
+            <div id="{{ form.description.vars.id }}_error" class="text-danger" role="alert">
+                {{ form_errors(form.description) }}
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label" for="{{ form.instructions.vars.id }}">{{ form_label(form.instructions) }}</label>
+            {{ form_widget(form.instructions, {
+                'attr': {
+                    'class': 'form-control',
+                    'rows': '5',
+                    'aria-describedby': form.instructions.vars.id ~ '_error'
+                }
+            }) }}
+            <div id="{{ form.instructions.vars.id }}_error" class="text-danger" role="alert">
+                {{ form_errors(form.instructions) }}
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label" for="{{ form.tempsPreparation.vars.id }}">{{ form_label(form.tempsPreparation) }}</label>
+            <div class="input-group">
+                {{ form_widget(form.tempsPreparation, {
+                    'attr': {
+                        'class': 'form-control',
+                        'aria-describedby': 'temps-addon-left temps-addon-right ' ~ form.tempsPreparation.vars.id ~ '_error'
+                    }
+                }) }}
+                <span class="input-group-text" id="temps-addon-right">minutes</span>
+            </div>
+            <div id="{{ form.tempsPreparation.vars.id }}_error" class="text-danger" role="alert">
+                {{ form_errors(form.tempsPreparation) }}
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label" for="{{ form.difficulte.vars.id }}">{{ form_label(form.difficulte) }}</label>
+            {{ form_widget(form.difficulte, {
+                'attr': {
+                    'class': 'form-control',
+                    'aria-describedby': form.difficulte.vars.id ~ '_error'
+                }
+            }) }}
+            <div id="{{ form.difficulte.vars.id }}_error" class="text-danger" role="alert">
+                {{ form_errors(form.difficulte) }}
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label" for="{{ form.portions.vars.id }}">{{ form_label(form.portions) }}</label>
+            <div class="input-group">
+                {{ form_widget(form.portions, {
+                    'attr': {
+                        'class': 'form-control',
+                        'aria-describedby': 'portions-addon-left portions-addon-right ' ~ form.portions.vars.id ~ '_error'
+                    }
+                }) }}
+                <span class="input-group-text" id="portions-addon-right">portions</span>
+            </div>
+            <div id="{{ form.portions.vars.id }}_error" class="text-danger" role="alert">
+                {{ form_errors(form.portions) }}
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label" for="{{ form.valeursNutrition.vars.id }}">{{ form_label(form.valeursNutrition) }}</label>
+            {{ form_widget(form.valeursNutrition, {
+                'attr': {
+                    'class': 'form-control',
+                    'aria-describedby': form.valeursNutrition.vars.id ~ '_help ' ~ form.valeursNutrition.vars.id ~ '_error'
+                }
+            }) }}
+            <div id="{{ form.valeursNutrition.vars.id }}_help" class="form-text text-muted">
+                {{ form_help(form.valeursNutrition) }}
+            </div>
+            <div id="{{ form.valeursNutrition.vars.id }}_error" class="text-danger" role="alert">
+                {{ form_errors(form.valeursNutrition) }}
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label" for="{{ form.utilisateur.vars.id }}">{{ form_label(form.utilisateur) }}</label>
+            {{ form_widget(form.utilisateur, {
+                'attr': {
+                    'class': 'form-control',
+                    'aria-describedby': form.utilisateur.vars.id ~ '_error'
+                }
+            }) }}
+            <div id="{{ form.utilisateur.vars.id }}_error" class="text-danger" role="alert">
+                {{ form_errors(form.utilisateur) }}
+            </div>
+        </div>
+
+        {% if form.validation is defined %}
+            <div class="form-check mb-3">
+                {{ form_widget(form.validation, {
+                    'attr': {
+                        'class': 'form-check-input',
+                        'aria-describedby': form.validation.vars.id ~ '_error'
+                    }
+                }) }}
+                <label class="form-check-label" for="{{ form.validation.vars.id }}">
+                    {{ form_label(form.validation) }}
+                </label>
+                <div id="{{ form.validation.vars.id }}_error" class="text-danger" role="alert">
+                    {{ form_errors(form.validation) }}
+                </div>
+            </div>
+        {% endif %}
+
+        <button type="submit" class="btn btn-primary w-100" aria-label="{{ button_label|default('Enregistrer la recette') }}">
+            <i class="bi bi-check-circle me-2"></i>{{ button_label|default('Enregistrer') }}
+        </button>
+
+        {{ form_end(form) }}
+    </div>
+</div>

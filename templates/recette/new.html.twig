@@ -1,0 +1,11 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}New Recette{% endblock %}
+
+{% block body %}
+
+    {% include 'recette/_form.html.twig' with {'button_label': 'Créer', 'form_title': 'Ajouter une recette'} %}
+
+
+    <a href="{{ path('recette_index') }}" class="btn btn-secondary">Retour à la liste</a>
+{% endblock %}

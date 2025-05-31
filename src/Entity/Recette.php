@@ -7,6 +7,8 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
+
 
 #[ORM\Entity(repositoryClass: RecetteRepository::class)]
 class Recette
@@ -16,28 +18,45 @@ class Recette
     #[ORM\Column]
     private ?int $id = null;
 
+   
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: "Le titre est obligatoire.")]
+    #[Assert\Length(
+    max: 255,
+    maxMessage: "Le titre ne peut pas dépasser {{ limit }} caractères.")]
     private ?string $titre = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Assert\Length(
+    max: 1000,
+    maxMessage: "La description ne peut pas dépasser {{ limit }} caractères.")]
     private ?string $description = null;
 
     #[ORM\Column(type: Types::TEXT)]
+    #[Assert\NotBlank(message: "Les instructions sont obligatoires.")]
+    #[Assert\Length(
+    min: 10,
+    minMessage: "Les instructions doivent contenir au moins {{ limit }} caractères.")]
     private ?string $instructions = null;
 
     #[ORM\Column(nullable: true)]
+    #[Assert\Positive(message: "Le temps de préparation doit être un nombre positif.")]
     private ?int $tempsPreparation = null;
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $difficulte = null;
 
     #[ORM\Column]
-    private ?bool $validation = null;
+    private ?bool $validation = false;
 
     #[ORM\Column(nullable: true)]
+    #[Assert\Positive(message: "Le nombre de portions doit être positif.")]
     private ?int $portions = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Assert\Length(
+    max: 1000,
+    maxMessage: "Les valeurs nutritionnelles ne peuvent pas dépasser {{ limit }} caractères.")]
     private ?string $valeursNutrition = null;
 
     #[ORM\OneToMany(mappedBy: 'recette', targetEntity: RecetteIngredient::class, cascade: ['persist', 'remove'])]
