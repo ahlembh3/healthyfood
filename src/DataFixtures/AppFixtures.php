@@ -2,162 +2,141 @@
 
 namespace App\DataFixtures;
 
-use App\Entity\Utilisateur;
-use App\Entity\Plante;
-use App\Entity\Bienfait;
-use App\Entity\Tisane;
-use App\Entity\Ingredient;
-use App\Entity\Recette;
-use App\Entity\RecetteIngredient;
 use App\Entity\Article;
+use App\Entity\Bienfait;
+use App\Entity\Commentaire;
+use App\Entity\Ingredient;
+use App\Entity\Plante;
+use App\Entity\Recette;
+use App\Entity\Tisane;
+use App\Entity\Utilisateur;
+use App\Entity\RecetteIngredient;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
-use Faker\Factory;
 
 class AppFixtures extends Fixture
 {
-    private UserPasswordHasherInterface $hasher;
+    private $passwordHasher;
 
-    public function __construct(UserPasswordHasherInterface $hasher)
+    public function __construct(UserPasswordHasherInterface $passwordHasher)
     {
-        $this->hasher = $hasher;
+        $this->passwordHasher = $passwordHasher;
     }
 
     public function load(ObjectManager $manager): void
     {
-        $faker = Factory::create('fr_FR');
+        $projectDir = __DIR__ . '/json/';
 
-        /**
-         * UTILISATEUR PRINCIPAL
-         */
-        $user = new Utilisateur();
-        $user->setEmail('ahlem@example.com');
-        $user->setNom('Ben Hamouda');
-        $user->setPrenom('Ahlem');
-        $user->setRoles(['ROLE_USER']);
-        $user->setPreferences('tisanes, bio, detox');
-        $hashedPassword = $this->hasher->hashPassword($user, 'aaa');
-        $user->setPassword($hashedPassword);
-        $manager->persist($user);
+        // 1. Utilisateur
+        $utilisateur = new Utilisateur();
+        $utilisateur->setEmail('admin@example.com');
+        $utilisateur->setRoles(['ROLE_ADMIN']);
+        $utilisateur->setNom('Admin');
+        $utilisateur->setPrenom('Principal');
+        $utilisateur->setPassword($this->passwordHasher->hashPassword($utilisateur, 'password'));
+        $manager->persist($utilisateur);
 
-        /**
-         * PLANTES
-         */
-      // Plantes
-$plantes = [];
-for ($i = 0; $i < 10; $i++) {
-    $plante = new Plante();
-    $plante->setNomCommun($faker->word());
-    $plante->setNomScientifique($faker->words(2, true));
-    $plante->setDescription($faker->sentence());
-    $plante->setPartieUtilisee($faker->randomElement(['feuilles', 'racines', 'fleurs', 'tiges']));
-    $plante->setPrecautions($faker->sentence());
-    $manager->persist($plante);
-    $plantes[] = $plante;
-}
-
-
-        /**
-         * BIENFAITS
-         */
+        // 2. Bienfaits
+        $bienfaitsData = json_decode(file_get_contents($projectDir . 'bienfaits.json'), true);
         $bienfaits = [];
-        $nomsBienfaits = ['Digestion', 'Sommeil', 'Détox', 'Énergie', 'Anti-stress'];
-        foreach ($nomsBienfaits as $nom) {
+
+        foreach ($bienfaitsData as $item) {
             $bienfait = new Bienfait();
-            $bienfait->setNom($nom);
+            $bienfait->setNom($item['nom']);
+            $bienfait->setDescription($item['description'] ?? null);
             $manager->persist($bienfait);
             $bienfaits[] = $bienfait;
         }
 
-        /**
-         * TISANES
-         */
-        for ($i = 0; $i < 5; $i++) {
-            $tisane = new Tisane();
-            $tisane->setNom('Tisane ' . $faker->colorName());
-            $tisane->setModePreparation($faker->paragraph());
+        // 3. Plantes
+        $plantesData = json_decode(file_get_contents($projectDir . 'plantes.json'), true);
+        $plantes = [];
 
-            foreach ($faker->randomElements($plantes, rand(1, 3)) as $plante) {
-                $tisane->addPlante($plante);
+        foreach ($plantesData as $item) {
+            $plante = new Plante();
+            $plante->setNomCommun($item['nomCommun']);
+            $plante->setNomScientifique($item['nomScientifique']);
+            $plante->setDescription($item['description'] ?? null);
+            $plante->setPartieUtilisee($item['partieUtilisee'] ?? null);
+            $plante->setPrecautions($item['precautions'] ?? null);
+            $plante->setImage($item['image'] ?? null);
+            $manager->persist($plante);
+            $plantes[] = $plante;
+        }
+
+        // 4. Ingrédients
+        $ingredientsData = json_decode(file_get_contents($projectDir . 'ingredients.json'), true);
+        $ingredients = [];
+
+        foreach ($ingredientsData as $item) {
+            $ingredient = new Ingredient();
+            $ingredient->setNom($item['nom']);
+            $ingredient->setDescription($item['description'] ?? null);
+            $manager->persist($ingredient);
+            $ingredients[] = $ingredient;
+        }
+
+        // 5. Tisanes
+        $tisanesData = json_decode(file_get_contents($projectDir . 'tisanes.json'), true);
+
+        foreach ($tisanesData as $item) {
+            $tisane = new Tisane();
+            $tisane->setNom($item['nom']);
+            $tisane->setModePreparation($item['modePreparation']);
+
+            foreach ($item['bienfaits'] as $index) {
+                if (isset($bienfaits[$index - 1])) {
+                    $tisane->addBienfait($bienfaits[$index - 1]);
+                }
             }
 
-            foreach ($faker->randomElements($bienfaits, rand(1, 2)) as $bienfait) {
-                $tisane->addBienfait($bienfait);
+            foreach ($item['plantes'] as $index) {
+                if (isset($plantes[$index - 1])) {
+                    $tisane->addPlante($plantes[$index - 1]);
+                }
             }
 
             $manager->persist($tisane);
         }
 
-        /**
-         * INGREDIENTS
-         */
-        $ingredients = [];
-        for ($i = 0; $i < 10; $i++) {
-            $ingredient = new Ingredient();
-            $ingredient->setNom($faker->word());
-            $ingredient->setUnite($faker->randomElement(['g', 'mg', 'ml', 'cuillère', 'pincée']));
-            $manager->persist($ingredient);
-            $ingredients[] = $ingredient;
-        }
+// 6. Recette : Salade detox
+$recette = new Recette();
+$recette->setTitre('Salade detox');
+$recette->setDescription('Une salade légère et détoxifiante.');
+$recette->setImage('salade.jpg');
+$recette->setInstructions('1. Couper les légumes. 2. Assaisonner. 3. Servir frais.');
+$recette->setUtilisateur($utilisateur);
+$recette->setTempsPreparation(15);
+$recette->setDifficulte('Facile');
+$recette->setValidation(true);
+$recette->setPortions(2);
+$recette->setValeursNutrition("Faible en calories, riche en fibres");
 
-        /**
-         * RECETTES
-         */
-      // Recettes
-for ($i = 0; $i < 5; $i++) {
-    $recette = new Recette();
-    $recette->setTitre('Recette ' . $faker->word());
-    $recette->setDescription($faker->sentence());
-    $recette->setInstructions($faker->paragraph());
-    $recette->setUtilisateur($user);
-    $recette->setValidation($faker->boolean());
-    $recette->setDifficulte($faker->randomElement(['Facile', 'Moyen', 'Difficile']));
-    $recette->setTempsPreparation($faker->numberBetween(5, 60));
-    $recette->setPortions($faker->numberBetween(1, 6));
-    $recette->setValeursNutrition($faker->sentence());
-
-    foreach ($faker->randomElements($ingredients, rand(2, 4)) as $ingredient) {
-        $ri = new RecetteIngredient();
-        $ri->setIngredient($ingredient);
-        $ri->setRecette($recette);
-        $ri->setQuantite($faker->randomFloat(2, 0.1, 5.0));
-        $manager->persist($ri);
-        $recette->getRecetteIngredients()->add($ri);
-    }
-
-    $manager->persist($recette);
+// Ajout des ingrédients via la méthode personnalisée
+foreach (array_slice($ingredients, 0, 2) as $ingredient) {
+    $recette->addIngredient($ingredient, '100g');
 }
 
+// Persistance de la recette et des RecetteIngredient associés
+foreach ($recette->getRecetteIngredients() as $ri) {
+    $manager->persist($ri);
+}
 
-        /**
-         * ARTICLES
-         */
-        $categories = ['Santé', 'Nutrition', 'Remèdes naturels', 'Bien-être', 'Tisanes'];
-        for ($i = 0; $i < 5; $i++) {
-            $article = new Article();
-            $article->setTitre('Article ' . $faker->words(3, true));
-            $article->setContenu($faker->paragraphs(3, true));
-            $article->setDate(new \DateTimeImmutable());
-            $article->setImage($faker->boolean(70) ? $faker->imageUrl(640, 480, 'nature') : null);
-            $article->setValidation($faker->boolean(80));
-            $article->setCategorie($faker->randomElement($categories));
-            $article->setUtilisateur($user);
+$manager->persist($recette);
 
-            $manager->persist($article);
-        }
 
-        /**
-         * ENREGISTRER DANS LA BDD
-         */
-           try {
-            $manager->flush();
-        } catch (\Exception $e) {
-            dump('Erreur lors du flush :');
-            dump($e->getMessage());
-            dump($e->getTraceAsString());
-            throw $e;
-        }
+
+        // 7. Articles
+        $article = new Article();
+        $article->setTitre('Bienfaits de la tisane');
+        $article->setContenu('Les tisanes ont de nombreuses vertus...');
+        $article->setDate(new \DateTimeImmutable());
+         $article->setImage('salade.jpg');
+        $article->setUtilisateur($utilisateur);
+        $manager->persist($article);
+
+        // Flush final
+        $manager->flush();
     }
-    }
-
+}

@@ -1,3 +1,5 @@
+{% set is_edit = form.vars.value.id is defined and form.vars.value.id %}
+
 <div class="d-flex justify-content-center mt-5">
     <div class="card shadow p-4" style="max-width: 500px; width: 100%;">
 
@@ -12,6 +14,7 @@
                 {{ form_widget(form.prenom, {
                     'attr': {
                         'class': 'form-control',
+                        'aria-required': 'true',
                         'aria-describedby': 'prenom-icon ' ~ form.prenom.vars.id ~ '_error'
                     }
                 }) }}
@@ -28,6 +31,7 @@
                 {{ form_widget(form.nom, {
                     'attr': {
                         'class': 'form-control',
+                        'aria-required': 'true',
                         'aria-describedby': 'nom-icon ' ~ form.nom.vars.id ~ '_error'
                     }
                 }) }}
@@ -44,7 +48,9 @@
                 {{ form_widget(form.email, {
                     'attr': {
                         'class': 'form-control',
-                        'aria-describedby': 'email-icon ' ~ form.email.vars.id ~ '_error'
+                        'aria-required': 'true',
+                        'aria-describedby': 'email-icon ' ~ form.email.vars.id ~ '_error',
+                        'disabled': is_edit
                     }
                 }) }}
             </div>
@@ -53,21 +59,43 @@
             </div>
         </div>
 
-        <div class="mb-3">
-            <label class="form-label" for="{{ form.password.vars.id }}">{{ form_label(form.password) }}</label>
-            <div class="input-group">
-                <span class="input-group-text" id="password-icon"><i class="bi bi-lock"></i></span>
-                {{ form_widget(form.password, {
-                    'attr': {
-                        'class': 'form-control',
-                        'aria-describedby': 'password-icon ' ~ form.password.vars.id ~ '_error'
-                    }
-                }) }}
+        {% if not is_edit %}
+            <div class="mb-3">
+                <label class="form-label" for="{{ form.password.vars.id }}">{{ form_label(form.password) }}</label>
+                <div class="input-group">
+                    <span class="input-group-text" id="password-icon"><i class="bi bi-lock"></i></span>
+                    {{ form_widget(form.password, {
+                        'attr': {
+                            'class': 'form-control',
+                            'aria-required': 'true',
+                            'aria-describedby': 'password-icon ' ~ form.password.vars.id ~ '_error'
+                        }
+                    }) }}
+                </div>
+                <div id="{{ form.password.vars.id }}_error" class="text-danger" role="alert">
+                    {{ form_errors(form.password) }}
+                </div>
             </div>
-            <div id="{{ form.password.vars.id }}_error" class="text-danger" role="alert">
-                {{ form_errors(form.password) }}
-            </div>
-        </div>
+
+            {% if form.confirmPassword is defined %}
+                <div class="mb-3">
+                    <label class="form-label" for="{{ form.confirmPassword.vars.id }}">{{ form_label(form.confirmPassword) }}</label>
+                    <div class="input-group">
+                        <span class="input-group-text" id="confirm-icon"><i class="bi bi-lock-fill"></i></span>
+                        {{ form_widget(form.confirmPassword, {
+                            'attr': {
+                                'class': 'form-control',
+                                'aria-required': 'true',
+                                'aria-describedby': 'confirm-icon ' ~ form.confirmPassword.vars.id ~ '_error'
+                            }
+                        }) }}
+                    </div>
+                    <div id="{{ form.confirmPassword.vars.id }}_error" class="text-danger" role="alert">
+                        {{ form_errors(form.confirmPassword) }}
+                    </div>
+                </div>
+            {% endif %}
+        {% endif %}
 
         <div class="mb-3">
             <label class="form-label" for="{{ form.preferences.vars.id }}">{{ form_label(form.preferences) }}</label>
@@ -75,6 +103,7 @@
                 'attr': {
                     'class': 'form-control',
                     'rows': '3',
+                    'placeholder': 'Décrivez vos préférences...',
                     'aria-describedby': form.preferences.vars.id ~ '_error'
                 }
             }) }}

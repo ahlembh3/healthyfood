@@ -1,0 +1,26 @@
+[
+  {
+    "nom": "Tisane Relaxation",
+    "modePreparation": "Infuser 2 cuillères à café de plantes dans 250 ml d’eau chaude pendant 10 minutes.",
+    "plantes": [1, 2],
+    "bienfaits": [1]
+  },
+  {
+    "nom": "Tisane Digestion",
+    "modePreparation": "Faire bouillir les plantes pendant 5 minutes, puis laisser infuser 10 minutes.",
+    "plantes": [3, 4],
+    "bienfaits": [2,3]
+  },
+  {
+    "nom": "Tisane Sommeil",
+    "modePreparation": "Verser de l’eau frémissante sur les plantes et infuser 15 minutes avant le coucher.",
+    "plantes": [5],
+    "bienfaits": [1, 4]
+  },
+  {
+    "nom": "Tisane Détox",
+    "modePreparation": "Infuser à froid pendant 2 heures pour préserver les principes actifs.",
+    "plantes": [6, 7],
+    "bienfaits": [3]
+  }
+]

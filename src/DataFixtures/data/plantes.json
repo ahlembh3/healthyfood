@@ -1,0 +1,72 @@
+[
+    {
+        "nomCommun": "Camomille",
+        "nomScientifique": "Matricaria chamomilla",
+        "description": "Utilisée pour calmer les troubles digestifs et favoriser le sommeil.",
+        "partieUtilisee": "Fleurs",
+        "precautions": "À éviter chez les personnes allergiques aux astéracées."
+    },
+    {
+        "nomCommun": "Menthe poivrée",
+        "nomScientifique": "Mentha × piperita",
+        "description": "Efficace contre les nausées et les maux de tête.",
+        "partieUtilisee": "Feuilles",
+        "precautions": "Ne pas utiliser en cas de reflux gastro-œsophagien."
+    },
+    {
+        "nomCommun": "Gingembre",
+        "nomScientifique": "Zingiber officinale",
+        "description": "Stimule la digestion et possède des propriétés anti-inflammatoires.",
+        "partieUtilisee": "Racine",
+        "precautions": "À consommer avec modération chez les personnes sous traitement anticoagulant."
+    },
+    {
+        "nomCommun": "Thym",
+        "nomScientifique": "Thymus vulgaris",
+        "description": "Antiseptique naturel utilisé pour soulager les affections respiratoires.",
+        "partieUtilisee": "Feuilles",
+        "precautions": "Peut être irritant à forte dose."
+    },
+    {
+        "nomCommun": "Ortie",
+        "nomScientifique": "Urtica dioica",
+        "description": "Riche en minéraux, utilisée pour les douleurs articulaires.",
+        "partieUtilisee": "Feuilles",
+        "precautions": "Manipuler avec des gants pour éviter les piqûres."
+    },
+    {
+        "nomCommun": "Lavande",
+        "nomScientifique": "Lavandula angustifolia",
+        "description": "Apaisante, elle est utilisée pour réduire le stress et améliorer le sommeil.",
+        "partieUtilisee": "Fleurs",
+        "precautions": "Peut être allergisante chez certaines personnes."
+    },
+    {
+        "nomCommun": "Sauge",
+        "nomScientifique": "Salvia officinalis",
+        "description": "Utile contre les troubles de la ménopause et les maux de gorge.",
+        "partieUtilisee": "Feuilles",
+        "precautions": "Contre-indiquée chez la femme enceinte."
+    },
+    {
+        "nomCommun": "Tilleul",
+        "nomScientifique": "Tilia cordata",
+        "description": "Favorise la détente et le sommeil.",
+        "partieUtilisee": "Fleurs",
+        "precautions": "Peut provoquer de la somnolence."
+    },
+    {
+        "nomCommun": "Romarin",
+        "nomScientifique": "Rosmarinus officinalis",
+        "description": "Stimulant digestif et tonique général.",
+        "partieUtilisee": "Feuilles",
+        "precautions": "À éviter chez les personnes épileptiques."
+    },
+    {
+        "nomCommun": "Valériane",
+        "nomScientifique": "Valeriana officinalis",
+        "description": "Réputée pour ses effets calmants et sédatifs.",
+        "partieUtilisee": "Racine",
+        "precautions": "Ne pas associer avec des somnifères chimiques."
+    }
+]

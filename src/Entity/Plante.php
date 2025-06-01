@@ -12,9 +12,9 @@ use Doctrine\ORM\Mapping as ORM;
 class Plante
 {
     #[ORM\Id]
-    #[ORM\GeneratedValue]
-    #[ORM\Column]
-    private ?int $id = null;
+#[ORM\GeneratedValue]
+#[ORM\Column(type: 'integer')]
+private ?int $id = null;
 
     #[ORM\Column(length: 255)]
     private ?string $nomCommun = null;
@@ -30,6 +30,11 @@ class Plante
 
     #[ORM\Column(type: Types::TEXT)]
     private ?string $precautions = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $image = null;
+
+
 
 
     #[ORM\ManyToMany(targetEntity: Bienfait::class, inversedBy: 'plantes')]
@@ -104,6 +109,12 @@ class Plante
         $this->precautions = $precautions;
         return $this;
     }
+    
+    public function getImage(): ?string { return $this->image; }
+    public function setImage(?string $image): static {
+    $this->image = $image;
+    return $this;
+    }
 
     /** @return Collection<int, Bienfait> */
     public function getBienfaits(): Collection
@@ -116,5 +127,16 @@ class Plante
     {
         return $this->tisanes;
     }
+    public function addTisane(Tisane $tisane): static
+{
+    if (!$this->tisanes->contains($tisane)) {
+        $this->tisanes->add($tisane);
+        if (!$tisane->getPlantes()->contains($this)) {
+            $tisane->addPlante($this); // <--- synchronisation inverse
+        }
+    }
+
+    return $this;
+}
 }
 

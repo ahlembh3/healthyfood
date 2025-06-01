@@ -1,0 +1,14 @@
+<h2>Résultats pour "{{ query }}"</h2>
+
+<form method="get" action="{{ path('plante_search') }}">
+    <input type="text" name="q" value="{{ query }}" placeholder="Rechercher une plante...">
+    <button type="submit">Chercher</button>
+</form>
+
+<ul>
+    {% for plante in plantes %}
+        <li><a href="{{ path('plante_show', {'id': plante.id}) }}">{{ plante.nomCommun }}</a></li>
+    {% else %}
+        <li>Aucune plante trouvée.</li>
+    {% endfor %}
+</ul>

@@ -1,0 +1,22 @@
+[
+  {
+    "nom": "Relaxation",
+    "description": "Aide à calmer le système nerveux, idéale en période de stress ou d'anxiété."
+  },
+  {
+    "nom": "Digestion",
+    "description": "Facilite la digestion après les repas lourds, réduit les ballonnements et les gaz."
+  },
+  {
+    "nom": "Détox",
+    "description": "Aide à l’élimination des toxines du foie et des reins."
+  },
+  {
+    "nom": "Sommeil",
+    "description": "Favorise l’endormissement naturel et améliore la qualité du sommeil."
+  },
+  {
+    "nom": "Circulation sanguine",
+    "description": "Stimule la circulation sanguine et prévient les jambes lourdes."
+  }
+]

@@ -1,0 +1,37 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Liste des Tisanes{% endblock %}
+
+{% block body %}
+    <h1>Liste des Tisanes</h1>
+
+    <form method="get" action="{{ path('tisane_index') }}">
+        <input type="text" name="q" value="{{ query }}" placeholder="Rechercher une tisane...">
+        <button type="submit">Rechercher</button>
+    </form>
+
+    <ul>
+        {% for tisane in tisanes %}
+            <li>
+                <strong><a href="{{ path('tisane_show', { id: tisane.id }) }}">{{ tisane.nom }}</a></strong><br>
+
+                Préparation : {{ tisane.modePreparation }}<br>
+                Bienfaits :
+                <ul>
+                    {% for b in tisane.bienfaits %}
+                        <li>{{ b.nom }}</li>
+                    {% endfor %}
+                </ul>
+                Plantes :
+                <ul>
+                    {% for p in tisane.plantes %}
+                        <li>{{ p.nomCommun }}</li>
+                    {% endfor %}
+                </ul>
+            </li>
+
+        {% else %}
+            <li>Aucune tisane trouvée.</li>
+        {% endfor %}
+    </ul>
+{% endblock %}

@@ -11,6 +11,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response; 
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use Symfony\Component\Form\FormError;
 
 #[Route('/admin/utilisateurs')]
 final class UtilisateurController extends AbstractController
@@ -25,32 +26,41 @@ final class UtilisateurController extends AbstractController
 
 
 
-    #[Route('/inscription', name: 'utilisateurs_ajouter', methods: ['GET', 'POST'])]
-    public function ajouter(Request $request, EntityManagerInterface $entityManager, UserPasswordHasherInterface $passwordHasher)
-    {
-        $utilisateur = new Utilisateur();
-        $utilisateur->setRoles(['ROLE_USER']);
-        $form = $this->createForm(UtilisateurType::class, $utilisateur);
-        $form->handleRequest($request);
+   #[Route('/inscription', name: 'utilisateurs_ajouter', methods: ['GET', 'POST'])]
+public function ajouter(Request $request, EntityManagerInterface $entityManager, UserPasswordHasherInterface $passwordHasher): Response
+{
+    $utilisateur = new Utilisateur();
+    $utilisateur->setRoles(['ROLE_USER']);
 
-        if ($form->isSubmitted() && $form->isValid()) {
-             // Hachage du mot de passe
-        $hashedPassword = $passwordHasher->hashPassword(
-            $utilisateur,
-            $utilisateur->getPassword()
-        );
-        $utilisateur->setPassword($hashedPassword);
+    // Passe l'option personnalisée is_edit à false
+    $form = $this->createForm(UtilisateurType::class, $utilisateur, [
+        'is_edit' => false,
+    ]);
+
+    $form->handleRequest($request);
+
+    if ($form->isSubmitted() && $form->isValid()) {
+        $plainPassword = $form->get('password')->getData();
+        $confirmPassword = $form->get('confirmPassword')->getData();
+
+        if ($plainPassword !== $confirmPassword) {
+            $form->get('confirmPassword')->addError(new FormError('Les mots de passe ne correspondent pas.'));
+        } else {
+            $hashedPassword = $passwordHasher->hashPassword($utilisateur, $plainPassword);
+            $utilisateur->setPassword($hashedPassword);
+
             $entityManager->persist($utilisateur);
             $entityManager->flush();
 
             return $this->redirectToRoute('utilisateurs_liste');
         }
-
-        return $this->render('utilisateur/new.html.twig', [
-            'utilisateur' => $utilisateur,
-            'form' => $form,
-        ]);
     }
+
+    return $this->render('utilisateur/new.html.twig', [
+        'utilisateur' => $utilisateur,
+        'form' => $form,
+    ]);
+}
 
 
     #[Route('/{id}', name: 'utilisateurs_afficher', methods: ['GET'])]
@@ -64,7 +74,8 @@ final class UtilisateurController extends AbstractController
     #[Route('/{id}/modifier', name: 'utilisateurs_modifier', methods: ['GET', 'POST'])]
     public function modifier(Request $request, Utilisateur $utilisateur, EntityManagerInterface $entityManager): Response
     {
-        $form = $this->createForm(UtilisateurType::class, $utilisateur);
+        $form = $this->createForm(UtilisateurType::class, $utilisateur,['is_edit' => true,]);
+        
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {

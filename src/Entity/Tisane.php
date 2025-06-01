@@ -24,6 +24,9 @@ class Tisane
     #[ORM\Column(type: Types::TEXT)]
     private ?string $modePreparation = null;
 
+     #[ORM\Column(length: 255, nullable: true)]
+    private ?string $image = null;
+
     #[ORM\ManyToMany(targetEntity: Bienfait::class, inversedBy: 'tisanes')]
     #[ORM\JoinTable(name: 'tisane_bienfait')]
     private Collection $bienfaits;
@@ -65,6 +68,12 @@ class Tisane
         return $this;
     }
 
+    public function getImage(): ?string { return $this->image; }
+    public function setImage(?string $image): static {
+    $this->image = $image;
+    return $this;
+    }
+
     /** @return Collection<int, Bienfait> */
     public function getBienfaits(): Collection
     {
@@ -76,10 +85,13 @@ class Tisane
     {
         return $this->plantes;
     }
-    public function addPlante(Plante $plante): static
+ public function addPlante(Plante $plante): static
 {
     if (!$this->plantes->contains($plante)) {
         $this->plantes->add($plante);
+        if (!$plante->getTisanes()->contains($this)) {
+            $plante->getTisanes()->add($this); // synchronisation
+        }
     }
 
     return $this;
@@ -95,6 +107,9 @@ public function addBienfait(Bienfait $bienfait): static
 {
     if (!$this->bienfaits->contains($bienfait)) {
         $this->bienfaits->add($bienfait);
+        if (!$bienfait->getTisanes()->contains($this)) {
+            $bienfait->getTisanes()->add($this); // synchronisation
+        }
     }
 
     return $this;

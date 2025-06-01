@@ -10,54 +10,66 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Validator\Constraints\NotBlank;
 
 class UtilisateurType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
+        $isEdit = $options['is_edit'] ?? false;
+
         $builder
-           ->add('prenom', TextType::class, [
+            ->add('prenom', TextType::class, [
                 'label' => 'Prénom',
-                'attr' => [
-                    'placeholder' => 'Prénom'
-                ]
+                'required' => true,
+                'attr' => ['placeholder' => 'Prénom']
             ])
             ->add('nom', TextType::class, [
                 'label' => 'Nom',
-                'attr' => [
-                    'placeholder' => 'Nom'
-                ]
+                'required' => true,
+                'attr' => ['placeholder' => 'Nom']
             ])
             ->add('email', EmailType::class, [
                 'label' => 'Email',
-                'attr' => [
-                    'placeholder' => 'Email'
-                ]
+                'required' => true,
+                'disabled' => $isEdit,
+                'attr' => ['placeholder' => 'Email']
             ])
-            ->add('password', PasswordType::class, [
-                'label' => 'Mot de passe',
-                'attr' => [
-                    'placeholder' => 'Mot de passe'
-                ]
-            ])
-              ->add('preferences', TextareaType::class, [
+            ->add('preferences', TextareaType::class, [
                 'label' => 'Préférences',
                 'required' => false,
-            ])
-          /*  ->add('submit', SubmitType::class, [
-                'label' => 'S\'inscrire',
-                'attr' => [
-                    'class' => 'w-100 mt-4 btn btn-dark'
-                ]
-            ])*/
-          
-        ;
+                'attr' => ['placeholder' => 'Décrivez vos préférences...']
+            ]);
+
+        if (!$isEdit) {
+            // Pour l'inscription
+            $builder
+                ->add('password', PasswordType::class, [
+                    'label' => 'Mot de passe',
+                    'mapped' => true,
+                    'required' => true,
+                    'attr' => ['placeholder' => 'Mot de passe'],
+                    'constraints' => [
+                        new NotBlank(['message' => 'Veuillez entrer un mot de passe.']),
+                    ],
+                ])
+                ->add('confirmPassword', PasswordType::class, [
+                    'label' => 'Confirmer le mot de passe',
+                    'mapped' => false,
+                    'required' => true,
+                    'attr' => ['placeholder' => 'Confirmez votre mot de passe'],
+                    'constraints' => [
+                        new NotBlank(['message' => 'Veuillez confirmer votre mot de passe.']),
+                    ],
+                ]);
+        }
     }
 
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
             'data_class' => Utilisateur::class,
+            'is_edit' => false,
         ]);
     }
 }

@@ -1,0 +1,30 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Tisane : {{ tisane.nom }}{% endblock %}
+
+{% block body %}
+    <h1>{{ tisane.nom }}</h1>
+
+    <p><strong>Mode de préparation :</strong></p>
+    <p>{{ tisane.modePreparation }}</p>
+
+    <h3>Bienfaits</h3>
+    <ul>
+        {% for bienfait in tisane.bienfaits %}
+            <li>{{ bienfait.nom }}</li>
+        {% else %}
+            <li>Aucun bienfait associé.{{ dump(tisane.bienfaits) }}</li>
+        {% endfor %}
+    </ul>
+
+    <h3>Plantes utilisées</h3>
+    <ul>
+        {% for plante in tisane.plantes %}
+            <li>{{ plante.nomCommun }}</li>
+        {% else %}
+            <li>Aucune plante associée.{{ dump(tisane.plantes) }}</li>
+        {% endfor %}
+    </ul>
+
+    <p><a href="{{ path('tisane_index') }}">Retour à la liste</a></p>
+{% endblock %}

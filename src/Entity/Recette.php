@@ -59,6 +59,16 @@ class Recette
     maxMessage: "Les valeurs nutritionnelles ne peuvent pas dépasser {{ limit }} caractères.")]
     private ?string $valeursNutrition = null;
 
+     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: 'Vous devez saisir une image')]
+    #[Assert\Image(
+        maxSize: '2M',
+        mimeTypes: ['image/jpeg', 'image/png', 'image/gif'],
+        maxSizeMessage: 'L\'image ne doit pas dépasser {{ limit }} {{ suffix }}',
+        mimeTypesMessage: 'L\'image doit être au format JPEG, PNG ou GIF',
+    )]
+    private ?string $image = null;
+
     #[ORM\OneToMany(mappedBy: 'recette', targetEntity: RecetteIngredient::class, cascade: ['persist', 'remove'])]
     private Collection $recetteIngredients;
 
@@ -168,6 +178,12 @@ class Recette
         return $this;
     }
 
+    public function getImage(): ?string { return $this->image; }
+    public function setImage(?string $image): static {
+    $this->image = $image;
+    return $this;
+    }
+
     /**
      * @return Collection<int, RecetteIngredient>
      */
@@ -175,6 +191,38 @@ class Recette
     {
         return $this->recetteIngredients;
     }
+
+    public function addIngredient(Ingredient $ingredient, string $quantite = '100g'): static
+{
+    foreach ($this->recetteIngredients as $ri) {
+        if ($ri->getIngredient() === $ingredient) {
+            // L'ingrédient est déjà présent pour cette recette
+            return $this;
+        }
+    }
+
+    $recetteIngredient = new RecetteIngredient();
+    $recetteIngredient->setRecette($this);
+    $recetteIngredient->setIngredient($ingredient);
+    $recetteIngredient->setQuantite($quantite);
+
+    $this->recetteIngredients->add($recetteIngredient);
+
+    return $this;
+}
+
+public function removeIngredient(Ingredient $ingredient): static
+{
+    foreach ($this->recetteIngredients as $recetteIngredient) {
+        if ($recetteIngredient->getIngredient() === $ingredient) {
+            $this->recetteIngredients->removeElement($recetteIngredient);
+            break;
+        }
+    }
+
+    return $this;
+}
+
 
     public function getUtilisateur(): ?Utilisateur
     {
