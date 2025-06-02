@@ -1,0 +1,27 @@
+[
+  {
+    "nom": "Carotte",
+    "description": "Riche en bêta-carotène, bonne pour la vue et la peau.",
+    "unite": "g"
+  },
+  {
+    "nom": "Concombre",
+    "description": "Légume rafraîchissant et hydratant.",
+    "unite": "g"
+  },
+  {
+    "nom": "Citron",
+    "description": "Fruit acide riche en vitamine C, aide à la détox.",
+    "unite": "ml"
+  },
+  {
+    "nom": "Ail",
+    "description": "Antibactérien naturel, bon pour la santé cardiovasculaire.",
+    "unite": "g"
+  },
+  {
+    "nom": "Miel",
+    "description": "Sucrant naturel aux propriétés antiseptiques.",
+    "unite": "cuillère"
+  }
+]

@@ -26,7 +26,7 @@ class AppFixtures extends Fixture
 
     public function load(ObjectManager $manager): void
     {
-        $projectDir = __DIR__ . '/json/';
+        $projectDir = __DIR__ . '/data/';
 
         // 1. Utilisateur
         $utilisateur = new Utilisateur();
@@ -65,17 +65,7 @@ class AppFixtures extends Fixture
             $plantes[] = $plante;
         }
 
-        // 4. Ingrédients
-        $ingredientsData = json_decode(file_get_contents($projectDir . 'ingredients.json'), true);
-        $ingredients = [];
-
-        foreach ($ingredientsData as $item) {
-            $ingredient = new Ingredient();
-            $ingredient->setNom($item['nom']);
-            $ingredient->setDescription($item['description'] ?? null);
-            $manager->persist($ingredient);
-            $ingredients[] = $ingredient;
-        }
+       
 
         // 5. Tisanes
         $tisanesData = json_decode(file_get_contents($projectDir . 'tisanes.json'), true);
@@ -84,6 +74,7 @@ class AppFixtures extends Fixture
             $tisane = new Tisane();
             $tisane->setNom($item['nom']);
             $tisane->setModePreparation($item['modePreparation']);
+            $tisane->setImage($item['image'] ?? null);
 
             foreach ($item['bienfaits'] as $index) {
                 if (isset($bienfaits[$index - 1])) {
@@ -100,31 +91,34 @@ class AppFixtures extends Fixture
             $manager->persist($tisane);
         }
 
-// 6. Recette : Salade detox
+
+        // 1. Création des ingrédients
+        $ingredientsData = json_decode(file_get_contents(__DIR__ . '/data/ingredients.json'), true);
+        $ingredients = [];
+
+        foreach ($ingredientsData as $item) {
+            $ingredient = new Ingredient();
+            $ingredient->setNom($item['nom']);
+            $ingredient->setDescription($item['description'] ?? null);
+            $ingredient->setUnite($item['unite'] ?? 'g');
+
+            $manager->persist($ingredient);
+            $ingredients[$item['nom']] = $ingredient; // clé pour accès rapide
+        }
+
+       // 3. Création d'une recette
 $recette = new Recette();
-$recette->setTitre('Salade detox');
-$recette->setDescription('Une salade légère et détoxifiante.');
-$recette->setImage('salade.jpg');
-$recette->setInstructions('1. Couper les légumes. 2. Assaisonner. 3. Servir frais.');
+$recette->setTitre('Salade fraîcheur citronnée');
+$recette->setDescription('Une salade simple et rafraîchissante à base de concombre et citron.');
+$recette->setInstructions('Mélanger les ingrédients dans un saladier. Servir frais.');
+$recette->setTempsPreparation(10);
 $recette->setUtilisateur($utilisateur);
-$recette->setTempsPreparation(15);
-$recette->setDifficulte('Facile');
-$recette->setValidation(true);
-$recette->setPortions(2);
-$recette->setValeursNutrition("Faible en calories, riche en fibres");
-
-// Ajout des ingrédients via la méthode personnalisée
-foreach (array_slice($ingredients, 0, 2) as $ingredient) {
-    $recette->addIngredient($ingredient, '100g');
-}
-
-// Persistance de la recette et des RecetteIngredient associés
-foreach ($recette->getRecetteIngredients() as $ri) {
-    $manager->persist($ri);
-}
-
+$recette->setImage('salade.jpg');
+ $recette->setTempsCuisson(0); 
+$recette->addIngredient($ingredients['Concombre'], 150);
+$recette->addIngredient($ingredients['Citron'], 20);
+$recette->addIngredient($ingredients['Miel'], 1);
 $manager->persist($recette);
-
 
 
         // 7. Articles
@@ -136,7 +130,28 @@ $manager->persist($recette);
         $article->setUtilisateur($utilisateur);
         $manager->persist($article);
 
+         //commentaires
+         // 8. Commentaires
+$commentaire1 = new Commentaire();
+$commentaire1->setContenu("Très bonne recette, simple et rapide !");
+$commentaire1->setDate(new \DateTimeImmutable('-1 day'));
+$commentaire1->setNote(5);
+$commentaire1->setSignaler(false);
+$commentaire1->setRecette($recette);
+$commentaire1->setUtilisateur($utilisateur);
+$manager->persist($commentaire1);
+
+$commentaire2 = new Commentaire();
+$commentaire2->setContenu("J’ai remplacé le miel par du sirop d’agave, excellent !");
+$commentaire2->setDate(new \DateTimeImmutable('-2 hours'));
+$commentaire2->setNote(4);
+$commentaire2->setSignaler(false);
+$commentaire2->setRecette($recette);
+$commentaire2->setUtilisateur($utilisateur);
+$manager->persist($commentaire2);
+
         // Flush final
         $manager->flush();
-    }
+    
+}
 }

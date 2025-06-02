@@ -23,7 +23,7 @@ class Article
     #[ORM\Column]
     private ?\DateTimeImmutable $date = null;
 
-    #[ORM\Column(length: 255, nullable: true)]
+   #[ORM\Column(type: 'string', length: 255, nullable: true)]
     private ?string $image = null;
 
     #[ORM\Column(options: ["default" => false])]

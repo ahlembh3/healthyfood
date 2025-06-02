@@ -57,8 +57,8 @@ class Commentaire
 
     public function setDate(\DateTimeImmutable $date): static
     {
-        $this->date;
-        return $this;
+         $this->date = $date;
+         return $this;
     }
 
     public function getNote(): ?int

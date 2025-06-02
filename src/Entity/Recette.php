@@ -59,15 +59,16 @@ class Recette
     maxMessage: "Les valeurs nutritionnelles ne peuvent pas dépasser {{ limit }} caractères.")]
     private ?string $valeursNutrition = null;
 
-     #[ORM\Column(length: 255)]
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
     #[Assert\NotBlank(message: 'Vous devez saisir une image')]
-    #[Assert\Image(
-        maxSize: '2M',
-        mimeTypes: ['image/jpeg', 'image/png', 'image/gif'],
-        maxSizeMessage: 'L\'image ne doit pas dépasser {{ limit }} {{ suffix }}',
-        mimeTypesMessage: 'L\'image doit être au format JPEG, PNG ou GIF',
-    )]
     private ?string $image = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?int $tempsCuisson = null;
+
+    #[ORM\Column(type: 'datetime_immutable')]
+    private ?\DateTimeImmutable $createdAt = null;
+
 
     #[ORM\OneToMany(mappedBy: 'recette', targetEntity: RecetteIngredient::class, cascade: ['persist', 'remove'])]
     private Collection $recetteIngredients;
@@ -83,6 +84,7 @@ class Recette
     {
         $this->recetteIngredients = new ArrayCollection();
         $this->commentaires = new ArrayCollection();
+        $this->createdAt = new \DateTimeImmutable();
     }
 
     public function getId(): ?int
@@ -184,6 +186,22 @@ class Recette
     return $this;
     }
 
+    public function getTempsCuisson(): ?int
+    {
+    return $this->tempsCuisson;
+    }
+
+    public function setTempsCuisson(?int $tempsCuisson): static
+    {
+    $this->tempsCuisson = $tempsCuisson;
+    return $this;
+    }
+    public function getCreatedAt(): ?\DateTimeImmutable
+    {
+    return $this->createdAt;
+    }
+
+
     /**
      * @return Collection<int, RecetteIngredient>
      */
@@ -192,7 +210,8 @@ class Recette
         return $this->recetteIngredients;
     }
 
-    public function addIngredient(Ingredient $ingredient, string $quantite = '100g'): static
+    public function addIngredient(Ingredient $ingredient, float $quantite = 100.0): static
+
 {
     foreach ($this->recetteIngredients as $ri) {
         if ($ri->getIngredient() === $ingredient) {
