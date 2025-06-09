@@ -5,6 +5,8 @@ namespace App\Entity;
 use App\Repository\ArticleRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
+
 
 #[ORM\Entity(repositoryClass: ArticleRepository::class)]
 class Article
@@ -15,15 +17,30 @@ class Article
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: "Le titre est obligatoire.")]
+    #[Assert\Length(
+    min: 5,
+    max: 255,
+    minMessage: "Le titre doit faire au moins {{ limit }} caractères.",
+    maxMessage: "Le titre ne peut pas dépasser {{ limit }} caractères.")]
     private ?string $titre = null;
 
     #[ORM\Column(type: Types::TEXT)]
+    #[Assert\NotBlank(message: "Le contenu est obligatoire.")]
+    #[Assert\Length(
+    min: 20,
+    minMessage: "Le contenu doit faire au moins {{ limit }} caractères.")]
     private ?string $contenu = null;
 
     #[ORM\Column]
     private ?\DateTimeImmutable $date = null;
 
    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+   #[Assert\File(
+    maxSize: '2M',
+    mimeTypes: ['image/jpeg', 'image/png', 'image/webp'],
+    mimeTypesMessage: "Veuillez télécharger une image valide (jpeg, png, webp).",
+    maxSizeMessage: "L'image ne doit pas dépasser 2 Mo.")]
     private ?string $image = null;
 
     #[ORM\Column(options: ["default" => false])]

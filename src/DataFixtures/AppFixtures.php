@@ -130,7 +130,7 @@ $manager->persist($recette);
         $article->setUtilisateur($utilisateur);
         $manager->persist($article);
 
-         //commentaires
+         
          // 8. Commentaires
 $commentaire1 = new Commentaire();
 $commentaire1->setContenu("Très bonne recette, simple et rapide !");

@@ -8,7 +8,8 @@
     <title>{% block title %}Accueil{% endblock %} - healthyfood</title>
     {% block stylesheets %}
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css"
-              rel="stylesheet" integrity="sha384-SgOJa3DmI69IUzQ2PVdRZhwQ+dy64/BUtbMJw1MZ8t5HZApcHrRKUc4W0kG879m7"
+              rel="stylesheet"
+              integrity="sha384-SgOJa3DmI69IUzQ2PVdRZhwQ+dy64/BUtbMJw1MZ8t5HZApcHrRKUc4W0kG879m7"
               crossorigin="anonymous">
     {% endblock %}
 </head>
@@ -17,31 +18,36 @@
 {% include 'partials/_header.html.twig' %}
 
 <!-- Contenu du site -->
-    {% block body %} <!-- main>.p-5.mx-auto.text-center>h1.display-4{Bienvenue sur Actunews} -->
-        <main>
+{% block body %}
+    <main>
         <!-- Titre de la page -->
         <div class="p-5 mx-auto text-center">
-            <h1 class="display-4">{% block page_title %}Bienvenue sur Actunews{% endblock %}</h1>
+            <h1 class="display-4">{% block page_title %}Bienvenue sur healthyfood{% endblock %}</h1>
         </div>
 
         <!-- Contenu de la page -->
         <div class="py-5 bg-light">
             <div class="container">{% block content %}{% endblock %}</div>
         </div>
-        </main>{% endblock %}
+    </main>
+{% endblock %}
 
 <!-- Pied de page -->
 {% include 'partials/_footer.html.twig' %}
-</body>
-</html>
 
 <!-- Javascripts -->
 {% block javascripts %}
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js"
             integrity="sha384-k6d4wzSIapyDyv1kpU366/PK5hCdSbCRGRCMv+eplOQJWyd1fbcAu9OCUj5zNLiq"
             crossorigin="anonymous"></script>
+    <script src="https://cdn.ckeditor.com/4.22.1/standard/ckeditor.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            if (document.getElementById('article_contenu')) {
+                CKEDITOR.replace('article_contenu');
+            }
+        });
+    </script>
 {% endblock %}
-
 </body>
 </html>
-

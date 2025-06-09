@@ -1,0 +1,40 @@
+<div class="d-flex justify-content-center mt-5">
+    <div class="card shadow p-4" style="max-width: 500px; width: 100%;">
+        <h1 class="text-center mb-4" id="form-title">{{ form_title|default('Ajouter un article') }}</h1>
+
+        {{ form_start(form, {'attr': {'class': 'needs-validation', 'novalidate': 'novalidate', 'aria-labelledby': 'form-title'}}) }}
+
+        <div class="mb-3">
+            <label class="form-label" for="{{ form.titre.vars.id }}">{{ form_label(form.titre) }}</label>
+            {{ form_widget(form.titre, {'attr': {'class': 'form-control'}}) }}
+            <div class="text-danger">{{ form_errors(form.titre) }}</div>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label" for="{{ form.contenu.vars.id }}">{{ form_label(form.contenu) }}</label>
+            {{ form_widget(form.contenu, {'attr': {'class': 'form-control'}}) }}
+            <div class="text-danger">{{ form_errors(form.contenu) }}</div>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label" for="{{ form.categorie.vars.id }}">{{ form_label(form.categorie) }}</label>
+            {{ form_widget(form.categorie, {'attr': {'class': 'form-select'}}) }}
+            <div class="text-danger">{{ form_errors(form.categorie) }}</div>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label" for="{{ form.image.vars.id }}">{{ form_label(form.image) }}</label>
+            {{ form_widget(form.image, {'attr': {'class': 'form-control','onchange': 'previewImage(event)'}}) }}
+            <div class="text-danger">{{ form_errors(form.image) }}</div>
+             <div class="mt-3">
+                   <img id="imagePreview" src="#" alt="Aperçu de l’image" class="img-fluid d-none border rounded" style="max-height: 300px;" />
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100">
+            <i class="bi bi-check-circle me-2"></i>{{ button_label|default('Enregistrer') }}
+        </button>
+
+        {{ form_end(form) }}
+    </div>
+</div>

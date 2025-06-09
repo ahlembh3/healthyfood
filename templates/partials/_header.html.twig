@@ -10,14 +10,17 @@
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ms-auto">
                 <li class="nav-item">
-                    <a class="nav-link" href="{{ path('utilisateurs_liste') }}">Utilisateurs</a>
+                    <a href="{{ path('app_home') }}">Accueil</a>
+
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#">Connexion</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#">Déconnexion</a>
-                </li>
+                {% if app.user %}
+                Connecté en tant que {{ app.user.email }} |
+                <li class="nav-item"> <a href="{{ path('article_index') }}">Article</a></li>
+                <li class="nav-item"> <a href="{{ path('recette_index') }}">Recette</a></li>
+                <li class="nav-item"> <a href="{{ path('app_logout') }}">Déconnexion</a></li>
+                {% else %}
+                <li class="nav-item"><a href="{{ path('app_login') }}">Connexion</a></li>
+                {% endif %}
             </ul>
         </div>
     </div>

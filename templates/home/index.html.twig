@@ -1,0 +1,13 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Accueil{% endblock %}
+
+{% block body %}
+    <h1>Bienvenue sur HealthyFood</h1>
+
+    {% if app.user %}
+        <p>Bonjour {{ app.user.prenom }} !</p>
+    {% else %}
+        <p>Veuillez vous connecter pour accéder à toutes les fonctionnalités.</p>
+    {% endif %}
+{% endblock %}

@@ -1,0 +1,38 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier l'article{% endblock %}
+
+{% block body %}
+<h1>Modifier l'article</h1>
+
+{{ include('article/_form.html.twig', {'button_label': 'Modifier'}) }}
+<a href="{{ path('article_index') }}" class="btn btn-secondary mt-3">Retour à la liste</a>
+
+{% endblock %}
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        function previewImage(event) {
+            const input = event.target;
+            const preview = document.getElementById('imagePreview');
+
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                    preview.classList.remove('d-none');
+                };
+
+                reader.readAsDataURL(input.files[0]);
+            } else {
+                preview.src = "#";
+                preview.classList.add('d-none');
+            }
+        }
+    </script>
+{% endblock %}
+
+
+
+
