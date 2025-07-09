@@ -163,5 +163,10 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     {
         return $this->articles;
     }
+    public function __toString(): string
+{
+    return $this->prenom . ' ' . $this->nom . ' (' . $this->email . ')';
+}
+
 }
 

@@ -80,7 +80,7 @@ class ArticleController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-                    $imageFile = $form->get('image')->getData();
+            $imageFile = $form->get('image')->getData();
 
         if ($imageFile) {
             $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
@@ -93,7 +93,7 @@ class ArticleController extends AbstractController
                     $newFilename
                 );
             } catch (FileException $e) {
-                // Gère l’erreur si besoin
+                $this->addFlash('danger', 'Erreur lors de l\'upload de l\'image.');
             }
 
             $article->setImage($newFilename);

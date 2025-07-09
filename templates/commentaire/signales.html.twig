@@ -1,0 +1,56 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Commentaires signalés{% endblock %}
+
+{% block body %}
+    <h1 class="mb-4">Commentaires signalés</h1>
+
+    {% if commentaires is empty %}
+        <div class="alert alert-info">Aucun commentaire signalé.</div>
+    {% else %}
+        <div class="list-group">
+            {% for commentaire in commentaires %}
+                <div class="list-group-item mb-3 border rounded p-3 shadow-sm">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h5 class="mb-1">{{ commentaire.utilisateur.email }}</h5>
+                            <small class="text-muted">{{ commentaire.date|date('d/m/Y H:i') }}</small>
+                        </div>
+                        <span class="badge bg-danger">Signalé</span>
+                    </div>
+                    <p class="mt-2 mb-1">{{ commentaire.contenu }}</p>
+                    <p class="mb-2"><strong>Note :</strong> {{ commentaire.note ?? 'Non notée' }}</p>
+                   <p><strong>Signalé par :</strong>
+    {% if commentaire.signalePar %}
+        {{ commentaire.signalePar.email }}
+    {% else %}
+        <em>Utilisateur inconnu</em>
+    {% endif %}
+</p>
+
+<p><strong>Le :</strong> {{ commentaire.signaleLe ? commentaire.signaleLe|date('d/m/Y H:i') : 'Date inconnue' }}</p>
+
+
+                    <p><strong>Recette :</strong> {{ commentaire.recette.titre }}</p>
+
+                    <div class="d-flex gap-2 mt-2">
+                        <a href="{{ path('commentaire_show', {'id': commentaire.id}) }}" class="btn btn-sm btn-outline-primary">Voir</a>
+
+                        <form method="post" action="{{ path('commentaire_delete', {'id': commentaire.id}) }}" onsubmit="return confirm('Confirmer la suppression ?');">
+                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ commentaire.id) }}">
+                            <button class="btn btn-sm btn-danger">Supprimer</button>
+                        </form>
+
+                        <form method="post" action="{{ path('commentaire_designaler', {'id': commentaire.id}) }}">
+                           <input type="hidden" name="_token" value="{{ csrf_token('designaler' ~ commentaire.id) }}">
+                           <button class="btn btn-sm btn-warning">Désignaler</button>
+                        </form>
+
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <a href="{{ path('commentaire_index') }}" class="btn btn-secondary mt-4">Retour à la liste complète</a>
+{% endblock %}

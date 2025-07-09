@@ -26,7 +26,7 @@ security:
                 target: app_home # ou "/" si tu n’as pas encore créé la route "app_home"
 
     access_control:
-        - { path: ^/admin, roles: ROLE_ADMIN }
+        #- { path: ^/admin, roles: ROLE_ADMIN }
         - { path: ^/articles, roles: ROLE_USER }
         - { path: ^/recettes, roles: ROLE_USER }
         - { path: ^/login, roles: PUBLIC_ACCESS }

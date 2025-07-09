@@ -1,0 +1,39 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Liste des commentaires{% endblock %}
+
+{% block body %}
+    <h1 class="mb-4">Tous les commentaires</h1>
+   {% if is_granted('ROLE_ADMIN') %}
+  <div class="btn-group mb-4" role="group" aria-label="Filtres commentaires">
+    <a href="{{ path('commentaire_index') }}" class="btn btn-outline-primary {% if not app.request.get('signale') %}active{% endif %}">Tous</a>
+    <a href="{{ path('commentaire_index', {'signale': 1}) }}" class="btn btn-outline-danger {% if app.request.get('signale') %}active{% endif %}">Signalés uniquement</a>
+  </div>
+{% endif %}
+
+
+    {% if commentaires is empty %}
+        <div class="alert alert-info">Aucun commentaire trouvé.</div>
+    {% else %}
+        <div class="list-group">
+            {% for commentaire in commentaires %}
+               <div class="list-group-item mb-3 border rounded p-3 shadow-sm {% if commentaire.signaler %}border-danger bg-light{% endif %}">
+    <div class="d-flex justify-content-between">
+        <div>
+            <h5 class="mb-1">{{ commentaire.utilisateur.email }}</h5>
+            <small class="text-muted">{{ commentaire.date|date('d/m/Y H:i') }}</small>
+        </div>
+        <span class="badge bg-{{ commentaire.signaler ? 'danger' : 'success' }}">
+            {{ commentaire.signaler ? 'Signalé' : 'Valide' }}
+        </span>
+    </div>
+    <p class="mt-2 mb-1">{{ commentaire.contenu }}</p>
+    <p class="mb-2"><strong>Note :</strong> {{ commentaire.note ?? 'Non notée' }}</p>
+
+    <a href="{{ path('commentaire_show', {'id': commentaire.id}) }}" class="btn btn-sm btn-outline-primary">Voir</a>
+</div>
+
+            {% endfor %}
+        </div>
+    {% endif %}
+{% endblock %}

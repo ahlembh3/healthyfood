@@ -11,6 +11,10 @@ use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\NotBlank;
+use Symfony\Component\Form\FormEvent;
+use Symfony\Component\Form\FormEvents;
+use Symfony\Component\Form\FormError;
+
 
 class UtilisateurType extends AbstractType
 {
@@ -62,6 +66,18 @@ class UtilisateurType extends AbstractType
                         new NotBlank(['message' => 'Veuillez confirmer votre mot de passe.']),
                     ],
                 ]);
+                 //  Ajout du validateur des mots de passe
+            $builder->addEventListener(FormEvents::POST_SUBMIT, function (FormEvent $event) {
+                      $form = $event->getForm();
+                      $password = $form->get('password')->getData();
+                      $confirmPassword = $form->get('confirmPassword')->getData();
+
+                     if ($password !== $confirmPassword) {
+                         $form->get('confirmPassword')->addError(
+                        new FormError("Les mots de passe ne correspondent pas.")
+                        );
+                      }
+                 });
         }
     }
 

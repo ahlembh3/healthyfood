@@ -98,27 +98,36 @@ class AppFixtures extends Fixture
 
         foreach ($ingredientsData as $item) {
             $ingredient = new Ingredient();
-            $ingredient->setNom($item['nom']);
+            $ingredient->setNom($item['nom'] ?? '');
+            $ingredient->setType($item['type'] ?? '');
+            $ingredient->setAllergenes($item['allergenes'] ?? '');
+            $ingredient->setSaisonnalite($item['saisonnalite'] ?? '');
             $ingredient->setDescription($item['description'] ?? null);
-            $ingredient->setUnite($item['unite'] ?? 'g');
+            $ingredient->setUnite($item['unite'] ?? 'gramme');
 
             $manager->persist($ingredient);
             $ingredients[$item['nom']] = $ingredient; // clé pour accès rapide
         }
 
        // 3. Création d'une recette
-$recette = new Recette();
-$recette->setTitre('Salade fraîcheur citronnée');
-$recette->setDescription('Une salade simple et rafraîchissante à base de concombre et citron.');
-$recette->setInstructions('Mélanger les ingrédients dans un saladier. Servir frais.');
-$recette->setTempsPreparation(10);
-$recette->setUtilisateur($utilisateur);
-$recette->setImage('salade.jpg');
- $recette->setTempsCuisson(0); 
-$recette->addIngredient($ingredients['Concombre'], 150);
-$recette->addIngredient($ingredients['Citron'], 20);
-$recette->addIngredient($ingredients['Miel'], 1);
-$manager->persist($recette);
+           $recette = new Recette();
+           $recette->setTitre('Salade fraîcheur citronnée');
+           $recette->setDescription('Une salade simple et rafraîchissante à base de concombre et citron.');
+           $recette->setInstructions('Mélanger les ingrédients dans un saladier. Servir frais.');
+           $recette->setTempsPreparation(10);
+           $recette->setUtilisateur($utilisateur);
+           $recette->setImage('salade.jpg');
+           $recette->setTempsCuisson(0); 
+           if (isset($ingredients['Concombre'])) {
+              $recette->addIngredient($ingredients['Concombre'], 150);
+            }
+           if (isset($ingredients['Citron'])){
+              $recette->addIngredient($ingredients['Citron'], 20);
+            }
+           if (isset($ingredients['Miel'])){
+              $recette->addIngredient($ingredients['Miel'], 1);
+            }
+           $manager->persist($recette);
 
 
         // 7. Articles
@@ -132,23 +141,35 @@ $manager->persist($recette);
 
          
          // 8. Commentaires
-$commentaire1 = new Commentaire();
-$commentaire1->setContenu("Très bonne recette, simple et rapide !");
-$commentaire1->setDate(new \DateTimeImmutable('-1 day'));
-$commentaire1->setNote(5);
-$commentaire1->setSignaler(false);
-$commentaire1->setRecette($recette);
-$commentaire1->setUtilisateur($utilisateur);
-$manager->persist($commentaire1);
+        $commentaire1 = new Commentaire();
+        $commentaire1->setContenu("Très bonne recette, simple et rapide !");
+        $commentaire1->setDate(new \DateTimeImmutable('-1 day'));
+        $commentaire1->setNote(5);
+        $commentaire1->setSignaler(false);
+        $commentaire1->setRecette($recette);
+        $commentaire1->setType(1);
+        $commentaire1->setUtilisateur($utilisateur);
+        $manager->persist($commentaire1);
 
-$commentaire2 = new Commentaire();
-$commentaire2->setContenu("J’ai remplacé le miel par du sirop d’agave, excellent !");
-$commentaire2->setDate(new \DateTimeImmutable('-2 hours'));
-$commentaire2->setNote(4);
-$commentaire2->setSignaler(false);
-$commentaire2->setRecette($recette);
-$commentaire2->setUtilisateur($utilisateur);
-$manager->persist($commentaire2);
+        $commentaire2 = new Commentaire();
+        $commentaire2->setContenu("J’ai remplacé le miel par du sirop d’agave, excellent !");
+        $commentaire2->setDate(new \DateTimeImmutable('-2 hours'));
+        $commentaire2->setNote(4);
+        $commentaire2->setSignaler(false);
+        $commentaire2->setRecette($recette);
+        $commentaire2->setType(1);
+        $commentaire2->setUtilisateur($utilisateur);
+        $manager->persist($commentaire2);
+
+        $commentaire3 = new Commentaire();
+        $commentaire3->setContenu("Article très intéressant sur les bienfaits des plantes !");
+        $commentaire3->setDate(new \DateTimeImmutable('-3 hours'));
+        $commentaire3->setNote(5);
+        $commentaire3->setSignaler(false);
+        $commentaire3->setArticle($article); 
+        $commentaire3->setUtilisateur($utilisateur);
+        $commentaire3->setType(2); 
+        $manager->persist($commentaire3);
 
         // Flush final
         $manager->flush();

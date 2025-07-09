@@ -6,6 +6,9 @@ use App\Repository\ArticleRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\Common\Collections\ArrayCollection;
+
 
 
 #[ORM\Entity(repositoryClass: ArticleRepository::class)]
@@ -19,9 +22,7 @@ class Article
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank(message: "Le titre est obligatoire.")]
     #[Assert\Length(
-    min: 5,
     max: 255,
-    minMessage: "Le titre doit faire au moins {{ limit }} caractères.",
     maxMessage: "Le titre ne peut pas dépasser {{ limit }} caractères.")]
     private ?string $titre = null;
 
@@ -46,12 +47,53 @@ class Article
     #[ORM\Column(options: ["default" => false])]
     private ?bool $validation = false;
 
+    #[Assert\Choice(
+    choices: ['Bien-être', 'Nutrition', 'Plantes', 'Conseils', 'Autre'],
+    message: "Catégorie invalide. Choisissez une valeur valide.")]
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $categorie = null;
 
     #[ORM\ManyToOne(inversedBy: 'articles')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Utilisateur $utilisateur = null;
+
+    #[ORM\OneToMany(mappedBy: 'article', targetEntity: Commentaire::class)]
+    private Collection $commentaires;
+
+    public function __construct()
+    {
+    $this->commentaires = new ArrayCollection();
+    }
+
+    /**
+ * @return Collection<int, Commentaire>
+ */
+   public function getCommentaires(): Collection
+   {
+    return $this->commentaires;
+   }
+
+   public function addCommentaire(Commentaire $commentaire): static
+   {
+    if (!$this->commentaires->contains($commentaire)) {
+        $this->commentaires->add($commentaire);
+        $commentaire->setArticle($this);
+    }
+
+    return $this;
+   }
+
+   public function removeCommentaire(Commentaire $commentaire): static
+   {
+    if ($this->commentaires->removeElement($commentaire)) {
+        // set the owning side to null (unless already changed)
+        if ($commentaire->getArticle() === $this) {
+            $commentaire->setArticle(null);
+        }
+    }
+
+    return $this;
+   }
 
     public function getId(): ?int
     {

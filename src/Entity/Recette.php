@@ -44,6 +44,7 @@ class Recette
     private ?int $tempsPreparation = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Assert\Choice(choices: ['Facile', 'Moyen', 'Difficile'], message: "Choisissez une difficulté valide.")]
     private ?string $difficulte = null;
 
     #[ORM\Column]
@@ -53,17 +54,16 @@ class Recette
     #[Assert\Positive(message: "Le nombre de portions doit être positif.")]
     private ?int $portions = null;
 
-    #[ORM\Column(type: Types::TEXT, nullable: true)]
-    #[Assert\Length(
-    max: 1000,
-    maxMessage: "Les valeurs nutritionnelles ne peuvent pas dépasser {{ limit }} caractères.")]
-    private ?string $valeursNutrition = null;
-
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
-    #[Assert\NotBlank(message: 'Vous devez saisir une image')]
+     #[Assert\File(
+    maxSize: '2M',
+    mimeTypes: ['image/jpeg', 'image/png', 'image/webp'],
+    mimeTypesMessage: "Veuillez télécharger une image valide (jpeg, png, webp).",
+    maxSizeMessage: "L'image ne doit pas dépasser 2 Mo.")]
     private ?string $image = null;
 
     #[ORM\Column(nullable: true)]
+    #[Assert\Positive(message: "Le temps de cuisson doit être un nombre positif.")]
     private ?int $tempsCuisson = null;
 
     #[ORM\Column(type: 'datetime_immutable')]
@@ -169,17 +169,6 @@ class Recette
         return $this;
     }
 
-    public function getValeursNutrition(): ?string
-    {
-        return $this->valeursNutrition;
-    }
-
-    public function setValeursNutrition(?string $valeursNutrition): static
-    {
-        $this->valeursNutrition = $valeursNutrition;
-        return $this;
-    }
-
     public function getImage(): ?string { return $this->image; }
     public function setImage(?string $image): static {
     $this->image = $image;
@@ -209,10 +198,32 @@ class Recette
     {
         return $this->recetteIngredients;
     }
+    public function addRecetteIngredient(RecetteIngredient $recetteIngredient): static
+    {
+    if (!$this->recetteIngredients->contains($recetteIngredient)) {
+        $this->recetteIngredients->add($recetteIngredient);
+        $recetteIngredient->setRecette($this);
+    }
+
+    return $this;
+    }
+
+    public function removeRecetteIngredient(RecetteIngredient $recetteIngredient): static
+    {
+    if ($this->recetteIngredients->removeElement($recetteIngredient)) {
+        // Désassocier le lien inverse
+        if ($recetteIngredient->getRecette() === $this) {
+            $recetteIngredient->setRecette(null);
+        }
+    }
+
+    return $this;
+    }
+
 
     public function addIngredient(Ingredient $ingredient, float $quantite = 100.0): static
 
-{
+   {
     foreach ($this->recetteIngredients as $ri) {
         if ($ri->getIngredient() === $ingredient) {
             // L'ingrédient est déjà présent pour cette recette
@@ -228,10 +239,10 @@ class Recette
     $this->recetteIngredients->add($recetteIngredient);
 
     return $this;
-}
+   }
 
-public function removeIngredient(Ingredient $ingredient): static
-{
+   public function removeIngredient(Ingredient $ingredient): static
+   {
     foreach ($this->recetteIngredients as $recetteIngredient) {
         if ($recetteIngredient->getIngredient() === $ingredient) {
             $this->recetteIngredients->removeElement($recetteIngredient);
@@ -240,7 +251,7 @@ public function removeIngredient(Ingredient $ingredient): static
     }
 
     return $this;
-}
+   }
 
 
     public function getUtilisateur(): ?Utilisateur
@@ -261,5 +272,26 @@ public function removeIngredient(Ingredient $ingredient): static
     {
         return $this->commentaires;
     }
+    public function addCommentaire(Commentaire $commentaire): static
+   {
+    if (!$this->commentaires->contains($commentaire)) {
+        $this->commentaires->add($commentaire);
+        $commentaire->setRecette($this);
+    }
+
+    return $this;
+   }
+
+   public function removeCommentaire(Commentaire $commentaire): static
+   {
+    if ($this->commentaires->removeElement($commentaire)) {
+        if ($commentaire->getRecette() === $this) {
+            $commentaire->setRecette(null);
+        }
+    }
+
+    return $this;
+   }
+
 }
 

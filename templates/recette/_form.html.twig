@@ -1,146 +1,337 @@
 <div class="d-flex justify-content-center mt-5">
-    <div class="card shadow p-4" style="max-width: 500px; width: 100%;">
-        <h1 class="text-center mb-4" id="form-title">{{ form_title|default('Ajouter une recette') }}</h1>
+  <div class="card shadow p-4 w-100" style="max-width: 700px;">
 
-        {{ form_start(form, {'attr': {'class': 'needs-validation', 'novalidate': 'novalidate', 'aria-labelledby': 'form-title'}}) }}
+    <!-- Barre de progression -->
+    <nav aria-label="Progress">
+      <ol class="progressbar list-unstyled d-flex justify-content-between">
+        <li class="progress-step active" data-step="1">Infos</li>
+        <li class="progress-step" data-step="2">Ingrédients</li>
+        <li class="progress-step" data-step="3">Instructions</li>
+      </ol>
+    </nav>
 
-        <div class="mb-3">
-            <label class="form-label" for="{{ form.titre.vars.id }}">{{ form_label(form.titre) }}</label>
-            {{ form_widget(form.titre, {
-                'attr': {
-                    'class': 'form-control',
-                    'placeholder': 'Ex. : Salade composée légère',
-                    'aria-describedby': form.titre.vars.id ~ '_error'
-                }
-            }) }}
-            <div id="{{ form.titre.vars.id }}_error" class="text-danger" role="alert">
-                {{ form_errors(form.titre) }}
-            </div>
-        </div>
+    {{ form_start(form, {
+      'attr': {
+        'id': 'recipe-form',
+        'novalidate': 'novalidate',
+        'class': 'needs-validation'
+      }
+    }) }}
 
-        <div class="mb-3">
-            <label class="form-label" for="{{ form.description.vars.id }}">{{ form_label(form.description) }}</label>
-            {{ form_widget(form.description, {
-                'attr': {
-                    'class': 'form-control',
-                    'rows': '3',
-                    'aria-describedby': form.description.vars.id ~ '_error'
-                }
-            }) }}
-            <div id="{{ form.description.vars.id }}_error" class="text-danger" role="alert">
-                {{ form_errors(form.description) }}
-            </div>
-        </div>
+    <!-- ÉTAPE 1 - Infos -->
+    <div class="step" data-step="1">
+      <h4 class="mb-3">Informations de base</h4>
 
-        <div class="mb-3">
-            <label class="form-label" for="{{ form.instructions.vars.id }}">{{ form_label(form.instructions) }}</label>
-            {{ form_widget(form.instructions, {
-                'attr': {
-                    'class': 'form-control',
-                    'rows': '5',
-                    'aria-describedby': form.instructions.vars.id ~ '_error'
-                }
-            }) }}
-            <div id="{{ form.instructions.vars.id }}_error" class="text-danger" role="alert">
-                {{ form_errors(form.instructions) }}
-            </div>
-        </div>
+      <div class="mb-3">
+        {{ form_label(form.titre) }}
+        {{ form_widget(form.titre, {'attr': {'class': 'form-control'}}) }}
+        {{ form_errors(form.titre) }}
+      </div>
 
-        <div class="mb-3">
-            <label class="form-label" for="{{ form.tempsPreparation.vars.id }}">{{ form_label(form.tempsPreparation) }}</label>
-            <div class="input-group">
-                {{ form_widget(form.tempsPreparation, {
-                    'attr': {
-                        'class': 'form-control',
-                        'aria-describedby': 'temps-addon-left temps-addon-right ' ~ form.tempsPreparation.vars.id ~ '_error'
-                    }
-                }) }}
-                <span class="input-group-text" id="temps-addon-right">minutes</span>
-            </div>
-            <div id="{{ form.tempsPreparation.vars.id }}_error" class="text-danger" role="alert">
-                {{ form_errors(form.tempsPreparation) }}
-            </div>
-        </div>
+      <div class="mb-3">
+        {{ form_label(form.image) }}
+        {{ form_widget(form.image, {'attr': {'class': 'form-control', 'onchange': 'previewImage(event)'}}) }}
+        <img id="imagePreview" src="#" class="img-fluid mt-2 d-none rounded border" style="max-height: 200px;" />
+        {{ form_errors(form.image) }}
+      </div>
 
-        <div class="mb-3">
-            <label class="form-label" for="{{ form.difficulte.vars.id }}">{{ form_label(form.difficulte) }}</label>
-            {{ form_widget(form.difficulte, {
-                'attr': {
-                    'class': 'form-control',
-                    'aria-describedby': form.difficulte.vars.id ~ '_error'
-                }
-            }) }}
-            <div id="{{ form.difficulte.vars.id }}_error" class="text-danger" role="alert">
-                {{ form_errors(form.difficulte) }}
-            </div>
-        </div>
+      <div class="mb-3">
+        {{ form_label(form.description) }}
+        {{ form_widget(form.description, {'attr': {'class': 'form-control'}}) }}
+        {{ form_errors(form.description) }}
+      </div>
 
-        <div class="mb-3">
-            <label class="form-label" for="{{ form.portions.vars.id }}">{{ form_label(form.portions) }}</label>
-            <div class="input-group">
-                {{ form_widget(form.portions, {
-                    'attr': {
-                        'class': 'form-control',
-                        'aria-describedby': 'portions-addon-left portions-addon-right ' ~ form.portions.vars.id ~ '_error'
-                    }
-                }) }}
-                <span class="input-group-text" id="portions-addon-right">portions</span>
-            </div>
-            <div id="{{ form.portions.vars.id }}_error" class="text-danger" role="alert">
-                {{ form_errors(form.portions) }}
-            </div>
-        </div>
-
-        <div class="mb-3">
-            <label class="form-label" for="{{ form.valeursNutrition.vars.id }}">{{ form_label(form.valeursNutrition) }}</label>
-            {{ form_widget(form.valeursNutrition, {
-                'attr': {
-                    'class': 'form-control',
-                    'aria-describedby': form.valeursNutrition.vars.id ~ '_help ' ~ form.valeursNutrition.vars.id ~ '_error'
-                }
-            }) }}
-            <div id="{{ form.valeursNutrition.vars.id }}_help" class="form-text text-muted">
-                {{ form_help(form.valeursNutrition) }}
-            </div>
-            <div id="{{ form.valeursNutrition.vars.id }}_error" class="text-danger" role="alert">
-                {{ form_errors(form.valeursNutrition) }}
-            </div>
-        </div>
-
-        <div class="mb-3">
-            <label class="form-label" for="{{ form.utilisateur.vars.id }}">{{ form_label(form.utilisateur) }}</label>
-            {{ form_widget(form.utilisateur, {
-                'attr': {
-                    'class': 'form-control',
-                    'aria-describedby': form.utilisateur.vars.id ~ '_error'
-                }
-            }) }}
-            <div id="{{ form.utilisateur.vars.id }}_error" class="text-danger" role="alert">
-                {{ form_errors(form.utilisateur) }}
-            </div>
-        </div>
-
-        {% if form.validation is defined %}
-            <div class="form-check mb-3">
-                {{ form_widget(form.validation, {
-                    'attr': {
-                        'class': 'form-check-input',
-                        'aria-describedby': form.validation.vars.id ~ '_error'
-                    }
-                }) }}
-                <label class="form-check-label" for="{{ form.validation.vars.id }}">
-                    {{ form_label(form.validation) }}
-                </label>
-                <div id="{{ form.validation.vars.id }}_error" class="text-danger" role="alert">
-                    {{ form_errors(form.validation) }}
-                </div>
-            </div>
-        {% endif %}
-
-        <button type="submit" class="btn btn-primary w-100" aria-label="{{ button_label|default('Enregistrer la recette') }}">
-            <i class="bi bi-check-circle me-2"></i>{{ button_label|default('Enregistrer') }}
-        </button>
-
-        {{ form_end(form) }}
+      <button type="button" class="btn btn-primary btn-next">Suivant</button>
     </div>
+
+    <!-- ÉTAPE 2 - Ingrédients -->
+    <div class="step d-none" data-step="2">
+      <h4 class="mb-3">Ingrédients</h4>
+      <div id="ingredients-collection"
+           data-prototype="{{ form_widget(form.recetteIngredients.vars.prototype)|e('html_attr') }}">
+        {% for ri in form.recetteIngredients %}
+          <div class="row g-2 ingred-item align-items-center mb-3">
+             <div class="col-4">
+              {{ form_widget(ri.typeIngredient, {'attr': {'class': 'form-select ingredient-type'}}) }}
+            </div>
+            <div class="col-3">
+              {{ form_widget(ri.ingredient, {'attr': {'class': 'form-select ingredient-select'}}) }}
+            </div>
+           <div class="col-3">
+               <div class="input-group">
+                   {{ form_widget(ri.quantite, {'attr': {'class': 'form-control'}}) }}
+                   <span class="input-group-text unite-text">?</span>
+               </div>
+           </div>
+
+             <div class="col-2">
+            <button type="button" class="btn btn-outline-danger btn-sm remove-ingredient">
+              <i class="bi bi-trash"></i>
+            </button>
+          </div>
+          </div>
+        {% endfor %}
+      </div>
+      <button id="add-ingredient" type="button" class="btn btn-sm btn-outline-success mb-3">
+        <i class="bi bi-plus-circle me-1"></i> Ajouter un ingrédient
+      </button>
+      <div class="d-flex justify-content-between">
+        <button type="button" class="btn btn-secondary btn-prev">Précédent</button>
+        <button type="button" class="btn btn-primary btn-next">Suivant</button>
+      </div>
+    </div>
+
+    <!-- ÉTAPE 3 - Instructions -->
+    <div class="step d-none" data-step="3">
+      <h4 class="mb-3">Instructions</h4>
+      <div class="mb-3">
+        {{ form_label(form.instructions) }}
+        {{ form_widget(form.instructions, {'attr': {'class': 'form-control', 'rows': 5}}) }}
+        {{ form_errors(form.instructions) }}
+      </div>
+      <div class="mb-3">
+        {{ form_row(form.tempsPreparation, {'attr': {'class': 'form-control'}}) }}
+        {{ form_row(form.difficulte, {'attr': {'class': 'form-control'}}) }}
+        {{ form_row(form.portions, {'attr': {'class': 'form-control'}}) }}
+        {{ form_row(form.valeursNutrition, {'attr': {'class': 'form-control'}}) }}
+      </div>
+      <div class="d-flex justify-content-between">
+        <button type="button" class="btn btn-secondary btn-prev">Précédent</button>
+        <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#recipePreviewModal">Aperçu & Créer</button>
+      </div>
+    </div>
+
+    {{ form_rest(form) }}
+    {{ form_end(form, { 'render_rest': false }) }}
+
+  </div>
 </div>
+
+<!-- MODAL APERÇU -->
+<div class="modal fade" id="recipePreviewModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Aperçu de la recette</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+      </div>
+      <div class="modal-body">
+        <p><strong>Titre :</strong> <span id="preview-title"></span></p>
+        <p><strong>Description :</strong> <span id="preview-description"></span></p>
+        <p><strong>Ingrédients :</strong></p>
+        <ul id="preview-ingredients" class="list-group"></ul>
+        <p><strong>Instructions :</strong></p>
+        <div id="preview-instructions"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Modifier</button>
+        <button type="button" class="btn btn-success" id="confirm-submit-btn">Créer la recette</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const addButton = document.getElementById('add-ingredient');
+  const wrapper = document.getElementById('ingredients-collection');
+  let index = wrapper.querySelectorAll('.ingred-item').length;
+
+  function attachIngredientListener(container) {
+    const typeSelect = container.querySelector('.ingredient-type');
+    const ingredientSelect = container.querySelector('.ingredient-select');
+    const uniteSpan = container.querySelector('.unite-text');
+
+    if (typeSelect && ingredientSelect) {
+      typeSelect.addEventListener('change', function () {
+        const type = this.value;
+
+        // Vider proprement la liste sans innerHTML
+        while (ingredientSelect.firstChild) {
+          ingredientSelect.removeChild(ingredientSelect.firstChild);
+        }
+
+        // Ajout de l'option par défaut
+        const defaultOption = document.createElement('option');
+        defaultOption.value = '';
+        defaultOption.textContent = 'Sélectionnez un ingrédient';
+        ingredientSelect.appendChild(defaultOption);
+
+        if (uniteSpan) uniteSpan.textContent = '?';
+        if (!type) return;
+
+        fetch('/recettes/ajax/ingredients?type=' + encodeURIComponent(type))
+          .then(response => response.json())
+          .then(data => {
+            data.forEach(item => {
+              const option = document.createElement('option');
+              option.value = item.id;
+              option.textContent = item.nom;
+              option.dataset.unite = item.unite;
+              ingredientSelect.appendChild(option);
+            });
+          });
+      });
+    }
+
+    if (ingredientSelect && uniteSpan) {
+      ingredientSelect.addEventListener('change', function () {
+        const selected = this.selectedOptions[0];
+        const unite = selected?.dataset.unite || '?';
+        uniteSpan.textContent = unite;
+      });
+
+      const selected = ingredientSelect.selectedOptions[0];
+      if (selected?.dataset.unite) {
+        uniteSpan.textContent = selected.dataset.unite;
+      }
+    }
+
+    if (typeSelect?.value) {
+      typeSelect.dispatchEvent(new Event('change'));
+    }
+  }
+
+  function initRemoveIngredient(container) {
+    const btn = container.querySelector('.remove-ingredient');
+    if (btn) {
+      btn.addEventListener('click', () => {
+        container.remove();
+      });
+    }
+  }
+
+  addButton?.addEventListener('click', () => {
+    const prototypeHTML = wrapper.dataset.prototype.replace(/__name__/g, index);
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = prototypeHTML;
+
+    const ingredItem = tempDiv.firstElementChild;
+    ingredItem.classList.add('d-flex', 'gap-2', 'align-items-center', 'mb-3');
+
+    const quantiteInput = ingredItem.querySelector('input');
+    if (quantiteInput && !ingredItem.querySelector('.unite-text')) {
+      const inputGroup = document.createElement('div');
+      inputGroup.className = 'input-group';
+
+      quantiteInput.parentElement.insertBefore(inputGroup, quantiteInput);
+      inputGroup.appendChild(quantiteInput);
+
+      const span = document.createElement('span');
+      span.className = 'input-group-text unite-text';
+      span.textContent = '?';
+      inputGroup.appendChild(span);
+    }
+
+    if (!ingredItem.querySelector('.remove-ingredient')) {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'btn btn-outline-danger btn-sm remove-ingredient';
+      const icon = document.createElement('i');
+      icon.className = 'bi bi-trash';
+      btn.appendChild(icon);
+      ingredItem.appendChild(btn);
+    }
+
+    wrapper.appendChild(ingredItem);
+    attachIngredientListener(ingredItem);
+    initRemoveIngredient(ingredItem);
+    index++;
+  });
+
+  wrapper.querySelectorAll('.ingred-item').forEach(item => {
+    attachIngredientListener(item);
+    initRemoveIngredient(item);
+  });
+});
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const steps = Array.from(document.querySelectorAll('.step'));
+  const progressSteps = Array.from(document.querySelectorAll('.progress-step'));
+  let currentStep = 0;
+
+  function showStep(index) {
+    steps.forEach((step, i) => {
+      step.classList.toggle('d-none', i !== index);
+      progressSteps[i].classList.toggle('active', i <= index);
+    });
+  }
+
+  document.querySelectorAll('.btn-next').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (currentStep < steps.length - 1) {
+        currentStep++;
+        showStep(currentStep);
+      }
+    });
+  });
+
+  document.querySelectorAll('.btn-prev').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (currentStep > 0) {
+        currentStep--;
+        showStep(currentStep);
+      }
+    });
+  });
+
+  showStep(currentStep);
+});
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const previewBtn = document.querySelector('[data-bs-target="#recipePreviewModal"]');
+  const confirmSubmitBtn = document.getElementById('confirm-submit-btn');
+  const form = document.getElementById('recipe-form');
+
+  previewBtn?.addEventListener('click', function () {
+    // Fonction sécurité : protection XSS
+    function escapeHTML(str) {
+      return str?.replace(/[&<>'"]/g, tag => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+      }[tag] || tag));
+    }
+
+    // Prévisualisation du titre / description / instructions
+    const titre = document.getElementById('recette_titre')?.value || '';
+    const description = document.getElementById('recette_description')?.value || '';
+    const instructions = document.getElementById('recette_instructions')?.value || '';
+
+    document.getElementById('preview-title').innerHTML = escapeHTML(titre);
+    document.getElementById('preview-description').innerHTML = escapeHTML(description);
+    document.getElementById('preview-instructions').innerHTML = escapeHTML(instructions);
+
+    // Prévisualisation des ingrédients
+    const ingredientItems = document.querySelectorAll('.ingred-item');
+    const previewList = document.getElementById('preview-ingredients');
+    previewList.innerHTML = '';
+
+    ingredientItems.forEach(item => {
+      const nom = item.querySelector('.ingredient-select')?.selectedOptions[0]?.textContent || '';
+      const quantite = item.querySelector('input[type="number"]')?.value || '';
+      const unite = item.querySelector('.unite-text')?.textContent || '?';
+
+      const li = document.createElement('li');
+      li.className = 'list-group-item';
+      li.innerHTML = escapeHTML(`${quantite} ${unite} de ${nom}`);
+      previewList.appendChild(li);
+    });
+  });
+
+  confirmSubmitBtn?.addEventListener('click', function () {
+    const modalEl = document.getElementById('recipePreviewModal');
+    const modalInstance = bootstrap.Modal.getInstance(modalEl);
+    modalInstance?.hide();
+    form?.submit();
+  });
+});
+</script>
+
+
+
+

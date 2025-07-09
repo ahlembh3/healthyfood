@@ -1,0 +1,39 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Détail du commentaire{% endblock %}
+
+{% block body %}
+    <h1 class="mb-4">Détail du commentaire</h1>
+
+    <div class="card shadow-sm mb-3">
+        <div class="card-body">
+            <h5 class="card-title">{{ commentaire.utilisateur.email }}</h5>
+            <h6 class="card-subtitle mb-2 text-muted">{{ commentaire.date|date('d/m/Y H:i') }}</h6>
+            <p class="card-text mt-3">{{ commentaire.contenu }}</p>
+            <p><strong>Note :</strong> {{ commentaire.note ?? 'Non notée' }}</p>
+            <p><strong>Recette liée :</strong> {{ commentaire.recette.titre }}</p>
+            <p><strong>Signalé :</strong> {{ commentaire.signaler ? 'Oui' : 'Non' }}</p>
+        </div>
+    </div>
+<div class="d-flex gap-2 flex-wrap mt-3 align-items-center">
+    <form method="post" action="{{ path('commentaire_delete', {'id': commentaire.id}) }}" class="d-inline" onsubmit="return confirm('Voulez-vous vraiment supprimer ce commentaire ?');">
+        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ commentaire.id) }}">
+        <button class="btn btn-danger">Supprimer</button>
+    </form>
+
+    {% if commentaire.signaler and is_granted('ROLE_ADMIN') %}
+        <form method="post" action="{{ path('commentaire_designaler', {'id': commentaire.id}) }}" class="d-inline" onsubmit="return confirm('Voulez-vous désignaliser ce commentaire ?');">
+            <input type="hidden" name="_token" value="{{ csrf_token('designaler' ~ commentaire.id) }}">
+            <button class="btn btn-success">Désignaler</button>
+        </form>
+    {% elseif not commentaire.signaler and not is_granted('ROLE_ADMIN') %}
+        <form method="post" action="{{ path('commentaire_signaler', {'id': commentaire.id}) }}" class="d-inline" onsubmit="return confirm('Voulez-vous signaler ce commentaire ?');">
+            <input type="hidden" name="_token" value="{{ csrf_token('signaler' ~ commentaire.id) }}">
+            <button class="btn btn-warning">Signaler</button>
+        </form>
+    {% endif %}
+
+    <a href="{{ path('commentaire_index') }}" class="btn btn-secondary">Retour à la liste</a>
+</div>
+
+{% endblock %}

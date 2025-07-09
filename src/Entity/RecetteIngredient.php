@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use App\Repository\RecetteIngredientRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: RecetteIngredientRepository::class)]
 class RecetteIngredient
@@ -13,8 +14,9 @@ class RecetteIngredient
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column]
-    private ?float $quantite = null;
+   #[Assert\Positive(message: "La quantité doit être un nombre positif.")]
+   #[ORM\Column]
+   private ?float $quantite = null;
 
     #[ORM\ManyToOne(inversedBy: 'recetteIngredients')]
     #[ORM\JoinColumn(nullable: false)]
@@ -60,6 +62,10 @@ class RecetteIngredient
     {
         $this->ingredient = $ingredient;
         return $this;
+    }
+    public function __toString(): string
+    {
+    return $this->ingredient?->getNom() . ' (' . $this->quantite . ')';
     }
 }
 

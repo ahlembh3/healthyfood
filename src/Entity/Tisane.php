@@ -9,6 +9,7 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use App\Entity\Bienfait;
 use App\Entity\Plante;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: TisaneRepository::class)]
 class Tisane
@@ -19,9 +20,17 @@ class Tisane
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: "Le nom de la tisane est obligatoire.")]
+    #[Assert\Length(
+    max: 255,
+    maxMessage: "Le nom ne peut pas dépasser {{ limit }} caractères.")]
     private ?string $nom = null;
 
-    #[ORM\Column(type: Types::TEXT)]
+   #[ORM\Column(type: Types::TEXT)]
+   #[Assert\NotBlank(message: "Le mode de préparation est obligatoire.")]
+   #[Assert\Length(
+    min: 10,
+    minMessage: "Le mode de préparation doit contenir au moins {{ limit }} caractères.")]
     private ?string $modePreparation = null;
 
     #[ORM\Column(type: 'string', length: 255, nullable: true)]

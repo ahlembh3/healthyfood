@@ -1,0 +1,35 @@
+  .progressbar {
+    counter-reset: step;
+  }
+
+  .progress-step {
+    position: relative;
+    text-align: center;
+    flex: 1;
+    font-weight: bold;
+  }
+
+  .progress-step::before {
+    counter-increment: step;
+    content: counter(step);
+    display: block;
+    margin: 0 auto 8px;
+    background-color: #dee2e6;
+    width: 30px;
+    height: 30px;
+    line-height: 30px;
+    border-radius: 50%;
+  }
+
+.progress-step.active {
+  color: #0d6efd;
+}
+
+.progress-step.active::before {
+    background-color: #0d6efd;
+    color: white;
+  }
+.stars {
+            color: gold;
+            font-size: 1.2em;
+        }

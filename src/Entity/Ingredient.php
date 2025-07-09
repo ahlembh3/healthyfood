@@ -7,6 +7,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: IngredientRepository::class)]
 class Ingredient
@@ -16,25 +17,60 @@ class Ingredient
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 255)]
+   #[ORM\Column(length: 255)]
+   #[Assert\NotBlank(message: "Le nom est obligatoire.")]
+   #[Assert\Length(max: 255, maxMessage: "Le nom ne peut pas dépasser {{ limit }} caractères.")]
     private ?string $nom = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $description = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: "L'unité est obligatoire.")]
+    #[Assert\Length(max: 255)]
     private ?string $unite = null;
 
-    /**
-     * @var Collection<int, RecetteIngredient>
-     */
-    #[ORM\OneToMany(targetEntity: RecetteIngredient::class, mappedBy: 'ingredient', orphanRemoval: true, cascade: ['persist'])]
+    #[ORM\Column(nullable: true)]
+    #[Assert\PositiveOrZero(message: "Les calories doivent être positives ou nulles.")]
+    private ?int $calories = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?float $proteines = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?float $glucides = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?float $lipides = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    #[Assert\Length(max: 255, maxMessage: "L'origine ne peut pas dépasser {{ limit }} caractères.")]
+    private ?string $origine = null;
+
+    #[ORM\Column(type: Types::BOOLEAN, options: ["default" => false])]
+    private bool $bio = false;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $image = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $type = null;
+
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $allergenes = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $saisonnalite = null;
+
+    #[ORM\OneToMany(mappedBy: 'ingredient', targetEntity: RecetteIngredient::class, orphanRemoval: true)]
     private Collection $recetteIngredients;
 
     public function __construct()
     {
         $this->recetteIngredients = new ArrayCollection();
     }
+
+    // GETTERS ET SETTERS
 
     public function getId(): ?int
     {
@@ -74,9 +110,116 @@ class Ingredient
         return $this;
     }
 
-    /**
-     * @return Collection<int, RecetteIngredient>
-     */
+    public function getCalories(): ?int
+    {
+        return $this->calories;
+    }
+
+    public function setCalories(?int $calories): static
+    {
+        $this->calories = $calories;
+        return $this;
+    }
+
+    public function getProteines(): ?float
+    {
+        return $this->proteines;
+    }
+
+    public function setProteines(?float $proteines): static
+    {
+        $this->proteines = $proteines;
+        return $this;
+    }
+
+    public function getGlucides(): ?float
+    {
+        return $this->glucides;
+    }
+
+    public function setGlucides(?float $glucides): static
+    {
+        $this->glucides = $glucides;
+        return $this;
+    }
+
+    public function getLipides(): ?float
+    {
+        return $this->lipides;
+    }
+
+    public function setLipides(?float $lipides): static
+    {
+        $this->lipides = $lipides;
+        return $this;
+    }
+
+    public function getOrigine(): ?string
+    {
+        return $this->origine;
+    }
+
+    public function setOrigine(?string $origine): static
+    {
+        $this->origine = $origine;
+        return $this;
+    }
+
+    public function isBio(): bool
+    {
+        return $this->bio;
+    }
+
+    public function setBio(bool $bio): static
+    {
+        $this->bio = $bio;
+        return $this;
+    }
+
+    public function getImage(): ?string
+    {
+        return $this->image;
+    }
+
+    public function setImage(?string $image): static
+    {
+        $this->image = $image;
+        return $this;
+    }
+
+    public function getType(): ?string
+    {
+        return $this->type;
+    }
+
+    public function setType(?string $type): static
+    {
+        $this->type = $type;
+        return $this;
+    }
+
+    public function getAllergenes(): ?string
+    {
+        return $this->allergenes;
+    }
+
+    public function setAllergenes(?string $allergenes): static
+    {
+        $this->allergenes = $allergenes;
+        return $this;
+    }
+
+    public function getSaisonnalite(): ?string
+    {
+        return $this->saisonnalite;
+    }
+
+    public function setSaisonnalite(?string $saisonnalite): static
+    {
+        $this->saisonnalite = $saisonnalite;
+        return $this;
+    }
+
     public function getRecetteIngredients(): Collection
     {
         return $this->recetteIngredients;
@@ -95,7 +238,6 @@ class Ingredient
     public function removeRecetteIngredient(RecetteIngredient $recetteIngredient): static
     {
         if ($this->recetteIngredients->removeElement($recetteIngredient)) {
-            // set the owning side to null (unless already changed)
             if ($recetteIngredient->getIngredient() === $this) {
                 $recetteIngredient->setIngredient(null);
             }
@@ -104,4 +246,3 @@ class Ingredient
         return $this;
     }
 }
-

@@ -1,11 +1,36 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}New Recette{% endblock %}
+{% block title %}{{ 'Ajouter une recette' }}{% endblock %}
 
 {% block body %}
+    {% include 'recette/_form.html.twig' with {
+        'button_label': 'Créer',
+        'form_title': 'Ajouter une recette'
+    } %}
 
-    {% include 'recette/_form.html.twig' with {'button_label': 'Créer', 'form_title': 'Ajouter une recette'} %}
+    <a href="{{ path('recette_index') }}" class="btn btn-secondary mt-3">Retour à la liste</a>
+{% endblock %}
 
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        function previewImage(event) {
+            const input = event.target;
+            const preview = document.getElementById('imagePreview');
 
-    <a href="{{ path('recette_index') }}" class="btn btn-secondary">Retour à la liste</a>
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                    preview.classList.remove('d-none');
+                };
+
+                reader.readAsDataURL(input.files[0]);
+            } else {
+                preview.src = "#";
+                preview.classList.add('d-none');
+            }
+        }
+    </script>
 {% endblock %}

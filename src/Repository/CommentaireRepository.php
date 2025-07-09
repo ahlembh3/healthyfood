@@ -21,6 +21,15 @@ class CommentaireRepository extends ServiceEntityRepository
         parent::__construct($registry, Commentaire::class);
     }
 
-    // Ajoute ici tes méthodes personnalisées si besoin
+    public function getMoyenneNoteParRecette(): array
+{
+    return $this->createQueryBuilder('c')
+        ->select('IDENTITY(c.recette) AS recette_id, AVG(c.note) AS moyenne')
+        ->where('c.note IS NOT NULL')
+        ->groupBy('c.recette')
+        ->getQuery()
+        ->getResult();
+}
+
     
 }

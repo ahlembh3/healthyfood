@@ -29,15 +29,16 @@ class ArticleType extends AbstractType
         'required' => false,
     ])
     ->add('categorie', ChoiceType::class, [
-        'label' => 'Catégorie',
-        'choices' => [
-            'Tisane' => 'tisane',
-            'Plante' => 'plante',
-            'Recette' => 'recette',
-        ],
-        'placeholder' => 'Choisir une catégorie',
+    'label' => 'Catégorie',
+    'choices' => [
+        'Bien-être' => 'Bien-être',
+        'Nutrition' => 'Nutrition',
+        'Plantes' => 'Plantes',
+        'Conseils' => 'Conseils',
+        'Autre' => 'Autre',
+    ],
+    'placeholder' => 'Choisir une catégorie',
     ]);
-            
     }
 
     public function configureOptions(OptionsResolver $resolver): void

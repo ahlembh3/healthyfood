@@ -20,6 +20,27 @@
                 <td>{{ recette.description }}</td>
             </tr>
             <tr>
+    <th>Ingrédients</th>
+    <td>
+        {% if recette.recetteIngredients is not empty %}
+            <ul class="mb-0">
+                {% for ri in recette.recetteIngredients %}
+                    <li>
+                      {% if ri.ingredient %}
+                      {{ ri.ingredient.nom }} : {{ ri.quantite }}
+                {% else %}
+                     <em>Ingrédient supprimé</em>
+                {% endif %}
+                      </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <span class="text-muted">Aucun ingrédient</span>
+        {% endif %}
+    </td>
+</tr>
+
+            <tr>
                 <th>Instructions</th>
                 <td>{{ recette.instructions }}</td>
             </tr>
@@ -45,6 +66,72 @@
             </tr>
         </tbody>
     </table>
+  <div class="mb-3">
+    <strong>Moyenne des notes :</strong>
+    {% if moyenne is not null %}
+        <div>
+            {% for i in 1..5 %}
+                {% if i <= moyenne %}
+                    ⭐
+                {% elseif i - moyenne < 1 %}
+                    ⭐
+                {% else %}
+                    ☆
+                {% endif %}
+            {% endfor %}
+            ({{ moyenne }}/5)
+        </div>
+    {% else %}
+        <p class="text-muted">Pas encore de note</p>
+    {% endif %}
+</div>
+
+
+<h2 class="mt-5">Laisser un commentaire</h2>
+
+{% if app.user %}
+    <div class="card mb-4 shadow-sm">
+        <div class="card-body">
+            {{ form_start(form) }}
+                <div class="mb-3">
+                    {{ form_label(form.contenu, 'Votre commentaire', {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.contenu, {'attr': {'class': 'form-control', 'rows': 4}}) }}
+                </div>
+                <div class="mb-3">
+                    {{ form_label(form.note, 'Votre note (facultatif)', {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.note, {'attr': {'class': 'form-control', 'min': 0, 'max': 5}}) }}
+                </div>
+                <button class="btn btn-primary">Envoyer</button>
+            {{ form_end(form) }}
+        </div>
+    </div>
+{% else %}
+    <div class="alert alert-warning">
+        Vous devez <a href="{{ path('app_login') }}" class="alert-link">vous connecter</a> pour poster un commentaire.
+    </div>
+{% endif %}
+
+<h3 class="mt-4">Commentaires</h3>
+{% for commentaire in commentaires %}
+    <div class="mb-3 p-3 border rounded shadow-sm bg-light">
+        <div class="d-flex justify-content-between align-items-center mb-1">
+            <small>{{ commentaire.date|date('d/m/Y H:i') }}</small>
+            {% if app.user  and commentaire.SignalePar is null  and commentaire.utilisateur != app.user %}
+              <form method="post" action="{{ path('commentaire_signaler', {'id': commentaire.id}) }}" onsubmit="return confirm('Voulez-vous signaler ce commentaire ?');" class="mt-2">
+              <input type="hidden" name="_token" value="{{ csrf_token('signaler' ~ commentaire.id) }}">
+              <button class="btn btn-sm btn-warning">Signaler</button>
+              </form>
+           {% endif %}
+
+        </div>
+        <p class="mb-1">Note : {{ commentaire.note ?? "non noté" }}</p>
+        <p>{{ commentaire.contenu }}</p>
+    </div>
+{% else %}
+    <p class="text-muted">Aucun commentaire pour cette recette.</p>
+{% endfor %}
+
+
  <div class="d-flex gap-2 mt-4">
     <a href="{{ path('recette_index') }}" class="btn btn-secondary">Retour à la liste</a>
 

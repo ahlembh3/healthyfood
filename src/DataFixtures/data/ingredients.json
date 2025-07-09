@@ -1,27 +1,154 @@
 [
   {
-    "nom": "Carotte",
-    "description": "Riche en bêta-carotène, bonne pour la vue et la peau.",
-    "unite": "g"
+    "nom": "Tomate",
+    "type": "Légume",
+    "allergenes": "",
+    "saisonnalite": "Juin à Septembre",
+    "description": "Fruit souvent utilisé comme légume, riche en vitamine C.",
+    "unite": "pièce"
   },
   {
     "nom": "Concombre",
-    "description": "Légume rafraîchissant et hydratant.",
-    "unite": "g"
+    "type": "Légume",
+    "allergenes": "",
+    "saisonnalite": "Juin à Août",
+    "description": "Légume frais et croquant, parfait en salade.",
+    "unite": "pièce"
   },
   {
-    "nom": "Citron",
-    "description": "Fruit acide riche en vitamine C, aide à la détox.",
-    "unite": "ml"
+    "nom": "Carotte",
+    "type": "Légume",
+    "allergenes": "",
+    "saisonnalite": "Toute l'année",
+    "description": "Légume racine riche en bêta-carotène.",
+    "unite": "pièce"
   },
   {
-    "nom": "Ail",
-    "description": "Antibactérien naturel, bon pour la santé cardiovasculaire.",
-    "unite": "g"
+    "nom": "Épinard",
+    "type": "Légume",
+    "allergenes": "",
+    "saisonnalite": "Mars à Juin, Septembre à Novembre",
+    "description": "Feuille verte riche en fer et vitamines.",
+    "unite": "gramme"
+  },
+  {
+    "nom": "Pommes de terre",
+    "type": "Légume",
+    "allergenes": "",
+    "saisonnalite": "Toute l'année",
+    "description": "Tubercule de base dans beaucoup de recettes.",
+    "unite": "pièce"
+  },
+  {
+    "nom": "Amande",
+    "type": "Fruit sec",
+    "allergenes": "Fruits à coque",
+    "saisonnalite": "Septembre à Novembre",
+    "description": "Fruits secs riches en bonnes graisses et protéines.",
+    "unite": "gramme"
+  },
+  {
+    "nom": "Noix de cajou",
+    "type": "Fruit sec",
+    "allergenes": "Fruits à coque",
+    "saisonnalite": "Toute l'année",
+    "description": "Noix au goût doux, riche en nutriments.",
+    "unite": "gramme"
+  },
+  {
+    "nom": "Noix",
+    "type": "Fruit sec",
+    "allergenes": "Fruits à coque",
+    "saisonnalite": "Septembre à Novembre",
+    "description": "Noix oléagineuse riche en oméga-3.",
+    "unite": "gramme"
+  },
+  {
+    "nom": "Blé",
+    "type": "Céréale",
+    "allergenes": "Gluten",
+    "saisonnalite": "Juillet à Septembre",
+    "description": "Céréale de base utilisée pour la farine.",
+    "unite": "gramme"
+  },
+  {
+    "nom": "Riz",
+    "type": "Céréale",
+    "allergenes": "",
+    "saisonnalite": "Toute l'année",
+    "description": "Céréale sans gluten, base alimentaire mondiale.",
+    "unite": "gramme"
+  },
+  {
+    "nom": "Lait de vache",
+    "type": "Produit laitier",
+    "allergenes": "Lait",
+    "saisonnalite": "Toute l'année",
+    "description": "Produit laitier riche en calcium.",
+    "unite": "millilitre"
+  },
+  {
+    "nom": "Fromage de chèvre",
+    "type": "Produit laitier",
+    "allergenes": "Lait",
+    "saisonnalite": "Toute l'année",
+    "description": "Fromage au goût prononcé, fabriqué à base de lait de chèvre.",
+    "unite": "gramme"
+  },
+  {
+    "nom": "Œuf",
+    "type": "Produit animal",
+    "allergenes": "Œuf",
+    "saisonnalite": "Toute l'année",
+    "description": "Ingrédient protéiné utilisé dans de nombreuses recettes.",
+    "unite": "pièce"
+  },
+  {
+    "nom": "Poulet",
+    "type": "Viande",
+    "allergenes": "",
+    "saisonnalite": "Toute l'année",
+    "description": "Viande blanche très consommée.",
+    "unite": "gramme"
+  },
+  {
+    "nom": "Saumon",
+    "type": "Poisson",
+    "allergenes": "Poisson",
+    "saisonnalite": "Septembre à Décembre",
+    "description": "Poisson gras riche en oméga-3.",
+    "unite": "gramme"
   },
   {
     "nom": "Miel",
-    "description": "Sucrant naturel aux propriétés antiseptiques.",
-    "unite": "cuillère"
+    "type": "Sucre naturel",
+    "allergenes": "",
+    "saisonnalite": "Toute l'année",
+    "description": "Sucre naturel produit par les abeilles.",
+    "unite": "gramme"
+  },
+  {
+    "nom": "Citron",
+    "type": "Fruit",
+    "allergenes": "",
+    "saisonnalite": "Toute l'année",
+    "description": "Fruit acide utilisé pour aromatiser les plats.",
+    "unite": "pièce"
+  },
+  {
+    "nom": "Basilic",
+    "type": "Herbe aromatique",
+    "allergenes": "",
+    "saisonnalite": "Mai à Septembre",
+    "description": "Herbe aromatique très utilisée en cuisine méditerranéenne.",
+    "unite": "gramme"
+  },
+  {
+    "nom": "Ail",
+    "type": "Légume",
+    "allergenes": "",
+    "saisonnalite": "Juillet à Septembre",
+    "description": "Alliacée utilisée comme aromate.",
+    "unite": "gousse"
   }
 ]
