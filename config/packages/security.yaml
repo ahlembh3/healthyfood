@@ -26,11 +26,40 @@ security:
                 target: app_home # ou "/" si tu n’as pas encore créé la route "app_home"
 
     access_control:
-        #- { path: ^/admin, roles: ROLE_ADMIN }
-        - { path: ^/articles, roles: ROLE_USER }
-        - { path: ^/recettes, roles: ROLE_USER }
+        # Accès PUBLIC
+        - { path: ^/utilisateurs/inscription, roles: PUBLIC_ACCESS }
         - { path: ^/login, roles: PUBLIC_ACCESS }
+        - { path: ^/logout, roles: PUBLIC_ACCESS }
+        - { path: ^/inscription, roles: PUBLIC_ACCESS }
+        - { path: ^/api, roles: PUBLIC_ACCESS }
+
+        #  Accès ADMIN uniquement
+        - { path: ^/admin, roles: ROLE_ADMIN }
+        - { path: ^/utilisateurs$, roles: ROLE_ADMIN } # liste des utilisateurs
+        - { path: ^/commentaires/signales, roles: ROLE_ADMIN }
+        - { path: ^/commentaires/designaler, roles: ROLE_ADMIN }
+        - { path: ^/articles/\d+/valider, roles: ROLE_ADMIN }
+        - { path: ^/recettes/\d+/valider, roles: ROLE_ADMIN }
+
+        #  Utilisateur connecté (ROLE_USER ou ROLE_ADMIN)
+        - { path: ^/dashboard, roles: ROLE_USER }
+        - { path: ^/recettes/new, roles: [ ROLE_USER, ROLE_ADMIN ] }
+        - { path: ^/recettes/\d+/edit, roles: [ ROLE_USER, ROLE_ADMIN ] }
+        - { path: ^/articles/new, roles: [ ROLE_USER, ROLE_ADMIN ] }
+        - { path: ^/articles/\d+/edit, roles: [ ROLE_USER, ROLE_ADMIN ] }
+        - { path: ^/commentaires, roles: [ ROLE_USER, ROLE_ADMIN ] }
+
+        #  Accès PUBLIC aux contenus en lecture seule
+        - { path: ^/plantes, roles: PUBLIC_ACCESS }
+        - { path: ^/tisanes, roles: PUBLIC_ACCESS }
+        - { path: ^/articles, roles: PUBLIC_ACCESS }
+        - { path: ^/articles/\d+$, roles: PUBLIC_ACCESS }
+        - { path: ^/recettes, roles: PUBLIC_ACCESS }
         - { path: ^/, roles: PUBLIC_ACCESS }
+
+
+
+
 
 when@test:
     security:

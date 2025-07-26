@@ -1,7 +1,79 @@
-<h1>{{ plante.nomCommun }}</h1>
-<img src="{{ plante.image }}" alt="{{ plante.nomCommun }}" style="max-width: 200px;">
+{% extends 'base.html.twig' %}
 
-<h3><strong>Nom scientifique :</strong> {{ plante.nomScientifique }}</h3>
-<h4><strong>Partie utilisee :</strong> {{ plante.partieUtilisee }}</h4>
-<p><strong>Description :</strong> {{ plante.description }}</p>
-<p><strong>Precautions :</strong> {{ plante.precautions }}</p>
+{% block title %}{{ plante.nomCommun }}{% endblock %}
+
+{% block body %}
+    <div class="container py-5">
+        <div class="card shadow-lg border-0 rounded-4 animate__animated animate__fadeIn">
+            <div class="row g-0">
+                {% if plante.image %}
+                    <div class="col-md-5">
+                        <img src="{{ asset('uploads/plantes/' ~ plante.image) }}" alt="{{ plante.nomCommun }}"
+                             class="img-fluid rounded-start w-100 h-100 object-fit-cover">
+                    </div>
+                {% endif %}
+
+                <div class="col-md-7">
+                    <div class="card-body p-4">
+                        <h1 class="card-title mb-3 text-success">{{ plante.nomCommun }}</h1>
+                        <h5 class="text-muted fst-italic mb-3">{{ plante.nomScientifique }}</h5>
+
+                        <p><strong> Partie utilisée :</strong> {{ plante.partieUtilisee }}</p>
+
+                        <div class="mb-3">
+                            <strong> Description :</strong>
+                            <p>{{ plante.description }}</p>
+                        </div>
+
+                        <div class="mb-3">
+                            <strong> Précautions :</strong>
+                            <p class="text-danger">{{ plante.precautions }}</p>
+                        </div>
+
+                        {% if plante.bienfaits|length > 0 %}
+                            <div class="mb-3">
+                                <strong> Bienfaits associés :</strong>
+                                <ul class="list-unstyled mt-2">
+                                    {% for bienfait in plante.bienfaits %}
+                                        <li class="badge bg-success-subtle text-success me-1 mb-1">{{ bienfait.nom }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        {% endif %}
+
+                        {% if plante.tisanes|length > 0 %}
+                            <div class="mt-4">
+                                <strong> Tisanes associées :</strong>
+                                <ul>
+                                    {% for tisane in plante.tisanes %}
+                                        <li>
+                                            <a href="{{ path('tisane_show', { id: tisane.id }) }}" class="text-decoration-none text-primary">
+                                                {{ tisane.nom }}
+                                            </a>
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        {% endif %}
+
+                        <div class="mt-4 d-flex justify-content-between">
+                            {% if previousPlante %}
+                                <a href="{{ path('plante_show', { id: previousPlante.id }) }}" class="btn btn-outline-secondary">
+                                    ← {{ previousPlante.nomCommun }}
+                                </a>
+                            {% endif %}
+
+                            <a href="{{ path('plante_index') }}" class="btn btn-outline-success">Retour à la liste</a>
+
+                            {% if nextPlante %}
+                                <a href="{{ path('plante_show', { id: nextPlante.id }) }}" class="btn btn-outline-secondary">
+                                    {{ nextPlante.nomCommun }} →
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

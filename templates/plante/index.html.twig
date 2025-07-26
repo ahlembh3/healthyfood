@@ -1,20 +1,43 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Hello PlanteController!{% endblock %}
+{% block title %}Liste des plantes{% endblock %}
 
 {% block body %}
-<style>
-    .example-wrapper { margin: 1em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif; }
-    .example-wrapper code { background: #F5F5F5; padding: 2px 6px; }
-</style>
+    <div class="container mt-4">
+        <h1 class="mb-4">🌿 Nos plantes médicinales</h1>
 
-<div class="example-wrapper">
-    <h1>Hello {{ controller_name }}! ✅</h1>
+        <form method="get" action="{{ path('plante_index') }}" class="mb-4">
+            <div class="input-group">
+                <input type="text" name="q" class="form-control" placeholder="Rechercher une plante...">
+                <button class="btn btn-outline-success" type="submit">Rechercher</button>
+            </div>
+        </form>
 
-    This friendly message is coming from:
-    <ul>
-        <li>Your controller at <code>C:/xampp/htdocs/symfony/healthyfood/src/Controller/PlanteController.php</code></li>
-        <li>Your template at <code>C:/xampp/htdocs/symfony/healthyfood/templates/plante/index.html.twig</code></li>
-    </ul>
-</div>
+        {% if pagination.items is empty %}
+            <p>Aucune plante trouvée.</p>
+        {% else %}
+            <div class="row">
+                {% for plante in pagination %}
+                    <div class="col-md-4 mb-3">
+                        <div class="card h-100 shadow-sm">
+                            {% if plante.image %}
+                                <img src="{{ asset('uploads/plantes/' ~ plante.image) }}" class="card-img-top" alt="{{ plante.nomCommun }}">
+                            {% endif %}
+                            <div class="card-body">
+                                <h5 class="card-title">{{ plante.nomCommun }}</h5>
+                                <p class="card-text">{{ plante.description|slice(0, 100) ~ '...' }}</p>
+                                <a href="{{ path('plante_show', {id: plante.id}) }}" class="btn btn-success">En savoir plus</a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <div class="mt-4 d-flex justify-content-center">
+                {{ knp_pagination_render(pagination) }}
+            </div>
+        {% endif %}
+    </div>
+
+
 {% endblock %}

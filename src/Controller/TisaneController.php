@@ -65,7 +65,7 @@ public function test(EntityManagerInterface $em): Response
     $em->persist($tisane);
     $em->flush();
 
-    return new Response('Tisane test enregistrée avec une plante et un bienfait.');
+    return new Response('Tisane test enregistrée avec une plantes et un bienfait.');
 }
 
 

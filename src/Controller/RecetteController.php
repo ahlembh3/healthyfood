@@ -43,6 +43,10 @@ final class RecetteController extends AbstractController
    #[Route('/new', name: 'recette_new', methods: ['GET', 'POST'])]
 public function new(Request $request, EntityManagerInterface $entityManager, SluggerInterface $slugger): Response
 {
+    if (!$this->getUser()) {
+        throw $this->createAccessDeniedException('Connectez-vous pour ajouter une recette.');
+    }
+
     $recette = new Recette();
     $recetteIngredient = new RecetteIngredient();
     $recette->addRecetteIngredient($recetteIngredient);
@@ -69,7 +73,7 @@ public function new(Request $request, EntityManagerInterface $entityManager, Slu
             $recette->setImage($newFilename);
         }
 
-        // 🔄 Important : établir le lien bidirectionnel entre Recette et chaque RecetteIngredient
+        //  Important : établir le lien bidirectionnel entre Recette et chaque RecetteIngredient
         foreach ($recette->getRecetteIngredients() as $recetteIngredient) {
             $recetteIngredient->setRecette($recette);
             $entityManager->persist($recetteIngredient);
@@ -93,7 +97,7 @@ public function new(Request $request, EntityManagerInterface $entityManager, Slu
 }
 
 
-  #[Route('/recettes/{id}', name: 'recette_show', methods: ['GET', 'POST'])]
+  #[Route('/{id}', name: 'recette_show', methods: ['GET', 'POST'])]
 public function show(Request $request, Recette $recette,CommentaireRepository $commentaireRepository, EntityManagerInterface $em): Response
 {
     $commentaire = new Commentaire();
@@ -136,6 +140,21 @@ public function show(Request $request, Recette $recette,CommentaireRepository $c
     #[Route('/{id}/edit', name: 'recette_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, Recette $recette, EntityManagerInterface $entityManager, SluggerInterface $slugger): Response
     {
+        $user = $this->getUser();
+
+        if (!$user) {
+            throw $this->createAccessDeniedException('Vous devez être connecté pour modifier une recette.');
+        }
+
+        if (!$this->isGranted('ROLE_ADMIN') && $recette->getUtilisateur() !== $user) {
+            throw $this->createAccessDeniedException("Vous ne pouvez modifier que vos propres recettes.");
+        }
+
+        if (!$this->isGranted('ROLE_ADMIN') && $recette->isValidation()) {
+            throw $this->createAccessDeniedException("Cette recette a déjà été validée par l’administrateur.");
+        }
+
+
         $form = $this->createForm(RecetteForm::class, $recette,['is_edit'=>true]);
         $form->handleRequest($request);
 
@@ -172,6 +191,11 @@ public function show(Request $request, Recette $recette,CommentaireRepository $c
     #[Route('/{id}/delete', name: 'recette_delete', methods: ['POST'])]
     public function delete(Request $request, Recette $recette, EntityManagerInterface $entityManager): Response
     {
+
+        if (!$this->isGranted('ROLE_ADMIN')) {
+            throw $this->createAccessDeniedException('Accès réservé à l\'administrateur.');
+        }
+
         if ($this->isCsrfTokenValid('delete'.$recette->getId(), $request->getPayload()->getString('_token'))) {
             $entityManager->remove($recette);
             $entityManager->flush();
@@ -183,6 +207,10 @@ public function show(Request $request, Recette $recette,CommentaireRepository $c
     #[Route('/recette/{id}/valider', name: 'recette_valider', methods: ['POST'])]
 public function valider(Request $request, Recette $recette, EntityManagerInterface $em): Response
 {
+    if (!$this->isGranted('ROLE_ADMIN')) {
+        throw $this->createAccessDeniedException('Accès réservé à l\'administrateur.');
+    }
+
     if ($this->isCsrfTokenValid('valider' . $recette->getId(), $request->request->get('_token'))) {
         $recette->setValidation(true);
         $em->flush();

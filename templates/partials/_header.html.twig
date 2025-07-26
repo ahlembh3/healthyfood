@@ -1,6 +1,6 @@
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
     <div class="container-fluid">
-        <a class="navbar-brand" href="#">HealthyFood</a>
+        <a class="navbar-brand fw-bold" href="{{ path('app_home') }}">HealthyFood</a>
 
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
                 aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -8,21 +8,53 @@
         </button>
 
         <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav ms-auto">
-                <li class="nav-item">
-                    <a href="{{ path('app_home') }}">Accueil</a>
+            <ul class="navbar-nav ms-auto align-items-center">
 
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ path('app_home') }}">Accueil</a>
                 </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ path('plante_index') }}">Plantes</a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ path('recette_index') }}">Recettes</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ path('tisane_index') }}">Tisanes</a>
+                </li>
+
                 {% if app.user %}
-                Connecté en tant que {{ app.user.email }} |
-                <li class="nav-item"> <a href="{{ path('article_index') }}">Article</a></li>
-                <li class="nav-item"> <a href="{{ path('recette_index') }}">Recette</a></li>
-                <li class="nav-item"> <a href="{{ path('app_logout') }}">Déconnexion</a></li>
+                    {% if is_granted('ROLE_ADMIN') %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ path('article_index') }}">Articles</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ path('utilisateurs_liste') }}">Compte utilisateurs</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ path('admin_dashboard') }}">Dashboard admin</a>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ path('utilisateurs_dashboard') }}">Mon espace</a>
+                        </li>
+                    {% endif %}
+
+                    <li class="nav-item text-white px-2 small">
+                        👤 {{ app.user.prenom|default(app.user.email) }}
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link text-warning" href="{{ path('app_logout') }}">Déconnexion</a>
+                    </li>
                 {% else %}
-                <li class="nav-item"><a href="{{ path('app_login') }}">Connexion</a></li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ path('app_login') }}">Connexion</a>
+                    </li>
                 {% endif %}
             </ul>
         </div>
     </div>
 </nav>
-

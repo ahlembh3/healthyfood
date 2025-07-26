@@ -12,8 +12,10 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Form\FormError;
+use App\Repository\RecetteRepository;
+use App\Repository\CommentaireRepository;
 
-#[Route('/admin/utilisateurs')]
+#[Route('/utilisateurs')]
 final class UtilisateurController extends AbstractController
 {
     #[Route('', name: 'utilisateurs_liste', methods: ['GET'])]
@@ -21,6 +23,26 @@ final class UtilisateurController extends AbstractController
     {
         return $this->render('utilisateur/index.html.twig', [
             'utilisateurs' => $utilisateurRepository->findAll(),
+        ]);
+    }
+    #[Route('/dashboard', name: 'utilisateurs_dashboard')]
+    public function dashboard(
+        RecetteRepository $recetteRepo,
+        CommentaireRepository $commentaireRepo
+    ): Response {
+        $user = $this->getUser();
+
+        if (!$user) {
+            throw $this->createAccessDeniedException('Vous devez être connecté pour accéder à votre espace.');
+        }
+
+        $mesRecettes = $recetteRepo->findBy(['utilisateur' => $user]);
+        $mesCommentaires = $commentaireRepo->findBy(['utilisateur' => $user]);
+
+        return $this->render('utilisateur/dashboard.html.twig', [
+            'utilisateur' => $user,
+            'mesRecettes' => $mesRecettes,
+            'mesCommentaires' => $mesCommentaires,
         ]);
     }
 
