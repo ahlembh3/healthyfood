@@ -37,11 +37,6 @@ class Article
     private ?\DateTimeImmutable $date = null;
 
    #[ORM\Column(type: 'string', length: 255, nullable: true)]
-   #[Assert\File(
-    maxSize: '2M',
-    mimeTypes: ['image/jpeg', 'image/png', 'image/webp'],
-    mimeTypesMessage: "Veuillez télécharger une image valide (jpeg, png, webp).",
-    maxSizeMessage: "L'image ne doit pas dépasser 2 Mo.")]
     private ?string $image = null;
 
     #[ORM\Column(options: ["default" => false])]

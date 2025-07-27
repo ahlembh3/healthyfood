@@ -19,6 +19,28 @@
             </div>
 
             <div class="col-md-4">
+                <div class="card border-danger shadow-sm h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">💬 Commentaires</h5>
+                        {% if commentaires is defined %}
+                            {% set nbSignalements = commentaires|filter(c => c.signaler)|length %}
+                        {% else %}
+                            {% set nbSignalements = 0 %}
+                        {% endif %}
+
+                        <a href="{{ path('commentaire_signales') }}" class="btn btn-outline-warning">
+                            Signalés <span class="badge bg-danger">{{ nbSignalements }}</span>
+                        </a>
+                        <a href="{{ path('commentaire_signales') }}" class="btn btn-outline-warning btn-sm mt-2">Voir les signalés</a>
+
+                        <p class="card-text">Modérez les commentaires signalés ou inappropriés.</p>
+                        <a href="{{ path('commentaire_index') }}" class="btn btn-danger">Modérer les commentaires</a>
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="col-md-4">
                 <div class="card border-primary shadow-sm h-100">
                     <div class="card-body">
                         <h5 class="card-title">🌿 Plantes médicinales</h5>

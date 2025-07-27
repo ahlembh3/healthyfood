@@ -11,7 +11,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Form\CommentaireType;
 
-#[Route('/commentaires')]
+#[Route('/admin/commentaires')]
 class CommentaireController extends AbstractController
 {
     #[Route('/', name: 'commentaire_index', methods: ['GET'])]
@@ -75,7 +75,14 @@ public function signaler(Request $request, Commentaire $commentaire, EntityManag
         }
     }
 
-    return $this->redirectToRoute('recette_show', ['id' => $commentaire->getRecette()->getId()]);
+    // Redirection conditionnelle selon le type de contenu
+    if ($commentaire->getType() === 1 && $commentaire->getRecette()) {
+        return $this->redirectToRoute('recette_show', ['id' => $commentaire->getRecette()->getId()]);
+    } elseif ($commentaire->getType() === 2 && $commentaire->getArticle()) {
+        return $this->redirectToRoute('article_show', ['id' => $commentaire->getArticle()->getId()]);
+    }
+
+    return $this->redirectToRoute('home');
 }
 
 

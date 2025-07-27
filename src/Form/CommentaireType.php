@@ -16,18 +16,23 @@ class CommentaireType extends AbstractType
             ->add('contenu', TextareaType::class, [
                 'label' => 'Votre commentaire',
                 'attr' => ['placeholder' => 'Écrivez votre avis...']
-            ])
-            ->add('note', IntegerType::class, [
+            ]);
+
+        // Ajoute le champ note uniquement si c’est pour une recette
+        if ($options['is_recette']) {
+            $builder->add('note', IntegerType::class, [
                 'label' => 'Note sur 5',
                 'required' => false,
                 'attr' => ['min' => 0, 'max' => 5]
             ]);
+        }
     }
 
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
             'data_class' => Commentaire::class,
+            'is_recette' => false, // valeur par défaut
         ]);
     }
 }

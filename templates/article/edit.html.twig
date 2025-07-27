@@ -3,12 +3,16 @@
 {% block title %}Modifier l'article{% endblock %}
 
 {% block body %}
-<h1>Modifier l'article</h1>
+    <div class="container mt-5">
+        <h1 class="mb-4">Modifier l'article</h1>
 
-{{ include('article/_form.html.twig', {'button_label': 'Modifier'}) }}
-<a href="{{ path('article_index') }}" class="btn btn-secondary mt-3">Retour à la liste</a>
 
+        {{ include('article/_form.html.twig', {'button_label': 'Modifier'}) }}
+
+        <a href="{{ path('article_mes_articles') }}" class="btn btn-secondary mt-3">← Retour à la liste</a>
+    </div>
 {% endblock %}
+
 {% block javascripts %}
     {{ parent() }}
     <script>
@@ -32,7 +36,3 @@
         }
     </script>
 {% endblock %}
-
-
-
-

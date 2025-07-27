@@ -8,8 +8,11 @@
         <p class="lead">Découvrez une vie plus saine, une tisane à la fois 🍵</p>
 
         {% if app.user %}
-            <p class="mt-4">Bonjour <strong>{{ app.user.prenom }}</strong> <br>Heureux de vous revoir !</p>
-            <a href="{{ path('recette_index') }}" class="btn btn-outline-success mt-3">Voir mes recettes</a>
+            <p class="mt-4">Bonjour <strong>{{ app.user.prenom }}</strong><br>Heureux de vous revoir !</p>
+            <div class="d-flex flex-column align-items-center mt-3 gap-2">
+                <a href="{# {{ path('recette_mes_recettes') }}#}" class="btn btn-outline-success">Voir mes recettes</a>
+                <a href="{{ path('article_mes_articles') }}" class="btn btn-outline-secondary">Mes articles</a>
+            </div>
         {% else %}
             <p class="mt-4">Rejoignez notre communauté bien-être 🌱</p>
             <a href="{{ path('app_login') }}" class="btn btn-success mt-2">Connexion</a>

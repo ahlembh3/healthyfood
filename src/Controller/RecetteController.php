@@ -100,8 +100,10 @@ public function new(Request $request, EntityManagerInterface $entityManager, Slu
   #[Route('/{id}', name: 'recette_show', methods: ['GET', 'POST'])]
 public function show(Request $request, Recette $recette,CommentaireRepository $commentaireRepository, EntityManagerInterface $em): Response
 {
-    $commentaire = new Commentaire();
-    $form = $this->createForm(CommentaireType::class, $commentaire);
+    $commentaire = new Commentaire();//une condition pour que note ne s'affiche que dans recette condition dans CommentaireType
+    $form = $this->createForm(CommentaireType::class, $commentaire, [
+        'is_recette' => true,
+    ]);
     $form->handleRequest($request);
 
     if ($form->isSubmitted() && $form->isValid()) {

@@ -53,7 +53,7 @@ class Commentaire
     #[ORM\ManyToOne(targetEntity: Utilisateur::class)]
     private ?Utilisateur $signalePar = null;
 
-    
+    //Date de signalement
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $signaleLe = null;
 
