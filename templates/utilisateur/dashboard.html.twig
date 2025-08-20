@@ -6,36 +6,49 @@
     <div class="container mt-5">
         <h1 class="mb-4">Bienvenue, {{ utilisateur.prenom }} !</h1>
 
-        <h2>📋 Mes recettes</h2>
-        <ul class="list-group mb-4">
-            {% for recette in mesRecettes %}
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                    <a href="{{ path('recette_show', {id: recette.id}) }}">{{ recette.nom }}</a>
-                    <span class="badge bg-success">{{ recette.validation ? 'Validée' : 'En attente' }}</span>
-                </li>
-            {% else %}
-                <li class="list-group-item">Aucune recette créée.</li>
-            {% endfor %}
-        </ul>
+        <div class="row g-4">
+            <!-- Mes recettes -->
+            <div class="col-md-6">
+                <h2> Mes recettes</h2>
+                <ul class="list-group">
+                    {% for recette in mesRecettes %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <a href="{{ path('recette_show', {id: recette.id}) }}">{{ recette.nom }}</a>
+                            <span class="badge bg-{{ recette.validation ? 'success' : 'warning' }}">
+                            {{ recette.validation ? 'Validée' : 'En attente' }}
+                        </span>
+                        </li>
+                    {% else %}
+                        <li class="list-group-item">Aucune recette créée.</li>
+                    {% endfor %}
+                </ul>
+            </div>
 
-        <h2>💬 Mes commentaires</h2>
-        <ul class="list-group">
-            {% for commentaire in mesCommentaires %}
-                <li class="list-group-item">
-                    <strong>Recette :</strong> <a href="{{ path('recette_show', {id: commentaire.recette.id}) }}">{{ commentaire.recette.nom }}</a><br>
-                    <strong>Note :</strong> {{ commentaire.note }}/5<br>
-                    <strong>Date :</strong> {{ commentaire.date|date('d/m/Y H:i') }}<br>
-                    <strong>Contenu :</strong> {{ commentaire.contenu }}
-                </li>
-            {% else %}
-                <li class="list-group-item">Aucun commentaire publié.</li>
-            {% endfor %}
-        </ul>
-            <div class="col-md-4 mt-3 mt-md-0">
-                <div class="card shadow-sm">
+            <!-- Mes articles -->
+            <div class="col-md-6">
+                <h2> Mes articles</h2>
+                <ul class="list-group">
+                    {% for article in mesArticles %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <a href="{{ path('article_show', {id: article.id}) }}">{{ article.titre }}</a>
+                            <span class="badge bg-{{ article.validation ? 'success' : 'warning' }}">
+                            {{ article.validation ? 'Validé' : 'En attente' }}
+                        </span>
+                        </li>
+                    {% else %}
+                        <li class="list-group-item">Aucun article rédigé.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <!-- Mon profil -->
+            <div class="col-12">
+                <div class="card shadow-sm mt-4">
                     <div class="card-body">
-                        <h5 class="card-title">Mon profil</h5>
-                        <a href="{{ path('utilisateurs_modifier', {id: utilisateur.id}) }}" class="btn btn-outline-secondary btn-sm">Modifier</a>
+                        <h5 class="card-title"> Mon profil</h5>
+                        <p><strong>Nom :</strong> {{ utilisateur.nom }}</p>
+                        <p><strong>Email :</strong> {{ utilisateur.email }}</p>
+                        <a href="{{ path('utilisateurs_modifier_mon_profil') }}" class="btn btn-outline-primary btn-sm">Modifier mon profil</a>
                     </div>
                 </div>
             </div>

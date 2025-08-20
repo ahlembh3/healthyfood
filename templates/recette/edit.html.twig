@@ -5,14 +5,42 @@
 {% block body %}
     {% include 'recette/_form.html.twig' with {
         'form': form,
+        'recette': recette,
         'button_label': 'Modifier',
         'form_title': 'Modifier la recette'
     } %}
 
-    <a href="{{ path('recette_index') }}" class="btn btn-secondary mt-3">Retour à la liste</a>
+    <a href="{% if is_granted('ROLE_ADMIN') %}
+                    {{ path('recette_liste_admin') }}
+                 {% else %}
+                    {{ path('recette_mes_recettes') }}
+                 {% endif %}" class="btn btn-secondary">
+        Retour à la liste
+    </a>
 {% endblock %}
 
-{% block javascripts %}
-    {{ parent() }}
+
     {# Le script de preview image et collection est dans _form.html.twig, donc pas besoin ici sauf si tu préfères #}
-{% endblock %}
+    {% block javascripts %}
+        {{ parent() }}
+        <script>
+            function previewImage(event) {
+                const input = event.target;
+                const preview = document.getElementById('imagePreview');
+
+                if (input.files && input.files[0]) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        preview.src = e.target.result;
+                        preview.classList.remove('d-none');
+                    };
+                    reader.readAsDataURL(input.files[0]);
+                } else {
+                    preview.src = "#";
+                    preview.classList.add('d-none');
+                }
+            }
+        </script>
+    {% endblock %}
+
+

@@ -1,15 +1,16 @@
-  .progressbar {
+/* Styles pour la barre de progression */
+.progressbar {
     counter-reset: step;
-  }
+}
 
-  .progress-step {
+.progress-step {
     position: relative;
     text-align: center;
     flex: 1;
     font-weight: bold;
-  }
+}
 
-  .progress-step::before {
+.progress-step::before {
     counter-increment: step;
     content: counter(step);
     display: block;
@@ -19,17 +20,73 @@
     height: 30px;
     line-height: 30px;
     border-radius: 50%;
-  }
+}
 
 .progress-step.active {
-  color: #0d6efd;
+    color: #0d6efd;
 }
 
 .progress-step.active::before {
     background-color: #0d6efd;
     color: white;
-  }
+}
+
 .stars {
-            color: gold;
-            font-size: 1.2em;
-        }
+    color: gold;
+    font-size: 1.2em;
+}
+
+/* Styles pour les ingrédients */
+.ingredient-row {
+    transition: all 0.3s ease;
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    border: 1px solid #e9ecef;
+    background-color: #f8f9fa;
+}
+
+.ingredient-row:hover {
+    background-color: #e9ecef;
+    border-color: #007bff;
+}
+
+.unit-display {
+    min-width: 80px;
+    background-color: #dee2e6;
+    font-weight: bold;
+    color: #495057;
+}
+
+.remove-ingredient {
+    opacity: 0.7;
+    transition: opacity 0.3s ease;
+    height: 38px;
+}
+
+.remove-ingredient:hover {
+    opacity: 1;
+}
+
+.input-group {
+    flex-wrap: nowrap;
+}
+
+.ingredient-select, .ingredient-type {
+    height: 38px;
+}
+
+.form-group {
+    margin-bottom: 0;
+}
+
+/* Styles pour l'aperçu d'image */
+#imagePreview {
+    max-height: 200px;
+    object-fit: contain;
+}
+
+.img-thumbnail {
+    border: 1px solid #dee2e6;
+    border-radius: 0.375rem;
+}

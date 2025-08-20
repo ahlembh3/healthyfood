@@ -4,8 +4,10 @@ namespace App\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity]
-#[ORM\UniqueConstraint(name:"u_pair", columns:["plante_id","ingredient_id","ingredient_type"])]
-class AromaPairing
+#[ORM\Table(name: 'accord_aromatique')]
+#[ORM\UniqueConstraint(name: 'u_pair_ing', columns: ['plante_id','ingredient_id'])]
+#[ORM\UniqueConstraint(name: 'u_pair_type', columns: ['plante_id','ingredient_type'])]
+class AccordAromatique
 {
 #[ORM\Id, ORM\GeneratedValue, ORM\Column] private ?int $id = null;
 
@@ -15,13 +17,14 @@ private ?Plante $plante = null;
 
 // accord direct sur un ingrédient précis (optionnel)
 #[ORM\ManyToOne(targetEntity: Ingredient::class)]
+#[ORM\JoinColumn(nullable: true, onDelete: "SET NULL")]
 private ?Ingredient $ingredient = null;
 
 // ou accord par type d’ingrédient (ex: "Poisson", "Volaille")
 #[ORM\Column(length:50, nullable:true)]
 private ?string $ingredientType = null;
 
-#[ORM\Column(type:"float")]  // pondération
+#[ORM\Column(type: "float", options: ["default" => 1.0])]
 private float $score = 1.0;
 
     public function getId(): ?int

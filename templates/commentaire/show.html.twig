@@ -11,7 +11,15 @@
             <h6 class="card-subtitle mb-2 text-muted">{{ commentaire.date|date('d/m/Y H:i') }}</h6>
             <p class="card-text mt-3">{{ commentaire.contenu }}</p>
             <p><strong>Note :</strong> {{ commentaire.note ?? 'Non notée' }}</p>
-            <p><strong>Recette liée :</strong> {{ commentaire.recette.titre }}</p>
+            {% if commentaire.recette %}
+                <p><strong>Recette :</strong> {{ commentaire.recette.titre }}</p>
+            {% elseif commentaire.article %}
+                <p><strong>Article :</strong> {{ commentaire.article.titre }}</p>
+            {% else %}
+                <p><strong>Contenu :</strong> Non lié</p>
+            {% endif %}
+
+
             <p><strong>Signalé :</strong> {{ commentaire.signaler ? 'Oui' : 'Non' }}</p>
         </div>
     </div>

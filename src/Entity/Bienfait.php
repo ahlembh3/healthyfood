@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Repository\BienfaitRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -33,10 +34,14 @@ class Bienfait
     #[ORM\ManyToMany(targetEntity: Plante::class, mappedBy: 'bienfaits')]
     private Collection $plantes;
 
+    #[ORM\ManyToMany(targetEntity: Gene::class, mappedBy: "bienfaits")]
+    private Collection $genes;
+
     public function __construct()
     {
        $this->tisanes = new ArrayCollection();
        $this->plantes = new ArrayCollection();
+        $this->genes = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -109,5 +114,25 @@ class Bienfait
 
         return $this;
     }
+    public function addGene(Gene $g): static {
+        if (!$this->genes->contains($g)) {
+            $this->genes->add($g);
+            if (method_exists($g, 'addBienfait')) {
+                $g->addBienfait($this);
+            }
+        }
+        return $this;
+    }
+    public function removeGene(Gene $g): static {
+        if ($this->genes->removeElement($g)) {
+            if (method_exists($g, 'removeBienfait')) {
+                $g->removeBienfait($this);
+            }
+        }
+        return $this;
+    }
+
+
+    public function getGenes(): Collection { return $this->genes; }
 }
 

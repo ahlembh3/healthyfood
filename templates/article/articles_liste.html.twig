@@ -1,0 +1,58 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Articles disponibles{% endblock %}
+
+{% block body %}
+    <div class="container my-4">
+
+        <h1 class="mb-4">📰 Articles publiés</h1>
+
+        <form method="get" action="{{ path('article_index') }}" class="row g-3 mb-5">
+            <div class="col-md-5">
+                <input type="text" name="q" class="form-control" placeholder="🔍 Rechercher un article..."
+                       value="{{ search }}">
+            </div>
+            <div class="col-md-5">
+                <select name="categorie" class="form-select">
+                    <option value=""> Toutes les catégories</option>
+                    {% for cat in categoriesDisponibles %}
+                        <option value="{{ cat }}" {% if cat == categorie %}selected{% endif %}>{{ cat }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2 d-grid">
+                <button class="btn btn-outline-primary">Filtrer</button>
+            </div>
+        </form>
+
+        {% if articles|length > 0 %}
+            <div class="row">
+                {% for article in articles %}
+                    <div class="col-md-6 col-lg-4 mb-4">
+                        <div class="card h-100 shadow-sm border-0">
+                            {% if article.image %}
+                                <img src="{{ asset('uploads/' ~ article.image) }}" class="card-img-top" alt="Illustration de l'article">
+                            {% endif %}
+                            <div class="card-body d-flex flex-column">
+                                <h5 class="card-title">{{ article.titre }}</h5>
+                                <p class="card-text small text-muted mb-1">🗂️ Catégorie : {{ article.categorie ?? 'Non précisée' }}</p>
+                                <p class="card-text">{{ article.contenu|striptags|slice(0, 120) ~ '…' }}</p>
+                                <a href="{{ path('article_show', {'id': article.id}) }}" class="btn btn-sm btn-primary mt-auto">Lire l’article</a>
+                            </div>
+                            <div class="card-footer text-muted small">
+                                🕒 Publié le {{ article.date|date('d/m/Y') }}
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <div class="pagination justify-content-center mt-4">
+                {{ knp_pagination_render(articles) }}
+            </div>
+        {% else %}
+            <div class="alert alert-info">Aucun article ne correspond à votre recherche.</div>
+        {% endif %}
+
+    </div>
+{% endblock %}

@@ -8,7 +8,13 @@
         'form_title': form_title|default('Ajouter un article')
     } %}
 
-    <a href="{{ path('article_index') }}" class="btn btn-secondary mt-3">Retour à la liste</a>
+    <a href="{% if is_granted('ROLE_ADMIN') %}
+                    {{ path('article_liste_admin') }}
+                 {% else %}
+                    {{ path('article_mes_articles') }}
+                 {% endif %}" class="btn btn-secondary">
+        ← Retour à la liste
+    </a>
 {% endblock %}
 {% block javascripts %}
     {{ parent() }}

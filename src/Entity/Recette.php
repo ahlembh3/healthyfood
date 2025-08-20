@@ -40,7 +40,7 @@ class Recette
     private ?string $instructions = null;
 
     #[ORM\Column(nullable: true)]
-    #[Assert\Positive(message: "Le temps de préparation doit être un nombre positif.")]
+    #[Assert\PositiveOrZero(message: "Le temps de préparation doit être un nombre positif.")]
     private ?int $tempsPreparation = null;
 
     #[ORM\Column(length: 255, nullable: true)]
@@ -51,19 +51,14 @@ class Recette
     private ?bool $validation = false;
 
     #[ORM\Column(nullable: true)]
-    #[Assert\Positive(message: "Le nombre de portions doit être positif.")]
+    #[Assert\PositiveOrZero(message: "Le nombre de portions doit être positif.")]
     private ?int $portions = null;
 
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
-     #[Assert\File(
-    maxSize: '2M',
-    mimeTypes: ['image/jpeg', 'image/png', 'image/webp'],
-    mimeTypesMessage: "Veuillez télécharger une image valide (jpeg, png, webp).",
-    maxSizeMessage: "L'image ne doit pas dépasser 2 Mo.")]
     private ?string $image = null;
 
     #[ORM\Column(nullable: true)]
-    #[Assert\Positive(message: "Le temps de cuisson doit être un nombre positif.")]
+    #[Assert\PositiveOrZero(message: "Le temps de cuisson doit être un nombre positif.")]
     private ?int $tempsCuisson = null;
 
     #[ORM\Column(type: 'datetime_immutable')]
@@ -77,7 +72,7 @@ class Recette
     #[ORM\JoinColumn(nullable: false)]
     private ?Utilisateur $utilisateur = null;
 
-    #[ORM\OneToMany(mappedBy: 'recette', targetEntity: Commentaire::class, cascade: ['remove'])]
+    #[ORM\OneToMany(mappedBy: 'recette', targetEntity: Commentaire::class, cascade: ['remove'], orphanRemoval: true)]
     private Collection $commentaires;
 
     public function __construct()
@@ -291,6 +286,13 @@ class Recette
     }
 
     return $this;
+   }
+
+   public function setCreatedAt(\DateTimeImmutable $createdAt): static
+   {
+       $this->createdAt = $createdAt;
+
+       return $this;
    }
 
 }

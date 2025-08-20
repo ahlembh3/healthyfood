@@ -13,7 +13,7 @@
                     <div class="card-body">
                         <h5 class="card-title">👨‍🍳 Recettes</h5>
                         <p class="card-text">Gérez les recettes créées par les utilisateurs.</p>
-                        <a href="{{ path('recette_index') }}" class="btn btn-success">Voir les recettes</a>
+                        <a href="{{ path('recette_liste_admin') }}" class="btn btn-success">Gérer les recettes</a>
                     </div>
                 </div>
             </div>
@@ -22,11 +22,6 @@
                 <div class="card border-danger shadow-sm h-100">
                     <div class="card-body">
                         <h5 class="card-title">💬 Commentaires</h5>
-                        {% if commentaires is defined %}
-                            {% set nbSignalements = commentaires|filter(c => c.signaler)|length %}
-                        {% else %}
-                            {% set nbSignalements = 0 %}
-                        {% endif %}
 
                         <a href="{{ path('commentaire_signales') }}" class="btn btn-outline-warning">
                             Signalés <span class="badge bg-danger">{{ nbSignalements }}</span>
@@ -40,42 +35,26 @@
             </div>
 
 
-            <div class="col-md-4">
-                <div class="card border-primary shadow-sm h-100">
-                    <div class="card-body">
-                        <h5 class="card-title">🌿 Plantes médicinales</h5>
-                        <p class="card-text">Ajoutez, modifiez ou supprimez les plantes.</p>
-                        <a href="{{ path('plante_index') }}" class="btn btn-primary">Gérer les plantes</a>
-                    </div>
-                </div>
-            </div>
+
 
             <div class="col-md-4">
                 <div class="card border-warning shadow-sm h-100">
                     <div class="card-body">
                         <h5 class="card-title">📰 Articles</h5>
                         <p class="card-text">Publiez ou modifiez des articles informatifs.</p>
-                        <a href="{{ path('article_index') }}" class="btn btn-warning">Gérer les articles</a>
+                        <a href="{{ path('article_liste_admin') }}" class="btn btn-warning">Gérer les articles</a>
                     </div>
                 </div>
             </div>
 
-            <div class="col-md-4">
-                <div class="card border-info shadow-sm h-100">
-                    <div class="card-body">
-                        <h5 class="card-title">🍵 Tisanes</h5>
-                        <p class="card-text">Créez et gérez les tisanes associées aux plantes.</p>
-                        <a href="{{ path('tisane_index') }}" class="btn btn-info">Gérer les tisanes</a>
-                    </div>
-                </div>
-            </div>
+
 
             <div class="col-md-4">
                 <div class="card border-dark shadow-sm h-100">
                     <div class="card-body">
                         <h5 class="card-title">👥 Utilisateurs</h5>
                         <p class="card-text">Consultez la liste des utilisateurs inscrits.</p>
-                        <a href="{{ path('utilisateurs_liste') }}" class="btn btn-dark">Voir les utilisateurs</a>
+                        <a href="{{ path('utilisateurs_liste') }}" class="btn btn-dark">Gérer les utilisateurs</a>
                     </div>
                 </div>
             </div>

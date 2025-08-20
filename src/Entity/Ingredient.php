@@ -65,8 +65,14 @@ class Ingredient
     #[ORM\OneToMany(mappedBy: 'ingredient', targetEntity: RecetteIngredient::class, orphanRemoval: true)]
     private Collection $recetteIngredients;
 
+    #[ORM\ManyToMany(targetEntity: Gene::class, inversedBy: "ingredients")]
+    #[ORM\JoinTable(name: "ingredient_gene")]
+    private Collection $genes;
+
+
     public function __construct()
     {
+        $this->genes = new ArrayCollection();
         $this->recetteIngredients = new ArrayCollection();
     }
 
@@ -245,4 +251,23 @@ class Ingredient
 
         return $this;
     }
+
+    public function addGene(Gene $g): self {
+        if (!$this->genes->contains($g)) {
+            $this->genes->add($g);
+            if (method_exists($g, 'addIngredient')) {
+                $g->addIngredient($this);
+            }
+        }
+        return $this;
+    }
+    public function removeGene(Gene $g): self {
+        if ($this->genes->removeElement($g)) {
+            if (method_exists($g, 'removeIngredient')) {
+                $g->removeIngredient($this);
+            }
+        }
+        return $this;
+    }
+    public function getGenes(): Collection { return $this->genes; }
 }

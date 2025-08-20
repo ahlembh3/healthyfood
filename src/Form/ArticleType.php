@@ -48,6 +48,7 @@ class ArticleType extends AbstractType
                     'Autre' => 'Autre',
                 ],
                 'placeholder' => 'Choisir une catégorie',
+                'required' => true,
             ]);
     }
 

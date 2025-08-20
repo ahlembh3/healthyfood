@@ -158,9 +158,14 @@ class Plante
 
     return $this;
    }
-   public function __toString(): string
+
+   public function removeTisane(Tisane $tisane): static
    {
-    return $this->nom ?? '';
+       if ($this->tisanes->removeElement($tisane)) {
+           $tisane->removePlante($this);
+       }
+
+       return $this;
    }
 
 

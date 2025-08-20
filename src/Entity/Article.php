@@ -42,17 +42,18 @@ class Article
     #[ORM\Column(options: ["default" => false])]
     private ?bool $validation = false;
 
+    #[Assert\NotBlank(message: "La catégorie est obligatoire.")]
     #[Assert\Choice(
     choices: ['Bien-être', 'Nutrition', 'Plantes', 'Conseils', 'Autre'],
     message: "Catégorie invalide. Choisissez une valeur valide.")]
-    #[ORM\Column(length: 255, nullable: true)]
+    #[ORM\Column(length: 255, nullable:false)]
     private ?string $categorie = null;
 
     #[ORM\ManyToOne(inversedBy: 'articles')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Utilisateur $utilisateur = null;
 
-    #[ORM\OneToMany(mappedBy: 'article', targetEntity: Commentaire::class)]
+    #[ORM\OneToMany(mappedBy: 'article', targetEntity: Commentaire::class, cascade: ['remove'], orphanRemoval: true)]
     private Collection $commentaires;
 
     public function __construct()
