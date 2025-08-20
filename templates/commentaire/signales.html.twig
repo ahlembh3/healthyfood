@@ -31,7 +31,16 @@
 <p><strong>Le :</strong> {{ commentaire.signaleLe ? commentaire.signaleLe|date('d/m/Y H:i') : 'Date inconnue' }}</p>
 
 
-                    <p><strong>Recette :</strong> {{ commentaire.recette.titre }}</p>
+                    <p>
+                        <strong>Contenu lié :</strong>
+                        {% if commentaire.recette %}
+                            Recette : <a href="{{ path('recette_show', {'id': commentaire.recette.id}) }}">{{ commentaire.recette.titre }}</a>
+                        {% elseif commentaire.article %}
+                            Article : <a href="{{ path('article_show', {'id': commentaire.article.id}) }}">{{ commentaire.article.titre }}</a>
+                        {% else %}
+                            Aucun contenu associé
+                        {% endif %}
+                    </p>
 
                     <div class="d-flex gap-2 mt-2">
                         <a href="{{ path('commentaire_show', {'id': commentaire.id}) }}" class="btn btn-sm btn-outline-primary">Voir</a>

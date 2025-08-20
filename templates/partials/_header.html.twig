@@ -1,60 +1,81 @@
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
     <div class="container-fluid">
-        <a class="navbar-brand fw-bold" href="{{ path('app_home') }}">HealthyFood</a>
+        <a class="navbar-brand fw-bold" href="{{ path('app_home') }}">Santé & Nature</a>
 
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false"
+                aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
 
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ms-auto align-items-center">
 
+                <!-- Toujours visible -->
                 <li class="nav-item">
-                    <a class="nav-link" href="{{ path('app_home') }}">Accueil</a>
-                </li>
-
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ path('plante_index') }}">Plantes</a>
-                </li>
-
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ path('recette_index') }}">Recettes</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ path('tisane_index') }}">Tisanes</a>
+                    <a class="nav-link" href="{{ path('app_home') }}">🏠 Accueil</a>
                 </li>
 
                 {% if app.user %}
                     {% if is_granted('ROLE_ADMIN') %}
+                        <!-- Liens pour ADMIN uniquement -->
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ path('article_index') }}">Articles</a>
+                            <a class="nav-link" href="{{ path('article_liste_admin') }}">📰 Articles</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ path('utilisateurs_liste') }}">Compte utilisateurs</a>
+                            <a class="nav-link" href="{{ path('recette_liste_admin') }}">🥗 Recettes</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ path('admin_dashboard') }}">Dashboard admin</a>
+                            <a class="nav-link" href="{{ path('commentaire_index') }}">💬 Commentaires</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ path('utilisateurs_liste') }}">👥 Utilisateurs</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ path('admin_dashboard') }}">📊 Dashboard admin</a>
                         </li>
                     {% else %}
+                        <!-- Liens pour UTILISATEUR connecté -->
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ path('article_mes_articles') }}">Mes articles</a>
+                            <a class="nav-link" href="{{ path('article_mes_articles') }}">📝 Mes articles</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ path('utilisateurs_dashboard') }}">Mon espace</a>
+                            <a class="nav-link" href="{{ path('recette_mes_recettes') }}">🍽️ Mes recettes</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ path('utilisateurs_mon_profil') }}">👤 Mon profil</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ path('utilisateurs_dashboard') }}">📂 Mon espace</a>
                         </li>
                     {% endif %}
 
+                    <!-- Utilisateur connecté -->
                     <li class="nav-item text-white px-2 small">
-                        👤 {{ app.user.prenom|default(app.user.email) }}
+                        👋 {{ app.user.prenom|default(app.user.email) }}
                     </li>
-
                     <li class="nav-item">
-                        <a class="nav-link text-warning" href="{{ path('app_logout') }}">Déconnexion</a>
+                        <a class="nav-link text-warning" href="{{ path('app_logout') }}">🚪 Déconnexion</a>
                     </li>
                 {% else %}
+                    <!-- Visiteur non connecté -->
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ path('app_login') }}">Connexion</a>
+                        <a class="nav-link" href="{{ path('plante_index') }}">🌿 Plantes</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ path('recette_index') }}">🥗 Recettes</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ path('tisane_index') }}">🍵 Tisanes</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ path('article_index') }}">📝 Blog</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ path('app_login') }}">🔐 Connexion</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ path('utilisateurs_ajouter') }}">🆕 Inscription</a>
                     </li>
                 {% endif %}
             </ul>

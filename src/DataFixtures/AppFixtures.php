@@ -104,6 +104,15 @@ class AppFixtures extends Fixture
             $ingredient->setSaisonnalite($item['saisonnalite'] ?? '');
             $ingredient->setDescription($item['description'] ?? null);
             $ingredient->setUnite($item['unite'] ?? 'gramme');
+            $ingredient->setCalories(self::toNullableFloat($item['calories']));
+            $ingredient->setProteines(self::toNullableFloat($item['proteines']));
+            $ingredient->setGlucides(self::toNullableFloat($item['glucides']));
+            $ingredient->setLipides(self::toNullableFloat($item['lipides']));
+            $ingredient->setOrigine($item['origine']);
+            $ingredient->setBio((int) $item['bio'] === 1 ? 1 : 0); // 0/1
+            $ingredient->setImage($item['image']);
+
+
 
             $manager->persist($ingredient);
             $ingredients[$item['nom']] = $ingredient; // clé pour accès rapide

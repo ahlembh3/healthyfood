@@ -1,0 +1,53 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Recettes saines{% endblock %}
+
+{% block body %}
+    <div class="container mt-4">
+        <h1 class="mb-4">🌿 Recettes saines </h1>
+
+        {% if recettes is empty %}
+            <div class="alert alert-info">
+                Aucune recette  pour le moment.
+            </div>
+        {% else %}
+            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                {% for recette in recettes %}
+                    <div class="col">
+                        <div class="card h-100 shadow-sm">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <a href="{{ path('recette_show', { id: recette.id }) }}" class="text-decoration-none text-dark">
+                                        {{ recette.titre }}
+                                    </a>
+                                </h5>
+
+                                <p class="card-text">{{ recette.description|u.truncate(100, '...') }}</p>
+                                <p class="mb-1"><strong>Difficulté :</strong> {{ recette.difficulte }}</p>
+                                <p class="mb-1">
+                                    <strong>Temps :</strong>
+                                    {{ recette.tempsPreparation }} min
+                                    {% if recette.tempsCuisson %}/ {{ recette.tempsCuisson }} min cuisson{% endif %}
+                                </p>
+
+                                <p class="mb-1">
+                                    <strong>Note moyenne :</strong>
+                                    {% if moyennes[recette.id] is defined %}
+                                        {{ moyennes[recette.id] }}/5
+                                    {% else %}
+                                        Non notée
+                                    {% endif %}
+                                </p>
+                            </div>
+                            <div class="card-footer bg-transparent">
+                                <a href="{{ path('recette_show', {'id': recette.id}) }}" class="btn btn-outline-success w-100">
+                                    Voir la recette
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}

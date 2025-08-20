@@ -5,9 +5,18 @@
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
     uploads_directory: '%kernel.project_dir%/public/uploads'
+    recettes_directory: '%kernel.project_dir%/public/uploads/recettes'
+    articles_directory: '%kernel.project_dir%/public/uploads/articles'
+    ingredients_directory: '%kernel.project_dir%/public/uploads/ingredients'
+    plantes_directory: '%kernel.project_dir%/public/uploads/plantes'
+    tisanes_directory: '%kernel.project_dir%/public/uploads/tisanes'
 
 
 services:
+    App\Security\LoginSuccessHandler:
+        arguments:
+            $router: '@router'
+        tags: [ 'monolog.logger' ]
     # default configuration for services in *this* file
     _defaults:
         autowire: true      # Automatically injects dependencies in your services.

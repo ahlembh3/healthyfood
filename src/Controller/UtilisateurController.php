@@ -13,7 +13,7 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Form\FormError;
 use App\Repository\RecetteRepository;
-use App\Repository\CommentaireRepository;
+use App\Repository\ArticleRepository;
 
 #[Route('/utilisateurs')]
 final class UtilisateurController extends AbstractController
@@ -28,7 +28,7 @@ final class UtilisateurController extends AbstractController
     #[Route('/dashboard', name: 'utilisateurs_dashboard')]
     public function dashboard(
         RecetteRepository $recetteRepo,
-        CommentaireRepository $commentaireRepo
+        ArticleRepository $articleRepo
     ): Response {
         $user = $this->getUser();
 
@@ -37,12 +37,12 @@ final class UtilisateurController extends AbstractController
         }
 
         $mesRecettes = $recetteRepo->findBy(['utilisateur' => $user]);
-        $mesCommentaires = $commentaireRepo->findBy(['utilisateur' => $user]);
+        $mesArticles = $articleRepo->findBy(['utilisateur' => $user]);
 
         return $this->render('utilisateur/dashboard.html.twig', [
             'utilisateur' => $user,
             'mesRecettes' => $mesRecettes,
-            'mesCommentaires' => $mesCommentaires,
+            'mesArticles' => $mesArticles,
         ]);
     }
 
@@ -92,6 +92,48 @@ public function ajouter(Request $request, EntityManagerInterface $entityManager,
             'utilisateur' => $utilisateur,
         ]);
     }
+    #[Route('/mon-profil', name: 'utilisateurs_mon_profil', methods: ['GET'])]
+    public function monProfil(): Response
+    {
+        $user = $this->getUser();
+
+        if (!$user) {
+            throw $this->createAccessDeniedException('Connectez-vous pour accéder à votre profil.');
+        }
+
+        return $this->render('utilisateur/show.html.twig', [
+            'utilisateur' => $user,
+        ]);
+    }
+    #[Route('/mon-profil/modifier', name: 'utilisateurs_modifier_mon_profil', methods: ['GET', 'POST'])]
+    public function modifierMonProfil(Request $request, EntityManagerInterface $em): Response
+    {
+        $utilisateur = $this->getUser();
+
+        if (!$utilisateur) {
+            throw $this->createAccessDeniedException('Vous devez être connecté pour modifier votre profil.');
+        }
+
+        $form = $this->createForm(UtilisateurType::class, $utilisateur, [
+            'is_edit' => true,
+        ]);
+
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $em->flush();
+
+            $this->addFlash('success', 'Votre profil a bien été mis à jour.');
+            return $this->redirectToRoute('utilisateurs_mon_profil');
+        }
+
+        return $this->render('utilisateur/edit.html.twig', [
+            'utilisateur' => $utilisateur,
+            'form' => $form,
+        ]);
+    }
+
+
 
     #[Route('/{id}/modifier', name: 'utilisateurs_modifier', methods: ['GET', 'POST'])]
     public function modifier(Request $request, Utilisateur $utilisateur, EntityManagerInterface $entityManager): Response

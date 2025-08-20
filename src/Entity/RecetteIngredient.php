@@ -4,50 +4,32 @@ namespace App\Entity;
 
 use App\Repository\RecetteIngredientRepository;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: RecetteIngredientRepository::class)]
+#[ORM\Table(name: 'recette_ingredient')]
 class RecetteIngredient
 {
     #[ORM\Id]
-    #[ORM\GeneratedValue]
-    #[ORM\Column]
-    private ?int $id = null;
-
-   #[Assert\Positive(message: "La quantité doit être un nombre positif.")]
-   #[ORM\Column]
-   private ?float $quantite = null;
-
     #[ORM\ManyToOne(inversedBy: 'recetteIngredients')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(name: 'id_recette', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
     private ?Recette $recette = null;
 
+    #[ORM\Id]
     #[ORM\ManyToOne(inversedBy: 'recetteIngredients')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(name: 'id_ingredient', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
     private ?Ingredient $ingredient = null;
 
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
+    #[ORM\Column(type: 'float')]
+    private ?float $quantite = null;
 
-    public function getQuantite(): ?float
-    {
-        return $this->quantite;
-    }
-
-    public function setQuantite(float $quantite): static
-    {
-        $this->quantite = $quantite;
-        return $this;
-    }
+    // Getters et setters
 
     public function getRecette(): ?Recette
     {
         return $this->recette;
     }
 
-    public function setRecette(?Recette $recette): static
+    public function setRecette(?Recette $recette): self
     {
         $this->recette = $recette;
         return $this;
@@ -58,14 +40,20 @@ class RecetteIngredient
         return $this->ingredient;
     }
 
-    public function setIngredient(?Ingredient $ingredient): static
+    public function setIngredient(?Ingredient $ingredient): self
     {
         $this->ingredient = $ingredient;
         return $this;
     }
-    public function __toString(): string
+
+    public function getQuantite(): ?float
     {
-    return $this->ingredient?->getNom() . ' (' . $this->quantite . ')';
+        return $this->quantite;
+    }
+
+    public function setQuantite(float $quantite): self
+    {
+        $this->quantite = $quantite;
+        return $this;
     }
 }
-

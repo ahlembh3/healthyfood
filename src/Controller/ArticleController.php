@@ -17,22 +17,58 @@ use Symfony\Component\String\Slugger\SluggerInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Knp\Component\Pager\PaginatorInterface;
 
-
-
 #[Route('/articles')]
 class ArticleController extends AbstractController
 {
-    #[Route('/', name: 'article_index', methods: ['GET'])]
-    public function index(ArticleRepository $articleRepository): Response
-    {
-        $user = $this->getUser();
+    // Page publique
+    #[Route('/liste', name: 'article_index', methods: ['GET'])]
+    public function index(
+        Request $request,
+        ArticleRepository $articleRepository,
+        PaginatorInterface $paginator
+    ): Response {
+        $search = $request->query->get('q');
+        $categorie = $request->query->get('categorie');
 
-        // Si l'utilisateur est connecté et n'est pas admin → redirige vers la liste publique
-        if ($user && !in_array('ROLE_ADMIN', $user->getRoles())) {
-            return $this->redirectToRoute('article_liste_utilisateur');
+        $queryBuilder = $articleRepository->createQueryBuilder('a')
+            ->where('a.validation = true');
+
+        if ($search) {
+            $queryBuilder
+                ->andWhere('a.titre LIKE :search OR a.contenu LIKE :search')
+                ->setParameter('search', '%' . $search . '%');
         }
 
-        // Sinon, admin → vue de gestion
+        if ($categorie) {
+            $queryBuilder
+                ->andWhere('a.categorie = :categorie')
+                ->setParameter('categorie', $categorie);
+        }
+
+        $queryBuilder->orderBy('a.date', 'DESC');
+
+        $articles = $paginator->paginate(
+            $queryBuilder->getQuery(),
+            $request->query->getInt('page', 1),
+            6
+        );
+
+        $categoriesDisponibles = ['Bien-être', 'Nutrition', 'Plantes', 'Conseils', 'Autre'];
+
+        return $this->render('article/articles_liste.html.twig', [
+            'articles' => $articles,
+            'search' => $search,
+            'categorie' => $categorie,
+            'categoriesDisponibles' => $categoriesDisponibles,
+        ]);
+    }
+
+    // Page d'administration
+    #[Route('/admin/liste', name: 'article_liste_admin', methods: ['GET'])]
+    public function listeAdmin(ArticleRepository $articleRepository): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
         return $this->render('article/index.html.twig', [
             'articles' => $articleRepository->findAll(),
         ]);
@@ -67,15 +103,12 @@ class ArticleController extends AbstractController
             $article->setDate(new \DateTimeImmutable());
             $article->setUtilisateur($this->getUser());
 
-            //  Mise en forme automatique si aucun HTML n’est détecté
             $contenu = $article->getContenu();
             if (strip_tags($contenu) === $contenu) {
-                // Pas de balises HTML → mise en forme simple
                 $contenu = nl2br(htmlspecialchars($contenu));
                 $article->setContenu($contenu);
             }
 
-            //  Gestion image
             $imageFile = $form->get('image')->getData();
             if ($imageFile) {
                 $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
@@ -83,7 +116,7 @@ class ArticleController extends AbstractController
                 $newFilename = $safeFilename . '-' . uniqid() . '.' . $imageFile->guessExtension();
 
                 try {
-                    $imageFile->move($this->getParameter('uploads_directory'), $newFilename);
+                    $imageFile->move($this->getParameter('articles_directory'), $newFilename);
                     $article->setImage($newFilename);
                 } catch (FileException $e) {
                     $this->addFlash('danger', 'Erreur lors de l\'upload de l\'image.');
@@ -93,20 +126,15 @@ class ArticleController extends AbstractController
             $em->persist($article);
             $em->flush();
 
-            //  Redirection conditionnelle selon le rôle
-            $roles = $this->getUser()->getRoles();
-            if (in_array('ROLE_ADMIN', $roles)) {
-                return $this->redirectToRoute('article_index');
-            } else {
-                return $this->redirectToRoute('article_mes_articles');
-            }
+            $route = $this->isGranted('ROLE_ADMIN') ? 'article_liste_admin' : 'article_mes_articles';
+            return $this->redirectToRoute($route);
+
         }
 
         return $this->render('article/new.html.twig', [
             'form' => $form->createView(),
         ]);
     }
-
 
     #[Route('/article/{id}', name: 'article_show', methods: ['GET', 'POST'])]
     public function show(
@@ -115,7 +143,6 @@ class ArticleController extends AbstractController
         EntityManagerInterface $em,
         PaginatorInterface $paginator
     ): Response {
-        // 1. Requête pour récupérer les commentaires liés à cet article (type = 2)
         $query = $em->getRepository(Commentaire::class)->createQueryBuilder('c')
             ->where('c.article = :article')
             ->andWhere('c.type = 2')
@@ -123,14 +150,12 @@ class ArticleController extends AbstractController
             ->orderBy('c.date', 'DESC')
             ->getQuery();
 
-        // 2. Pagination : 5 commentaires par page
         $commentaires = $paginator->paginate(
             $query,
             $request->query->getInt('page', 1),
             5
         );
 
-        // 3. Création du formulaire de commentaire (si connecté)
         $form = null;
 
         if ($this->getUser()) {
@@ -138,19 +163,17 @@ class ArticleController extends AbstractController
             $commentaire->setUtilisateur($this->getUser());
             $form = $this->createForm(CommentaireType::class, $commentaire, [
                 'is_recette' => false,
-                'attr' => ['id' => 'form_commentaire'], //  donne une ID unique
+                'attr' => ['id' => 'form_commentaire'],
             ]);
-
 
             $form->handleRequest($request);
 
-            // ⚠Associer l'utilisateur AVANT la validation
             if ($form->isSubmitted()) {
                 $commentaire->setUtilisateur($this->getUser());
 
                 if ($form->isValid()) {
                     $commentaire->setDate(new \DateTimeImmutable());
-                    $commentaire->setType(2); // 2 = article
+                    $commentaire->setType(2);
                     $commentaire->setArticle($article);
 
                     $em->persist($commentaire);
@@ -163,15 +186,12 @@ class ArticleController extends AbstractController
             }
         }
 
-        // 4. Rendu de la vue
         return $this->render('article/show.html.twig', [
             'article' => $article,
             'commentaires' => $commentaires,
             'formCommentaire' => $form?->createView(),
         ]);
     }
-
-
 
     #[Route('/{id}/edit', name: 'article_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, Article $article, EntityManagerInterface $em, SluggerInterface $slugger): Response
@@ -190,14 +210,12 @@ class ArticleController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            //  Mise en forme automatique si aucun HTML
             $contenu = $article->getContenu();
             if (strip_tags($contenu) === $contenu) {
                 $contenu = nl2br(htmlspecialchars($contenu));
                 $article->setContenu($contenu);
             }
 
-            //  Image
             $imageFile = $form->get('image')->getData();
             if ($imageFile instanceof UploadedFile) {
                 $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
@@ -205,7 +223,7 @@ class ArticleController extends AbstractController
                 $newFilename = $safeFilename . '-' . uniqid() . '.' . $imageFile->guessExtension();
 
                 try {
-                    $imageFile->move($this->getParameter('uploads_directory'), $newFilename);
+                    $imageFile->move($this->getParameter('articles_directory'), $newFilename);
                     $article->setImage($newFilename);
                 } catch (FileException $e) {
                     $this->addFlash('danger', 'Erreur lors de l\'upload de l\'image.');
@@ -214,12 +232,9 @@ class ArticleController extends AbstractController
 
             $em->flush();
 
-            // Redirection selon le rôle
-            if ($this->isGranted('ROLE_ADMIN')) {
-                return $this->redirectToRoute('article_index');
-            } else {
-                return $this->redirectToRoute('article_mes_articles');
-            }
+            $route = $this->isGranted('ROLE_ADMIN') ? 'article_liste_admin' : 'article_mes_articles';
+            return $this->redirectToRoute($route);
+
         }
 
         return $this->render('article/edit.html.twig', [
@@ -228,33 +243,26 @@ class ArticleController extends AbstractController
         ]);
     }
 
-
     #[Route('/{id}', name: 'article_delete', methods: ['POST'])]
     public function delete(Request $request, Article $article, EntityManagerInterface $em): Response
     {
-        // Vérifie que seul un administrateur peut supprimer un article validé
         if ($article->isValidation() && !$this->isGranted('ROLE_ADMIN')) {
             throw $this->createAccessDeniedException('Seul un administrateur peut supprimer un article validé.');
         }
 
-        // Vérifie que l'utilisateur est bien le propriétaire OU admin pour les articles non validés
         if (!$this->isGranted('ROLE_ADMIN') && $article->getUtilisateur() !== $this->getUser()) {
             throw $this->createAccessDeniedException('Vous ne pouvez supprimer que vos propres articles non validés.');
         }
 
-        // Protection CSRF
         if ($this->isCsrfTokenValid('delete' . $article->getId(), $request->request->get('_token'))) {
             $em->remove($article);
             $em->flush();
             $this->addFlash('success', 'Article supprimé avec succès.');
         }
 
-        // Redirection selon le rôle
-        if ($this->isGranted('ROLE_ADMIN')) {
-            return $this->redirectToRoute('article_index');
-        } else {
-            return $this->redirectToRoute('article_mes_articles');
-        }
+        $route = $this->isGranted('ROLE_ADMIN') ? 'article_liste_admin' : 'article_mes_articles';
+        return $this->redirectToRoute($route);
+
     }
 
     #[Route('/{id}/valider', name: 'article_valider', methods: ['POST'])]

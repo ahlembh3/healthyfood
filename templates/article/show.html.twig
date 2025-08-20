@@ -33,7 +33,7 @@
         <p><strong>Validé :</strong> {{ article.validation ? 'Oui' : 'Non' }}</p>
     </div>
 
-    {# ✅ Bouton de validation pour l’admin #}
+    {#  Bouton de validation pour l’admin #}
     {% if is_granted('ROLE_ADMIN') %}
         {% if not article.validation %}
             <form method="post" action="{{ path('article_valider', {id: article.id}) }}" onsubmit="return confirm('Confirmer la validation de cet article ?');">
@@ -81,7 +81,7 @@
         <p>Aucun commentaire pour le moment.</p>
     {% endif %}
 
-    {% if is_granted('ROLE_USER') %}
+    {% if app.user and app.user.id == article.utilisateur.id and not is_granted('ROLE_ADMIN') %}
         <h4 class="mt-5">Ajouter un commentaire</h4>
         {{ form_start(formCommentaire, {'attr': {'id': 'form_commentaire'}}) }}
 
@@ -98,7 +98,7 @@
 
     <div class="d-flex gap-2 mt-4">
         <a href="{% if is_granted('ROLE_ADMIN') %}
-                    {{ path('article_index') }}
+                    {{ path('article_liste_admin') }}
                  {% else %}
                     {{ path('article_mes_articles') }}
                  {% endif %}" class="btn btn-secondary">

@@ -7,43 +7,48 @@
 
     <table class="table">
         <tbody>
-            <tr>
-                <th>Id</th>
-                <td>{{ utilisateur.id }}</td>
-            </tr>
-            <tr>
-                <th>Email</th>
-                <td>{{ utilisateur.email }}</td>
-            </tr>
-            <tr>
-                <th>Roles</th>
-                <td>{{ utilisateur.roles ? utilisateur.roles|json_encode : '' }}</td>
-            </tr>
-            <tr>
-                <th>Password</th>
-                <td>{{ utilisateur.password }}</td>
-            </tr>
-            <tr>
-                <th>Nom</th>
-                <td>{{ utilisateur.nom }}</td>
-            </tr>
-            <tr>
-                <th>Prenom</th>
-                <td>{{ utilisateur.prenom }}</td>
-            </tr>
-            <tr>
-                <th>Preferences</th>
-                <td>{{ utilisateur.preferences }}</td>
-            </tr>
+        <tr>
+            <th>Id</th>
+            <td>{{ utilisateur.id }}</td>
+        </tr>
+        <tr>
+            <th>Email</th>
+            <td>{{ utilisateur.email }}</td>
+        </tr>
+        <tr>
+            <th>Roles</th>
+            <td>{{ utilisateur.roles ? utilisateur.roles|json_encode : '' }}</td>
+        </tr>
+        <tr>
+            <th>Nom</th>
+            <td>{{ utilisateur.nom }}</td>
+        </tr>
+        <tr>
+            <th>Prénom</th>
+            <td>{{ utilisateur.prenom }}</td>
+        </tr>
+        <tr>
+            <th>Préférences</th>
+            <td>{{ utilisateur.preferences }}</td>
+        </tr>
         </tbody>
     </table>
 
-  <div class="d-flex gap-2 mt-4">
-    <a href="{{ path('utilisateurs_liste') }}" class="btn btn-secondary"> Retour à la liste</a>
+    {#  Lien "Modifier mon profil" : visible uniquement pour l'utilisateur connecté lui-même #}
+    {% if app.user and app.user.id == utilisateur.id and not is_granted('ROLE_ADMIN') %}
+        <a href="{{ path('utilisateurs_modifier_mon_profil') }}" class="btn btn-outline-primary mt-3">
+            Modifier mon profil
+        </a>
+    {% endif %}
 
-    <a href="{{ path('utilisateurs_modifier', {'id': utilisateur.id}) }}" class="btn btn-primary"> Modifier</a>
+    {#  Liens admin : visibles uniquement si l'utilisateur connecté est admin #}
+    {% if is_granted('ROLE_ADMIN') %}
+        <div class="d-flex gap-2 mt-4">
+            <a href="{{ path('utilisateurs_liste') }}" class="btn btn-secondary">Retour à la liste</a>
 
-    {{ include('utilisateur/_delete_form.html.twig') }}
-</div>
+            <a href="{{ path('utilisateurs_modifier', {'id': utilisateur.id}) }}" class="btn btn-primary">Modifier</a>
 
+            {{ include('utilisateur/_delete_form.html.twig') }}
+        </div>
+    {% endif %}
 {% endblock %}

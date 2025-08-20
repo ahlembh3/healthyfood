@@ -36,11 +36,11 @@ class Commentaire
 
 
     #[ORM\ManyToOne(targetEntity: Recette::class, inversedBy: 'commentaires')]
-    #[ORM\JoinColumn(nullable: true)]
+    #[ORM\JoinColumn(onDelete: 'CASCADE')]
     private ?Recette $recette = null;
 
     #[ORM\ManyToOne(targetEntity: Article::class, inversedBy: 'commentaires')]
-    #[ORM\JoinColumn(nullable: true)] 
+    #[ORM\JoinColumn(onDelete: 'CASCADE')]
     private ?Article $article = null;
 
 
