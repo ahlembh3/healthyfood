@@ -1,53 +1,144 @@
 {% extends 'base.html.twig' %}
+{% set F = filters|default({}) %}
 
-{% block title %}Recettes saines{% endblock %}
+{% block title %}Recettes — HealthyFood{% endblock %}
 
 {% block body %}
-    <div class="container mt-4">
-        <h1 class="mb-4">🌿 Recettes saines </h1>
+    <div class="container my-5">
 
-        {% if recettes is empty %}
-            <div class="alert alert-info">
-                Aucune recette  pour le moment.
+        <header class="mb-4 d-flex align-items-center justify-content-between">
+            <h1 class="h3 m-0">🌿 Recettes</h1>
+
+
+        </header>
+
+        {# Barre de filtres #}
+        <form method="get" class="card p-3 shadow-sm mb-4" role="search" aria-label="Filtrer les recettes">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label" for="q">Recherche</label>
+                    <input id="q" name="q" class="form-control" value="{{ F.q|default('') }}" placeholder="Titre, description…">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label" for="ingredient">Ingrédient</label>
+                    <input id="ingredient" name="ingredient" class="form-control" value="{{ F.ingredient|default('') }}" placeholder="ex. Citron">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label" for="type">Type</label>
+                    <select id="type" name="type" class="form-select">
+                        <option value="">— Tous les types —</option>
+                        {% for t in types %}
+                            <option value="{{ t }}" {{ (F.type|default('')|lower == t|lower) ? 'selected' : '' }}>
+                                {{ t }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label" for="saison">Saison</label>
+                    <input id="saison" name="saison" class="form-control" value="{{ F.saison|default('') }}" placeholder="ex. Juin">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label" for="bienfait">Bienfait</label>
+                    <input id="bienfait" name="bienfait" class="form-control" value="{{ F.bienfait|default('') }}" placeholder="ex. Digestion">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label" for="calMax">Calories max*</label>
+                    <input id="calMax" name="calMax" type="number" min="0" class="form-control" value="{{ F.calMax|default('') }}" placeholder="ex. 500">
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button class="btn btn-success w-100" type="submit">Filtrer</button>
+                </div>
             </div>
-        {% else %}
-            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+            <small class="text-muted mt-2 d-block">
+                * Approximation basée sur les ingrédients en grammes/ml (100 g/ml).
+            </small>
+        </form>
+
+        {# Grille de cartes #}
+        {% if recettes is not empty %}
+            <div class="row g-4">
                 {% for recette in recettes %}
-                    <div class="col">
-                        <div class="card h-100 shadow-sm">
-                            <div class="card-body">
-                                <h5 class="card-title">
-                                    <a href="{{ path('recette_show', { id: recette.id }) }}" class="text-decoration-none text-dark">
-                                        {{ recette.titre }}
-                                    </a>
-                                </h5>
-
-                                <p class="card-text">{{ recette.description|u.truncate(100, '...') }}</p>
-                                <p class="mb-1"><strong>Difficulté :</strong> {{ recette.difficulte }}</p>
-                                <p class="mb-1">
-                                    <strong>Temps :</strong>
-                                    {{ recette.tempsPreparation }} min
-                                    {% if recette.tempsCuisson %}/ {{ recette.tempsCuisson }} min cuisson{% endif %}
-                                </p>
-
-                                <p class="mb-1">
-                                    <strong>Note moyenne :</strong>
-                                    {% if moyennes[recette.id] is defined %}
-                                        {{ moyennes[recette.id] }}/5
-                                    {% else %}
-                                        Non notée
-                                    {% endif %}
-                                </p>
+                    <div class="col-md-6 col-lg-4">
+                        <article class="card h-100 shadow-sm border-0" style="--c-vert:#5c9a74; --c-beige:#f6f3ee;">
+                            <div class="ratio ratio-16x9 bg-light">
+                                {% set img = recette.image|default('')|trim %}
+                                {% if img %}
+                                    {% set src = asset('uploads/recettes/' ~ img) %}
+                                {% else %}
+                                    {% set src = asset('images/placeholder-recipe.jpg') %}
+                                {% endif %}
+                                <img src="{{ src }}" alt="{{ recette.titre }}" class="rounded-top w-100 h-100" style="object-fit: cover;">
                             </div>
-                            <div class="card-footer bg-transparent">
-                                <a href="{{ path('recette_show', {'id': recette.id}) }}" class="btn btn-outline-success w-100">
-                                    Voir la recette
+
+                            <div class="card-body">
+                                <h2 class="h5 card-title mb-2">{{ recette.titre }}</h2>
+
+                                <ul class="list-inline text-muted small mb-2">
+                                    <li class="list-inline-item">⏱ {{ recette.tempsPreparation }} min</li>
+                                    {% if recette.tempsCuisson is not null %}
+                                        <li class="list-inline-item">🔥 {{ recette.tempsCuisson }} min</li>
+                                    {% endif %}
+                                    <li class="list-inline-item">🎚 {{ recette.difficulte ?? '—' }}</li>
+                                    <li class="list-inline-item">👥 {{ recette.portions ?? 1 }}</li>
+                                </ul>
+
+                                {# Ingrédients (aperçu) #}
+                                {% set apercu = [] %}
+                                {% for ri in recette.recetteIngredients|slice(0,3) %}
+                                    {% if ri.ingredient %}
+                                        {% set apercu = apercu|merge([ri.ingredient.nom]) %}
+                                    {% endif %}
+                                {% endfor %}
+                                {% if apercu is not empty %}
+                                    <p class="mb-2"><strong>Ingrédients :</strong> {{ apercu|join(', ') }}{% if recette.recetteIngredients|length > 3 %}…{% endif %}</p>
+                                {% endif %}
+
+                                {# Nutrition (approx) #}
+                                {% set cal = 0 %}
+                                {% for ri in recette.recetteIngredients %}
+                                    {% set ing = ri.ingredient %}
+                                    {% if ing and (ing.unite in ['gramme','millilitre']) %}
+                                        {% set factor = (ri.quantite / 100) %}
+                                        {% set cal = cal + (ing.calories ?? 0) * factor %}
+                                    {% endif %}
+                                {% endfor %}
+                                <p class="small text-muted mb-2">🍽️ ≈ {{ cal|round(0, 'common') }} kcal / recette</p>
+
+                                {# Note moyenne #}
+                                {% set m = moyennes[recette.id]|default(null) %}
+                                {% if m is not null %}
+                                    <div aria-label="Note moyenne">
+                                        {% for i in 1..5 %}{{ i <= m ? '⭐' : '☆' }}{% endfor %}
+                                        <span class="small">({{ m|number_format(1, '.', ' ') }}/5)</span>
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="card-footer bg-transparent border-0 d-flex gap-2">
+                                <a class="btn btn-outline-success flex-grow-1"
+                                   href="{{ path('recette_show', ({ 'id': recette.id, 'from': 'liste' } | merge(F))) }}">
+                                    Voir la fiche
                                 </a>
                             </div>
-                        </div>
+                        </article>
                     </div>
                 {% endfor %}
             </div>
+        {% else %}
+            <div class="alert alert-info">Aucune recette ne correspond aux filtres.</div>
         {% endif %}
     </div>
+
+    {# Mode sombre minimal #}
+    <style>
+        :root.dark {
+            color-scheme: dark;
+            --bs-body-bg: #0f1115;
+            --bs-body-color: #eaeaea;
+        }
+        :root.dark .card { background-color: #181b21; }
+        :root.dark .form-control, :root.dark .btn { border-color: #2a2f3a; }
+    </style>
 {% endblock %}

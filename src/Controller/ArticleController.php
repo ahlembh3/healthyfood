@@ -8,112 +8,149 @@ use App\Form\ArticleType;
 use App\Form\CommentaireType;
 use App\Repository\ArticleRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\File\Exception\FileException;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\String\Slugger\SluggerInterface;
-use Symfony\Component\HttpFoundation\File\UploadedFile;
-use Knp\Component\Pager\PaginatorInterface;
 
 #[Route('/articles')]
 class ArticleController extends AbstractController
 {
-    // Page publique
-    #[Route('/liste', name: 'article_index', methods: ['GET'])]
+    /**
+     * Point d’entrée “articles” :
+     * - visiteur (non connecté)  -> liste publique
+     * - connecté non-admin       -> mes articles
+     * - admin                    -> gestion admin
+     */
+    #[Route('', name: 'article_index', methods: ['GET'])]
+    public function home(): Response
+    {
+        $user = $this->getUser();
+
+        if (!$user) {
+            return $this->redirectToRoute('article_liste'); // liste publique
+        }
+
+        if ($this->isGranted('ROLE_ADMIN')) {
+            return $this->redirectToRoute('article_liste_admin');
+        }
+
+        return $this->redirectToRoute('article_mes_articles');
+    }
+
+    // --- Liste publique (avec recherche + pagination) ---
+    #[Route('/liste', name: 'article_liste', methods: ['GET'])]
     public function index(
         Request $request,
         ArticleRepository $articleRepository,
         PaginatorInterface $paginator
     ): Response {
-        $search = $request->query->get('q');
-        $categorie = $request->query->get('categorie');
+        $search    = trim((string) $request->query->get('q', ''));
+        $categorie = trim((string) $request->query->get('categorie', ''));
+        $page      = max(1, (int)$request->query->get('page', 1));
 
-        $queryBuilder = $articleRepository->createQueryBuilder('a')
+        $qb = $articleRepository->createQueryBuilder('a')
             ->where('a.validation = true');
 
-        if ($search) {
-            $queryBuilder
-                ->andWhere('a.titre LIKE :search OR a.contenu LIKE :search')
-                ->setParameter('search', '%' . $search . '%');
+        if ($search !== '') {
+            $qb->andWhere('a.titre LIKE :search OR a.contenu LIKE :search')
+                ->setParameter('search', '%'.$search.'%');
         }
 
-        if ($categorie) {
-            $queryBuilder
-                ->andWhere('a.categorie = :categorie')
-                ->setParameter('categorie', $categorie);
+        if ($categorie !== '') {
+            $qb->andWhere('a.categorie = :cat')
+                ->setParameter('cat', $categorie);
         }
 
-        $queryBuilder->orderBy('a.date', 'DESC');
+        $qb->orderBy('a.date', 'DESC');
 
         $articles = $paginator->paginate(
-            $queryBuilder->getQuery(),
-            $request->query->getInt('page', 1),
+            $qb->getQuery(),
+            $page,
             6
         );
+
+        // mémoriser l’URL de retour (avec filtres & page)
+        $returnUrl = $this->generateUrl('article_liste', [
+            'q'         => $search,
+            'categorie' => $categorie,
+            'page'      => $page,
+        ]);
+        $request->getSession()->set('article_return_url', $returnUrl);
 
         $categoriesDisponibles = ['Bien-être', 'Nutrition', 'Plantes', 'Conseils', 'Autre'];
 
         return $this->render('article/articles_liste.html.twig', [
-            'articles' => $articles,
-            'search' => $search,
-            'categorie' => $categorie,
+            'articles'              => $articles,
+            'search'                => $search,
+            'categorie'             => $categorie,
             'categoriesDisponibles' => $categoriesDisponibles,
         ]);
     }
 
-    // Page d'administration
+    // --- Liste admin (gestion) ---
     #[Route('/admin/liste', name: 'article_liste_admin', methods: ['GET'])]
-    public function listeAdmin(ArticleRepository $articleRepository): Response
+    public function listeAdmin(ArticleRepository $articleRepository, Request $request): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
+        // mémoriser l’URL de retour pour l’admin
+        $request->getSession()->set('article_return_url', $this->generateUrl('article_liste_admin'));
 
         return $this->render('article/index.html.twig', [
             'articles' => $articleRepository->findAll(),
         ]);
     }
 
+    // --- Mes articles (utilisateur connecté) ---
     #[Route('/mes-articles', name: 'article_mes_articles', methods: ['GET'])]
-    public function mesArticles(ArticleRepository $articleRepository): Response
+    public function mesArticles(ArticleRepository $articleRepository, Request $request): Response
     {
         $user = $this->getUser();
-
         if (!$user) {
             throw $this->createAccessDeniedException('Vous devez être connecté pour voir vos articles.');
         }
 
-        $articles = $articleRepository->findBy(['utilisateur' => $user]);
+        $articles = $articleRepository->findBy(['utilisateur' => $user], ['date' => 'DESC']);
+
+        // mémoriser l’URL de retour perso
+        $request->getSession()->set('article_return_url', $this->generateUrl('article_mes_articles'));
 
         return $this->render('article/mes_articles.html.twig', [
             'articles' => $articles,
         ]);
     }
 
+    // --- Création ---
     #[Route('/new', name: 'article_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $em, SluggerInterface $slugger): Response
     {
         $this->denyAccessUnlessGranted('ROLE_USER');
 
         $article = new Article();
-        $form = $this->createForm(ArticleType::class, $article);
+        $form    = $this->createForm(ArticleType::class, $article);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
             $article->setDate(new \DateTimeImmutable());
             $article->setUtilisateur($this->getUser());
 
+            // Si contenu brut -> transforme en HTML simple
             $contenu = $article->getContenu();
             if (strip_tags($contenu) === $contenu) {
-                $contenu = nl2br(htmlspecialchars($contenu));
-                $article->setContenu($contenu);
+                $article->setContenu(nl2br(htmlspecialchars($contenu)));
             }
 
+            // Upload image
             $imageFile = $form->get('image')->getData();
-            if ($imageFile) {
+            if ($imageFile instanceof UploadedFile) {
                 $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
-                $safeFilename = $slugger->slug($originalFilename);
-                $newFilename = $safeFilename . '-' . uniqid() . '.' . $imageFile->guessExtension();
+                $safe             = $slugger->slug($originalFilename);
+                $newFilename      = $safe.'-'.uniqid().'.'.$imageFile->guessExtension();
 
                 try {
                     $imageFile->move($this->getParameter('articles_directory'), $newFilename);
@@ -128,7 +165,6 @@ class ArticleController extends AbstractController
 
             $route = $this->isGranted('ROLE_ADMIN') ? 'article_liste_admin' : 'article_mes_articles';
             return $this->redirectToRoute($route);
-
         }
 
         return $this->render('article/new.html.twig', [
@@ -136,13 +172,36 @@ class ArticleController extends AbstractController
         ]);
     }
 
-    #[Route('/article/{id}', name: 'article_show', methods: ['GET', 'POST'])]
+    // --- Affichage d’un article ---
+    #[Route('/{id}', name: 'article_show', methods: ['GET', 'POST'])]
     public function show(
         Request $request,
         Article $article,
         EntityManagerInterface $em,
         PaginatorInterface $paginator
     ): Response {
+        // déterminer l’URL de retour
+        $from     = (string)$request->query->get('from', '');
+        $session  = $request->getSession();
+        $backUrl  = null;
+
+        if ($from === 'liste') {
+            // on essaie d’utiliser ce qu’on a mémorisé (avec filtres)
+            $backUrl = $session->get('article_return_url');
+            if (!$backUrl) {
+                $backUrl = $this->generateUrl('article_liste');
+            }
+        } elseif ($from === 'mes') {
+            $backUrl = $this->generateUrl('article_mes_articles');
+        } elseif ($from === 'admin') {
+            $this->denyAccessUnlessGranted('ROLE_ADMIN');
+            $backUrl = $this->generateUrl('article_liste_admin');
+        } else {
+            // fallback : ce qui est en session, sinon liste publique
+            $backUrl = $session->get('article_return_url') ?? $this->generateUrl('article_liste');
+        }
+
+        // (reste de show : pagination commentaires, formulaire, etc.)
         $query = $em->getRepository(Commentaire::class)->createQueryBuilder('c')
             ->where('c.article = :article')
             ->andWhere('c.type = 2')
@@ -156,43 +215,47 @@ class ArticleController extends AbstractController
             5
         );
 
-        $form = null;
+        $formView = null;
 
         if ($this->getUser()) {
             $commentaire = new Commentaire();
             $commentaire->setUtilisateur($this->getUser());
+
             $form = $this->createForm(CommentaireType::class, $commentaire, [
                 'is_recette' => false,
-                'attr' => ['id' => 'form_commentaire'],
+                'attr'       => ['id' => 'form_commentaire'],
             ]);
-
             $form->handleRequest($request);
 
-            if ($form->isSubmitted()) {
-                $commentaire->setUtilisateur($this->getUser());
+            if ($form->isSubmitted() && $form->isValid()) {
+                $commentaire->setDate(new \DateTimeImmutable());
+                $commentaire->setType(2);
+                $commentaire->setArticle($article);
 
-                if ($form->isValid()) {
-                    $commentaire->setDate(new \DateTimeImmutable());
-                    $commentaire->setType(2);
-                    $commentaire->setArticle($article);
+                $em->persist($commentaire);
+                $em->flush();
 
-                    $em->persist($commentaire);
-                    $em->flush();
-
-                    $this->addFlash('success', 'Commentaire ajouté !');
-
-                    return $this->redirectToRoute('article_show', ['id' => $article->getId()]);
-                }
+                $this->addFlash('success', 'Commentaire ajouté !');
+                return $this->redirectToRoute('article_show', ['id' => $article->getId(), 'from' => $from]);
             }
+
+            $formView = $form->createView();
         }
 
+        // droits d’édition/suppression
+        $canEdit = $this->isGranted('ROLE_ADMIN')
+            || ($this->getUser() && $article->getUtilisateur() === $this->getUser() && !$article->isValidation());
+
         return $this->render('article/show.html.twig', [
-            'article' => $article,
-            'commentaires' => $commentaires,
-            'formCommentaire' => $form?->createView(),
+            'article'         => $article,
+            'commentaires'    => $commentaires,
+            'formCommentaire' => $formView,
+            'backUrl'         => $backUrl,
+            'canEdit'         => $canEdit,
         ]);
     }
 
+    // --- Édition ---
     #[Route('/{id}/edit', name: 'article_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, Article $article, EntityManagerInterface $em, SluggerInterface $slugger): Response
     {
@@ -212,15 +275,14 @@ class ArticleController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $contenu = $article->getContenu();
             if (strip_tags($contenu) === $contenu) {
-                $contenu = nl2br(htmlspecialchars($contenu));
-                $article->setContenu($contenu);
+                $article->setContenu(nl2br(htmlspecialchars($contenu)));
             }
 
             $imageFile = $form->get('image')->getData();
             if ($imageFile instanceof UploadedFile) {
                 $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
-                $safeFilename = $slugger->slug($originalFilename);
-                $newFilename = $safeFilename . '-' . uniqid() . '.' . $imageFile->guessExtension();
+                $safe             = $slugger->slug($originalFilename);
+                $newFilename      = $safe.'-'.uniqid().'.'.$imageFile->guessExtension();
 
                 try {
                     $imageFile->move($this->getParameter('articles_directory'), $newFilename);
@@ -234,16 +296,16 @@ class ArticleController extends AbstractController
 
             $route = $this->isGranted('ROLE_ADMIN') ? 'article_liste_admin' : 'article_mes_articles';
             return $this->redirectToRoute($route);
-
         }
 
         return $this->render('article/edit.html.twig', [
-            'form' => $form->createView(),
+            'form'    => $form->createView(),
             'article' => $article,
         ]);
     }
 
-    #[Route('/{id}', name: 'article_delete', methods: ['POST'])]
+    // --- Suppression ---
+    #[Route('/{id}/delete', name: 'article_delete', methods: ['POST'])]
     public function delete(Request $request, Article $article, EntityManagerInterface $em): Response
     {
         if ($article->isValidation() && !$this->isGranted('ROLE_ADMIN')) {
@@ -254,7 +316,7 @@ class ArticleController extends AbstractController
             throw $this->createAccessDeniedException('Vous ne pouvez supprimer que vos propres articles non validés.');
         }
 
-        if ($this->isCsrfTokenValid('delete' . $article->getId(), $request->request->get('_token'))) {
+        if ($this->isCsrfTokenValid('delete'.$article->getId(), $request->request->get('_token'))) {
             $em->remove($article);
             $em->flush();
             $this->addFlash('success', 'Article supprimé avec succès.');
@@ -262,18 +324,17 @@ class ArticleController extends AbstractController
 
         $route = $this->isGranted('ROLE_ADMIN') ? 'article_liste_admin' : 'article_mes_articles';
         return $this->redirectToRoute($route);
-
     }
 
+    // --- Validation (admin) ---
     #[Route('/{id}/valider', name: 'article_valider', methods: ['POST'])]
     public function valider(Request $request, Article $article, EntityManagerInterface $em): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
-        if ($this->isCsrfTokenValid('valider' . $article->getId(), $request->request->get('_token'))) {
+        if ($this->isCsrfTokenValid('valider'.$article->getId(), $request->request->get('_token'))) {
             $article->setValidation(true);
             $em->flush();
-
             $this->addFlash('success', 'L’article a été validé avec succès.');
         }
 

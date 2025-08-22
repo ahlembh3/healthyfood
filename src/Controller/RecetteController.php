@@ -7,6 +7,7 @@ use App\Entity\RecetteIngredient;
 use App\Form\RecetteForm;
 use App\Form\CommentaireType;
 use App\Repository\RecetteRepository;
+use App\Repository\IngredientRepository;
 use App\Repository\CommentaireRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -22,22 +23,112 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 #[Route('/recettes')]
 final class RecetteController extends AbstractController
 {
+    /**
+     * Point d’entrée “recettes” :
+     * - visiteur (non connecté)  -> liste publique
+     * - connecté non-admin       -> mes recettes
+     * - admin                    -> gestion admin
+     */
     #[Route('/', name: 'recette_index', methods: ['GET'])]
-    public function index(
-        RecetteRepository $recetteRepository,
-        CommentaireRepository $commentaireRepository
-    ): Response {
-        $recettes = $recetteRepository->findBy(['validation' => true]);
-        $moyennes = $commentaireRepository->getMoyenneNoteParRecette();
+    public function index(): Response
+    {
+        $user = $this->getUser();
 
+        if (!$user) {
+            return $this->redirectToRoute('recette_liste');
+        }
+
+        if (!in_array('ROLE_ADMIN', $user->getRoles(), true)) {
+            return $this->redirectToRoute('recette_mes_recettes');
+        }
+
+        return $this->redirectToRoute('recette_liste_admin');
+    }
+
+    #[Route('/liste', name: 'recette_liste', methods: ['GET'])]
+    public function listePublique(
+        Request $request,
+        RecetteRepository $recetteRepository,
+        CommentaireRepository $commentaireRepository,
+        IngredientRepository $ingredientRepo,
+        EntityManagerInterface $em
+    ): Response {
+        $q        = trim((string)$request->query->get('q', ''));
+        $ingName  = trim((string)$request->query->get('ingredient', ''));
+        $type     = trim((string)$request->query->get('type', ''));   // ✅ manquant
+        $saison   = trim((string)$request->query->get('saison', ''));
+        $bienfait = trim((string)$request->query->get('bienfait', ''));
+        $calMax   = $request->query->get('calMax');
+
+        //  types distincts pour le <select>
+        $types = $ingredientRepo->findDistinctTypes();
+
+        $qb = $em->createQueryBuilder()
+            ->select('DISTINCT r')
+            ->from(\App\Entity\Recette::class, 'r')
+            ->leftJoin('r.recetteIngredients', 'ri')
+            ->leftJoin('ri.ingredient', 'ing')
+            // Astuce: si tu veux optimiser, ne jointe g/bf que si $bienfait != ''
+            ->leftJoin('ing.genes', 'g')
+            ->leftJoin('g.bienfaits', 'bf')
+            ->where('r.validation = :valide')
+            ->setParameter('valide', true);
+
+        if ($q !== '') {
+            $qb->andWhere('(LOWER(r.titre) LIKE :q OR LOWER(r.description) LIKE :q)')
+                ->setParameter('q', '%'.mb_strtolower($q).'%');
+        }
+        if ($ingName !== '') {
+            $qb->andWhere('LOWER(ing.nom) LIKE :ingName')
+                ->setParameter('ingName', '%'.mb_strtolower($ingName).'%');
+        }
+        if ($type !== '') {
+            $qb->andWhere('LOWER(ing.type) = :type')
+                ->setParameter('type', mb_strtolower($type));
+        }
+        if ($saison !== '') {
+            $qb->andWhere('LOWER(ing.saisonnalite) LIKE :saison')
+                ->setParameter('saison', '%'.mb_strtolower($saison).'%');
+        }
+        if ($bienfait !== '') {
+            $qb->andWhere('LOWER(bf.nom) LIKE :bf')
+                ->setParameter('bf', '%'.mb_strtolower($bienfait).'%');
+        }
+
+        $recettes = ($calMax !== null && $calMax !== '')
+            ? array_filter($qb->getQuery()->getResult(), function(\App\Entity\Recette $r) use ($calMax) {
+                $total = 0.0;
+                foreach ($r->getRecetteIngredients() as $ri) {
+                    $ing = $ri->getIngredient();
+                    if (!$ing) continue;
+                    $u = $ing->getUnite();
+                    if (in_array($u, ['gramme','millilitre'], true)) {
+                        $factor = ($ri->getQuantite() ?? 0) / 100.0;
+                        $total += (float)($ing->getCalories() ?? 0) * $factor;
+                    }
+                }
+                return $total <= (float)$calMax;
+            })
+            : $qb->getQuery()->getResult();
+
+        $moyennes = $commentaireRepository->getMoyenneNoteParRecette();
         $moyennesParRecette = [];
         foreach ($moyennes as $item) {
-            $moyennesParRecette[$item['recette_id']] = round($item['moyenne'], 2);
+            $moyennesParRecette[(int)$item['recette_id']] = round((float)$item['moyenne'], 2);
         }
 
         return $this->render('recette/recettes_liste.html.twig', [
             'recettes' => $recettes,
             'moyennes' => $moyennesParRecette,
+            'filters'  => [
+                'q' => $q,
+                'ingredient' => $ingName,
+                'type' => $type,
+                'saison' => $saison,
+                'bienfait' => $bienfait,
+                'calMax' => $calMax,
+            ],
+            'types'    => $types,
         ]);
     }
 
@@ -80,6 +171,7 @@ final class RecetteController extends AbstractController
     public function new(Request $request, EntityManagerInterface $em, SluggerInterface $slugger): Response
     {
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
+
 
         $recette = new Recette();
 
@@ -140,6 +232,52 @@ final class RecetteController extends AbstractController
         CommentaireRepository $commentaireRepository,
         EntityManagerInterface $em
     ): Response {
+
+        $from = $request->query->get('from'); // 'liste' | 'mes' | 'admin' | null
+
+// Récupérer les filtres (s'ils ont été propagés depuis la liste publique)
+        $filterKeys = ['q','ingredient','type','saison','bienfait','calMax'];
+        $filters = [];
+        foreach ($filterKeys as $k) {
+            $v = $request->query->get($k);
+            if ($v !== null && $v !== '') {
+                $filters[$k] = $v;
+            }
+        }
+
+// Règles de retour
+        $backRoute  = 'recette_liste'; // défaut
+        $backParams = $filters;
+
+        $isAdmin = $this->isGranted('ROLE_ADMIN');
+        $user    = $this->getUser();
+
+        if ($isAdmin) {
+            if ($from === 'liste') {
+                $backRoute = 'recette_liste';
+                $backParams = $filters;
+            } else {
+                $backRoute = 'recette_liste_admin'; // page de gestion admin
+                $backParams = [];
+            }
+        } elseif ($user) {
+            if ($from === 'mes') {
+                $backRoute = 'recette_mes_recettes';
+                $backParams = [];
+            } elseif ($from === 'liste') {
+                $backRoute = 'recette_liste';
+                $backParams = $filters;
+            } else {
+                // connecté mais venu d'ailleurs → retour vers ses recettes
+                $backRoute = 'recette_mes_recettes';
+                $backParams = [];
+            }
+        } else {
+            // anonyme → retour liste publique (avec filtres conservés)
+            $backRoute = 'recette_liste';
+            $backParams = $filters;
+        }
+
         // --- Formulaire commentaire ---
         $commentaire = new Commentaire();
         $form = $this->createForm(CommentaireType::class, $commentaire, [
@@ -211,6 +349,8 @@ final class RecetteController extends AbstractController
             'moyenne'           => $moyenne,
             'tisanesSuggerees'  => $tisanesSuggerees,
             'tisanesReasons'    => $tisanesReasons, // optionnel : pour afficher "pourquoi cette tisane"
+            'backRoute'        => $backRoute,
+            'backParams'       => $backParams,
         ]);
     }
 

@@ -37,7 +37,18 @@
                                 <h5 class="card-title">{{ article.titre }}</h5>
                                 <p class="card-text small text-muted mb-1">🗂️ Catégorie : {{ article.categorie ?? 'Non précisée' }}</p>
                                 <p class="card-text">{{ article.contenu|striptags|slice(0, 120) ~ '…' }}</p>
-                                <a href="{{ path('article_show', {'id': article.id}) }}" class="btn btn-sm btn-primary mt-auto">Lire l’article</a>
+                                <a
+                                        href="{{ path('article_show', {
+                                            id: article.id,
+                                            from: 'liste',
+                                            q: search,
+                                            categorie: categorie,
+                                            page: app.request.query.get('page')|default(1)
+                                        }) }}"
+                                        class="btn btn-sm btn-primary mt-auto"
+                                >
+                                    Lire l’article
+                                </a>
                             </div>
                             <div class="card-footer text-muted small">
                                 🕒 Publié le {{ article.date|date('d/m/Y') }}

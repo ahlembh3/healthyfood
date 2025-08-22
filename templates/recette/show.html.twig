@@ -247,12 +247,18 @@
         {% endif %}
 
         <div class="d-flex gap-2 mt-4">
-            <a href="{% if is_granted('ROLE_ADMIN') %}{{ path('recette_liste_admin') }}{% else %}{{ path('recette_mes_recettes') }}{% endif %}" class="btn btn-secondary">
+            <a href="{{ path(backRoute, backParams) }}" class="btn btn-secondary">
                 Retour à la liste
             </a>
-            <a href="{{ path('recette_edit', {'id': recette.id}) }}" class="btn btn-primary">Modifier</a>
-            {{ include('recette/_delete_form.html.twig') }}
-        </div>
+            {% set isOwner = app.user and recette.utilisateur and app.user.id == recette.utilisateur.id %}
+            {% set canManage = is_granted('ROLE_ADMIN') or (isOwner and not recette.validation) %}
+
+            {% if canManage %}
+                <a href="{{ path('recette_edit', {'id': recette.id}) }}" class="btn btn-primary">Modifier</a>
+                {{ include('recette/_delete_form.html.twig') }}
+            {% endif %}
+        </div> {# ferme le bloc boutons #}
+
 
     </div>
 {% endblock %}

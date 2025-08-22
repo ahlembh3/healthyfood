@@ -35,7 +35,10 @@
                                     {% endif %}
                                 </p>
                                 <div class="mt-auto">
-                                    <a href="{{ path('article_show', {id: article.id}) }}" class="btn btn-outline-primary btn-sm">Voir</a>
+                                    <a href="{{ path('article_show', { id: article.id, from: 'mes' }) }}"
+                                       class="btn btn-outline-primary btn-sm">
+                                        Voir
+                                    </a>
                                     {% if not article.validation %}
                                         <a href="{{ path('article_edit', {id: article.id}) }}" class="btn btn-outline-secondary btn-sm">Modifier</a>
                                     {% endif %}

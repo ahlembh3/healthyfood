@@ -97,17 +97,15 @@
     {% endif %}
 
     <div class="d-flex gap-2 mt-4">
-        <a href="{% if is_granted('ROLE_ADMIN') %}
-                    {{ path('article_liste_admin') }}
-                 {% else %}
-                    {{ path('article_mes_articles') }}
-                 {% endif %}" class="btn btn-secondary">
+        <a href="{{ backUrl ?? path('article_liste') }}" class="btn btn-secondary">
             ← Retour à la liste
         </a>
 
-        {% if is_granted('ROLE_ADMIN') or (article.utilisateur == app.user and not article.validation) %}
-            <a href="{{ path('article_edit', {'id': article.id}) }}" class="btn btn-primary btn-sm">Modifier</a>
+        {% if canEdit %}
+            <a href="{{ path('article_edit', {'id': article.id, 'from': app.request.get('from')}) }}"
+               class="btn btn-primary btn-sm">Modifier</a>
             {{ include('article/_delete_form.html.twig') }}
         {% endif %}
     </div>
+
 {% endblock %}

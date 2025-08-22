@@ -6,6 +6,7 @@
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>{% block title %}Accueil{% endblock %} - Santé & Nature</title>
+
     {% block stylesheets %}
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css"
               rel="stylesheet"
@@ -14,15 +15,52 @@
         <link rel="stylesheet" href="{{ asset('css/form_recette.css') }}">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+        {# Pas besoin de lier app.css ici : il est importé par assets/app.js via importmap #}
     {% endblock %}
 </head>
 <body>
+
+{# Lien d’évitement pour accéder directement au contenu #}
+<a href="#main" class="skip-link">Aller au contenu</a>
+
+{# Barre d’accessibilité globale #}
+{# Panneau d’accessibilité discret (FAB) #}
+<div class="a11y-fab" data-a11y>
+    <button id="a11yFab"
+            class="btn btn-primary rounded-circle a11y-fab-btn"
+            type="button"
+            aria-expanded="false"
+            aria-controls="a11yPanel"
+            aria-label="Options d’accessibilité">
+        <i class="bi bi-universal-access"></i>
+    </button>
+
+    <div id="a11yPanel" class="a11y-panel shadow" hidden>
+        <div class="btn-group w-100 mb-2" role="group" aria-label="Taille du texte">
+            <button id="fontUp"    class="btn btn-outline-secondary btn-sm" type="button">A+</button>
+            <button id="fontReset" class="btn btn-outline-secondary btn-sm" type="button">A</button>
+        </div>
+
+        <button id="toggleDark" class="btn btn-outline-secondary btn-sm w-100 mb-2" type="button">
+            🌓 Mode sombre
+        </button>
+
+        <button id="readBtn"
+                class="btn btn-outline-secondary btn-sm w-100"
+                type="button"
+                aria-pressed="false">
+            🔊 Lecture
+        </button>
+    </div>
+</div>
+
+
 <!-- Menu principal -->
 {% include 'partials/_header.html.twig' %}
 
 <!-- Contenu du site -->
 {% block body %}
-    <main>
+    <main id="main" tabindex="-1">
         <!-- Titre de la page -->
         <div class="p-5 mx-auto text-center">
             <h1 class="display-4">{% block page_title %}Bienvenue sur healthyfood{% endblock %}</h1>
@@ -38,8 +76,10 @@
 <!-- Pied de page -->
 {% include 'partials/_footer.html.twig' %}
 
-<!-- Javascripts -->
 {% block javascripts %}
+    {#  Charge assets/app.js (qui importe app.css) via AssetMapper #}
+    {{ importmap('app') }}
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js"
             integrity="sha384-k6d4wzSIapyDyv1kpU366/PK5hCdSbCRGRCMv+eplOQJWyd1fbcAu9OCUj5zNLiq"
             crossorigin="anonymous"></script>
@@ -49,7 +89,7 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            // Configuration de TinyMCE 4.x
+            // Configuration TinyMCE (inchangée)
             tinymce.init({
                 selector: '.tinymce-editor',
                 height: 300,
@@ -59,16 +99,13 @@
                     'insertdatetime media table contextmenu paste'
                 ],
                 toolbar: 'undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image',
-                menubar: false, // Cache le menu pour une interface plus simple
-                statusbar: false, // Cache la barre de status
+                menubar: false,
+                statusbar: false,
                 setup: function (editor) {
-                    editor.on('change', function () {
-                        editor.save();
-                    });
+                    editor.on('change', function () { editor.save(); });
                 }
             });
 
-            // Activer TinyMCE sur #article_contenu si présent
             const articleEditor = document.getElementById('article_contenu');
             if (articleEditor && !articleEditor.classList.contains('tinymce-editor')) {
                 articleEditor.classList.add('tinymce-editor');
