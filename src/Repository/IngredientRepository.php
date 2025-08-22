@@ -21,6 +21,16 @@ class IngredientRepository extends ServiceEntityRepository
         parent::__construct($registry, Ingredient::class);
     }
 
-    // Ajoute ici tes méthodes personnalisées si besoin
+    public function findDistinctTypes(): array
+    {
+        $rows = $this->createQueryBuilder('i')
+            ->select('DISTINCT i.type AS type')
+            ->andWhere('i.type IS NOT NULL')
+            ->andWhere('i.type <> :empty')->setParameter('empty', '')
+            ->orderBy('i.type', 'ASC')
+            ->getQuery()->getScalarResult();
+
+        return array_map(fn($r) => trim((string)$r['type']), $rows);
+    }
     
 }

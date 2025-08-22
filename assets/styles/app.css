@@ -1,3 +1,81 @@
-body {
-    background-color: skyblue;
+/* ---------- Palette & base ---------- */
+:root{
+    --c-vert:#5c9a74;
+    --c-vert-dark:#2f6148;
+    --c-beige:#f6f3ee;
+    --c-blanc:#ffffff;
+    --c-texte:#1b1f23;
+    --c-gris:#6b7280;
+    --shadow: 0 8px 20px rgba(0,0,0,.06);
 }
+
+html, body { height: 100%; }
+body{
+    background: var(--c-beige);
+    color: var(--c-texte);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Mode sombre */
+:root.dark { color-scheme: dark; }
+:root.dark body { background:#0f1115; color:#eaeaea; }
+
+/* Cards / boutons (léger re-styling pour coller à l’identité) */
+.card{ border:0; box-shadow: var(--shadow); background: var(--c-blanc); }
+:root.dark .card{ background:#181b21; }
+.btn-success{ background:var(--c-vert); border-color:var(--c-vert); }
+.btn-success:hover{ background:var(--c-vert-dark); border-color:var(--c-vert-dark); }
+.btn-outline-primary{ border-color:var(--c-vert); color:var(--c-vert-dark); }
+.btn-outline-primary:hover{ background:var(--c-vert); color:var(--c-blanc); }
+
+/* Liens et focus visibles */
+a { text-decoration: none; }
+a:hover { text-decoration: underline; }
+:focus-visible{ outline: 3px solid #4c9ffe; outline-offset: 2px; }
+
+/* Skip link (aller au contenu) */
+.skip-link{
+    position:absolute; left:-9999px; top:auto; width:1px; height:1px; overflow:hidden;
+}
+.skip-link:focus{
+    left:1rem; top:1rem; width:auto; height:auto; padding:.5rem .75rem;
+    background:#000; color:#fff; z-index:10000; border-radius:.5rem;
+}
+
+/* Toolbar accessibilité */
+.a11y-toolbar{
+    position:fixed; right:1rem; bottom:1rem; z-index:9999;
+    display:flex; gap:.5rem; background:rgba(255,255,255,.9);
+    backdrop-filter: blur(6px);
+    border:1px solid rgba(0,0,0,.08);
+    border-radius:.75rem; padding:.5rem;
+}
+:root.dark .a11y-toolbar{
+    background:rgba(24,27,33,.9);
+    border-color:#2a2f3a;
+}
+
+/* Images responsive */
+img{ max-width:100%; height:auto; }
+.cover { object-fit: cover; object-position:center; }
+
+/* Transitions douces (réduites si l’OS demande moins de mouvement) */
+*{ transition: color .2s ease, background-color .2s ease, border-color .2s ease; }
+:root.reduce-motion *{ transition: none !important; }
+
+/* ---------- Responsive helpers ---------- */
+@media (max-width: 991.98px){
+    .a11y-toolbar{ right:.75rem; bottom:.75rem; }
+}
+@media (max-width: 575.98px){
+    .a11y-toolbar{ right:.5rem; bottom:.5rem; padding:.4rem; }
+    .a11y-toolbar .btn{ padding:.25rem .5rem; font-size:.85rem; }
+}
+
+/* Utilitaires (si besoin) */
+.shadow-soft{ box-shadow: var(--shadow); }
+.text-muted-2{ color: var(--c-gris); }
+.bg-beige{ background: var(--c-beige); }
+.text-vert{ color: var(--c-vert-dark); }
+.border-soft{ border:1px solid rgba(0,0,0,.06); }

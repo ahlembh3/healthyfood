@@ -1,17 +1,29 @@
 {% extends 'base.html.twig' %}
-
-{% block title %}Bienvenue sur HealthyFood{% endblock %}
+{% block title %}Accueil{% endblock %}
 
 {% block body %}
-    <div class="hero-banner text-center p-5 bg-light rounded shadow">
-        <h1 class="display-4 text-success">HealthyFood 🌿</h1>
-        <p class="lead">Découvrez une vie plus saine, une tisane à la fois 🍵</p>
+    {# --- HERO --- #}
+    <section class="hero-plant position-relative overflow-hidden mb-4" aria-label="Découvrir une vie plus saine">
+        <div class="hero-bg" style="background-image:url('{{ asset('images/img_2.png') }}')"></div>
+        <div class="container position-relative">
+            <div class="row align-items-center" style="min-height: clamp(260px, 40vw, 420px);">
+                <div class="col-lg-7 py-5">
+                    <h1 class="display-5 fw-bold lh-1 hero-title mb-3">
+                        Découvrez <br> une vie <span class="d-inline-block">plus saine</span><br>
+                        <span class="text-vert">une tisane</span> à la fois
+                    </h1>
+                    <div class="d-flex flex-wrap gap-2">
+                        <a class="btn btn-primary btn-lg" href="{{ path('recette_liste') }}">Voir les recettes</a>
+                        <a class="btn btn-outline-primary btn-lg" href="{{ path('tisane_index') }}">Explorer les tisanes</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
 
 
-    </div>
-
-    <div class="container text-center mt-5">
+<div class="container text-center mt-5">
         <h2 class="mb-4">Explorez le monde des plantes et de la nutrition</h2>
         <div class="row justify-content-center">
             <div class="col-md-3 m-3 p-3 border rounded bg-white shadow-sm">

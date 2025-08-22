@@ -35,7 +35,10 @@
                             </div>
 
                             <div class="card-footer d-flex justify-content-between align-items-center">
-                                <a href="{{ path('recette_show', { id: recette.id }) }}" class="btn btn-sm btn-outline-primary">Voir</a>
+                                <a class="btn btn-outline-success"
+                                   href="{{ path('recette_show', {'id': recette.id, 'from': 'mes'}) }}">
+                                    Voir la recette
+                                </a>
 
                                 {% if not recette.validation %}
                                     <div class="btn-group">
