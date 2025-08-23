@@ -27,12 +27,13 @@ class ArticleController extends AbstractController
      * - admin                    -> gestion admin
      */
     #[Route('', name: 'article_index', methods: ['GET'])]
-    public function home(): Response
+    public function home(Request $request): Response
     {
         $user = $this->getUser();
 
         if (!$user) {
-            return $this->redirectToRoute('article_liste'); // liste publique
+            // préserve ?q=...&categorie=...
+            return $this->redirectToRoute('article_liste', $request->query->all());
         }
 
         if ($this->isGranted('ROLE_ADMIN')) {
@@ -42,7 +43,7 @@ class ArticleController extends AbstractController
         return $this->redirectToRoute('article_mes_articles');
     }
 
-    // --- Liste publique (avec recherche + pagination) ---
+    // --- Liste publique (recherche + filtre + pagination) ---
     #[Route('/liste', name: 'article_liste', methods: ['GET'])]
     public function index(
         Request $request,
@@ -51,14 +52,14 @@ class ArticleController extends AbstractController
     ): Response {
         $search    = trim((string) $request->query->get('q', ''));
         $categorie = trim((string) $request->query->get('categorie', ''));
-        $page      = max(1, (int)$request->query->get('page', 1));
+        $page      = max(1, (int) $request->query->get('page', 1));
 
         $qb = $articleRepository->createQueryBuilder('a')
             ->where('a.validation = true');
 
         if ($search !== '') {
-            $qb->andWhere('a.titre LIKE :search OR a.contenu LIKE :search')
-                ->setParameter('search', '%'.$search.'%');
+            $qb->andWhere('LOWER(a.titre) LIKE :search OR LOWER(a.contenu) LIKE :search')
+                ->setParameter('search', '%'.mb_strtolower($search).'%');
         }
 
         if ($categorie !== '') {
@@ -74,6 +75,18 @@ class ArticleController extends AbstractController
             6
         );
 
+        // Catégories disponibles (dynamiques)
+        $categoriesDisponibles = array_column(
+            $articleRepository->createQueryBuilder('a2')
+                ->select('DISTINCT a2.categorie AS categorie')
+                ->where('a2.validation = true')
+                ->andWhere('a2.categorie IS NOT NULL AND a2.categorie <> \'\'')
+                ->orderBy('a2.categorie', 'ASC')
+                ->getQuery()
+                ->getScalarResult(),
+            'categorie'
+        );
+
         // mémoriser l’URL de retour (avec filtres & page)
         $returnUrl = $this->generateUrl('article_liste', [
             'q'         => $search,
@@ -81,8 +94,6 @@ class ArticleController extends AbstractController
             'page'      => $page,
         ]);
         $request->getSession()->set('article_return_url', $returnUrl);
-
-        $categoriesDisponibles = ['Bien-être', 'Nutrition', 'Plantes', 'Conseils', 'Autre'];
 
         return $this->render('article/articles_liste.html.twig', [
             'articles'              => $articles,
@@ -139,7 +150,7 @@ class ArticleController extends AbstractController
             $article->setDate(new \DateTimeImmutable());
             $article->setUtilisateur($this->getUser());
 
-            // Si contenu brut -> transforme en HTML simple
+            // Si contenu brut -> transforme en HTML simple (baseline)
             $contenu = $article->getContenu();
             if (strip_tags($contenu) === $contenu) {
                 $article->setContenu(nl2br(htmlspecialchars($contenu)));
@@ -181,27 +192,22 @@ class ArticleController extends AbstractController
         PaginatorInterface $paginator
     ): Response {
         // déterminer l’URL de retour
-        $from     = (string)$request->query->get('from', '');
+        $from     = (string) $request->query->get('from', '');
         $session  = $request->getSession();
         $backUrl  = null;
 
         if ($from === 'liste') {
-            // on essaie d’utiliser ce qu’on a mémorisé (avec filtres)
-            $backUrl = $session->get('article_return_url');
-            if (!$backUrl) {
-                $backUrl = $this->generateUrl('article_liste');
-            }
+            $backUrl = $session->get('article_return_url') ?: $this->generateUrl('article_liste');
         } elseif ($from === 'mes') {
             $backUrl = $this->generateUrl('article_mes_articles');
         } elseif ($from === 'admin') {
             $this->denyAccessUnlessGranted('ROLE_ADMIN');
             $backUrl = $this->generateUrl('article_liste_admin');
         } else {
-            // fallback : ce qui est en session, sinon liste publique
             $backUrl = $session->get('article_return_url') ?? $this->generateUrl('article_liste');
         }
 
-        // (reste de show : pagination commentaires, formulaire, etc.)
+        // Pagination commentaires (type = 2 pour Article)
         $query = $em->getRepository(Commentaire::class)->createQueryBuilder('c')
             ->where('c.article = :article')
             ->andWhere('c.type = 2')
@@ -215,8 +221,8 @@ class ArticleController extends AbstractController
             5
         );
 
+        // Formulaire commentaire si connecté
         $formView = null;
-
         if ($this->getUser()) {
             $commentaire = new Commentaire();
             $commentaire->setUtilisateur($this->getUser());
@@ -338,6 +344,6 @@ class ArticleController extends AbstractController
             $this->addFlash('success', 'L’article a été validé avec succès.');
         }
 
-        return $this->redirectToRoute('article_show', ['id' => $article->getId()]);
+        return $this->redirectToRoute('article_show', ['id' => $article->getId(), 'from' => 'admin']);
     }
 }

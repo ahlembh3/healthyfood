@@ -1,14 +1,75 @@
-<h2>Résultats pour "{{ query }}"</h2>
+{# templates/plante/search.html.twig #}
+{% extends 'base.html.twig' %}
 
-<form method="get" action="{{ path('plante_search') }}">
-    <input type="text" name="q" value="{{ query }}" placeholder="Rechercher une plante...">
-    <button type="submit">Chercher</button>
-</form>
+{% block title %}Recherche de plantes{% endblock %}
+{% block page_title %}Recherche de plantes{% endblock %}
 
-<ul>
-    {% for plante in plantes %}
-        <li><a href="{{ path('plante_show', {'id': plante.id}) }}">{{ plante.nomCommun }}</a></li>
+{% block content %}
+    <section aria-labelledby="recherche-plantes" class="mb-4">
+        <h2 id="recherche-plantes" class="visually-hidden">Formulaire de recherche</h2>
+
+        <form method="get" action="{{ path('plante_search') }}" role="search" aria-label="Rechercher une plante">
+            <div class="input-group">
+                <label for="q" class="visually-hidden">Rechercher une plante</label>
+                <input
+                        type="text"
+                        id="q"
+                        name="q"
+                        class="form-control"
+                        placeholder="Rechercher une plante…"
+                        value="{{ query|default(app.request.query.get('q')) }}"
+                        autocomplete="off"
+                >
+                <button class="btn btn-primary" type="submit">Chercher</button>
+            </div>
+            {% if query is not empty %}
+                <small class="text-muted d-inline-block mt-2">
+                    Résultats pour « {{ query }} »
+                    · <a class="link-secondary" href="{{ path('plante_index') }}">Afficher toutes les plantes</a>
+                </small>
+            {% endif %}
+        </form>
+    </section>
+
+    {% if plantes is empty %}
+        <div class="alert alert-info">Aucune plante trouvée.</div>
     {% else %}
-        <li>Aucune plante trouvée.</li>
-    {% endfor %}
-</ul>
+        <section aria-labelledby="liste-plantes">
+            <h2 id="liste-plantes" class="visually-hidden">Liste des résultats</h2>
+            <div class="row g-4">
+                {% for plante in plantes %}
+                    <div class="col-sm-6 col-md-4">
+                        <article class="card h-100 shadow-sm border-0">
+                            <div class="ratio ratio-4x3 bg-light">
+                                {% set img = plante.image|default('')|trim %}
+                                {% set src = img ? asset('uploads/plantes/' ~ img) : asset('images/placeholder-plant.jpg') %}
+                                <img
+                                        src="{{ src }}"
+                                        alt="{{ img ? 'Photo de ' ~ plante.nomCommun : 'Image générique de plante' }}"
+                                        class="rounded-top w-100 h-100"
+                                        style="object-fit: cover;"
+                                        loading="lazy"
+                                >
+                            </div>
+                            <div class="card-body">
+                                <h3 class="h5 card-title mb-2">{{ plante.nomCommun }}</h3>
+                                {% if plante.description %}
+                                    <p class="card-text text-muted mb-3">
+                                        {{ plante.description|striptags|u.truncate(120, '…') }}
+                                    </p>
+                                {% endif %}
+                                <a
+                                        href="{{ path('plante_show', { id: plante.id }) }}"
+                                        class="btn btn-outline-primary"
+                                        aria-label="Voir la fiche de {{ plante.nomCommun }}"
+                                >
+                                    En savoir plus
+                                </a>
+                            </div>
+                        </article>
+                    </div>
+                {% endfor %}
+            </div>
+        </section>
+    {% endif %}
+{% endblock %}

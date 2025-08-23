@@ -1,13 +1,11 @@
 <form method="post"
-      action="{{ path('recette_delete', {'id': recette.id}) }}"
-      onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette recette ?');"
-      class="d-inline">
-
+      action="{{ path('recette_delete', { id: recette.id }) }}"
+      class="d-inline"
+      onsubmit="if (confirm('Supprimer « {{ recette.titre|e('js') }} » ? Cette action est irréversible.')) { this.querySelector('button[type=submit]').disabled = true; return true; } return false;">
     <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ recette.id) }}">
-
     <button type="submit"
-            class="btn btn-sm btn-danger"
-            aria-label="Supprimer la recette">
+            class="btn btn-sm btn-outline-danger"
+            aria-label="Supprimer la recette {{ recette.titre }}">
         🗑 Supprimer
     </button>
 </form>

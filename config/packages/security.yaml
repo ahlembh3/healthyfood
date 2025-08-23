@@ -27,37 +27,42 @@ security:
                 target: app_home # ou "/" si tu n’as pas encore créé la route "app_home"
 
     access_control:
-        # Accès PUBLIC
-        - { path: ^/utilisateurs/inscription, roles: PUBLIC_ACCESS }
-        - { path: ^/login, roles: PUBLIC_ACCESS }
-        - { path: ^/logout, roles: PUBLIC_ACCESS }
-        - { path: ^/inscription, roles: PUBLIC_ACCESS }
-        - { path: ^/api, roles: PUBLIC_ACCESS }
+        # --- Public (lecture seule + auth pages) ---
+        - { path: ^/login$, roles: PUBLIC_ACCESS }
+        - { path: ^/logout$, roles: PUBLIC_ACCESS }
+        - { path: ^/inscription$, roles: PUBLIC_ACCESS }
 
-        #  Accès ADMIN uniquement
-        - { path: ^/admin, roles: ROLE_ADMIN }
-        - { path: ^/utilisateurs$, roles: ROLE_ADMIN } # liste des utilisateurs
-        - { path: ^/commentaires/signales, roles: ROLE_ADMIN }
-        - { path: ^/commentaires/designaler, roles: ROLE_ADMIN }
-        - { path: ^/articles/\d+/valider, roles: ROLE_ADMIN }
-        - { path: ^/recettes/\d+/valider, roles: ROLE_ADMIN }
-        - { path: ^/recettes/admin, roles: ROLE_ADMIN }
-
-        #  Utilisateur connecté (ROLE_USER ou ROLE_ADMIN)
-        - { path: ^/dashboard, roles: ROLE_USER }
-        - { path: ^/recettes/new, roles: [ ROLE_USER, ROLE_ADMIN ] }
-        - { path: ^/recettes/\d+/edit, roles: [ ROLE_USER, ROLE_ADMIN ] }
-        - { path: ^/articles/new, roles: [ ROLE_USER, ROLE_ADMIN ] }
-        - { path: ^/articles/\d+/edit, roles: [ ROLE_USER, ROLE_ADMIN ] }
-        - { path: ^/commentaires, roles: [ ROLE_USER, ROLE_ADMIN ] }
-
-        #  Accès PUBLIC aux contenus en lecture seule
+        # Contenus publics en lecture
         - { path: ^/plantes, roles: PUBLIC_ACCESS }
         - { path: ^/tisanes, roles: PUBLIC_ACCESS }
-        - { path: ^/articles, roles: PUBLIC_ACCESS }
         - { path: ^/articles/\d+$, roles: PUBLIC_ACCESS }
+        - { path: ^/articles, roles: PUBLIC_ACCESS }
         - { path: ^/recettes, roles: PUBLIC_ACCESS }
-        - { path: ^/, roles: PUBLIC_ACCESS }
+        - { path: ^/$, roles: PUBLIC_ACCESS }
+
+        # --- Espace utilisateur (doit être loggué) ---
+        - { path: ^/utilisateurs/mon-profil/modifier$, roles: ROLE_USER }
+        - { path: ^/utilisateurs/mon-profil$, roles: ROLE_USER }
+        - { path: ^/utilisateurs/dashboard$, roles: ROLE_USER }
+
+        # Création/édition de contenus (user ou admin)
+        - { path: ^/recettes/new$, roles: [ ROLE_USER, ROLE_ADMIN ] }
+        - { path: ^/recettes/\d+/edit$, roles: [ ROLE_USER, ROLE_ADMIN ] }
+        - { path: ^/articles/new$, roles: [ ROLE_USER, ROLE_ADMIN ] }
+        - { path: ^/articles/\d+/edit$, roles: [ ROLE_USER, ROLE_ADMIN ] }
+        - { path: ^/commentaires, roles: [ ROLE_USER, ROLE_ADMIN ] }
+
+        # --- Zone admin uniquement ---
+        - { path: ^/admin, roles: ROLE_ADMIN }
+        - { path: ^/utilisateurs/ajouter$, roles: ROLE_ADMIN }
+        - { path: ^/utilisateurs/\d+/modifier$, roles: ROLE_ADMIN }
+        - { path: ^/utilisateurs/\d+$, roles: ROLE_ADMIN }
+        - { path: ^/utilisateurs$, roles: ROLE_ADMIN }                 # liste des utilisateurs
+        - { path: ^/articles/\d+/valider$, roles: ROLE_ADMIN }
+        - { path: ^/recettes/\d+/valider$, roles: ROLE_ADMIN }
+        - { path: ^/recettes/admin, roles: ROLE_ADMIN }
+        - { path: ^/commentaires/signales$, roles: ROLE_ADMIN }
+        - { path: ^/commentaires/designaler$, roles: ROLE_ADMIN }
 
 
 

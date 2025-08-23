@@ -1,46 +1,55 @@
 {% extends 'base.html.twig' %}
 
 {% block title %}Modifier la recette{% endblock %}
+{% block page_title %}Modifier la recette{% endblock %}
 
-{% block body %}
+{% block content %}
+    {# Le partial _form NE doit pas faire {% extends %} et ne doit pas contenir de <script> #}
     {% include 'recette/_form.html.twig' with {
-        'form': form,
-        'recette': recette,
-        'button_label': 'Modifier',
-        'form_title': 'Modifier la recette'
+        form: form,
+        recette: recette,
+        button_label: 'Enregistrer les modifications',
+        form_title: 'Modifier la recette'
     } %}
 
-    <a href="{% if is_granted('ROLE_ADMIN') %}
-                    {{ path('recette_liste_admin') }}
-                 {% else %}
-                    {{ path('recette_mes_recettes') }}
-                 {% endif %}" class="btn btn-secondary">
-        Retour à la liste
-    </a>
+    <div class="d-flex justify-content-between mt-4">
+        <a href="{% if is_granted('ROLE_ADMIN') %}
+                {{ path('recette_liste_admin') }}
+              {% else %}
+                {{ path('recette_mes_recettes') }}
+              {% endif %}"
+           class="btn btn-outline-secondary">
+            Retour à la liste
+        </a>
+    </div>
 {% endblock %}
 
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        // Aperçu de l'image (si non déplacé dans assets/app.js)
+        function previewImage(event) {
+            const input = event.target;
+            const preview = document.getElementById('imagePreview');
+            if (!preview) return;
 
-    {# Le script de preview image et collection est dans _form.html.twig, donc pas besoin ici sauf si tu préfères #}
-    {% block javascripts %}
-        {{ parent() }}
-        <script>
-            function previewImage(event) {
-                const input = event.target;
-                const preview = document.getElementById('imagePreview');
-
-                if (input.files && input.files[0]) {
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        preview.src = e.target.result;
-                        preview.classList.remove('d-none');
-                    };
-                    reader.readAsDataURL(input.files[0]);
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    preview.src = e.target.result;
+                    preview.classList.remove('d-none');
+                };
+                reader.readAsDataURL(input.files[0]);
+            } else {
+                const original = preview.dataset.originalSrc;
+                if (original) {
+                    preview.src = original;
+                    preview.classList.remove('d-none');
                 } else {
-                    preview.src = "#";
+                    preview.src = '#';
                     preview.classList.add('d-none');
                 }
             }
-        </script>
-    {% endblock %}
-
-
+        }
+    </script>
+{% endblock %}

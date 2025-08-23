@@ -1,71 +1,96 @@
 {% extends 'base.html.twig' %}
 
 {% block title %}Liste des recettes{% endblock %}
+{% block page_title %}Liste des recettes{% endblock %}
 
-{% block body %}
-    <h1 class="mb-4">Liste des recettes</h1>
-
-    <table class="table table-bordered table-hover align-middle">
-        <thead class="table-light">
-        <tr>
-            <th>Id</th>
-            <th>Titre</th>
-            <th>Description</th>
-            <th>Instructions</th>
-            <th>Préparation</th>
-            <th>Difficulté</th>
-            <th>Validation</th>
-            <th>Portions</th>
-            <th>Note</th>
-            <th>Actions</th>
-        </tr>
-        </thead>
-        <tbody>
-        {% for recette in recettes %}
+{% block content %}
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <caption class="visually-hidden">
+                Tableau des recettes : titre, description, instructions, préparation, difficulté, validation, portions, note et actions
+            </caption>
+            <thead class="table-light">
             <tr>
-                <td>{{ recette.id }}</td>
-                <td>{{ recette.titre }}</td>
-                <td>{{ recette.description|u.truncate(60) }}</td>
-                <td>{{ recette.instructions|u.truncate(60) }}</td>
-                <td>{{ recette.tempsPreparation }} min</td>
-                <td>{{ recette.difficulte }}</td>
-                <td>
-                    {% if recette.validation %}
-                        <span class="badge bg-success">Validée</span>
-                    {% else %}
-                        <form method="post" action="{{ path('recette_valider', {'id': recette.id}) }}">
-                            <input type="hidden" name="_token" value="{{ csrf_token('valider' ~ recette.id) }}">
-                            <button class="btn btn-warning btn-sm">Valider</button>
-                        </form>
-                    {% endif %}
-                </td>
-                <td>{{ recette.portions }}</td>
-                <td>
-                    {% if moyennes[recette.id] is defined %}
-                        <span class="badge bg-info">{{ moyennes[recette.id] }}/5</span>
-                    {% else %}
-                        <span class="text-muted">Pas notée</span>
-                    {% endif %}
-                </td>
-                <td>
-                    <div class="d-flex gap-1">
-                        <a href="{{ path('recette_show', {'id': recette.id, 'from': 'admin'}) }}"
-                           class="btn btn-secondary btn-sm">afficher</a>
-                        <a href="{{ path('recette_edit', {'id': recette.id}) }}" class="btn btn-outline-secondary btn-sm">Modifier</a>
-                        <form method="post" action="{{ path('recette_delete', {'id': recette.id}) }}" onsubmit="return confirm('Confirmer la suppression ?');">
-                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ recette.id) }}">
-                            <button class="btn btn-outline-danger btn-sm">Supprimer</button>
-                        </form>
-                    </div>
-                </td>
+                <th scope="col">Id</th>
+                <th scope="col">Titre</th>
+                <th scope="col">Description</th>
+                <th scope="col">Instructions</th>
+                <th scope="col">Préparation</th>
+                <th scope="col">Difficulté</th>
+                <th scope="col">Validation</th>
+                <th scope="col">Portions</th>
+                <th scope="col">Note</th>
+                <th scope="col" class="text-end">Actions</th>
             </tr>
-        {% else %}
-            <tr>
-                <td colspan="10" class="text-center">Aucune recette trouvée.</td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+            {% for recette in recettes %}
+                <tr>
+                    <th scope="row">{{ recette.id }}</th>
+                    <td>{{ recette.titre }}</td>
+                    <td>{{ recette.description|u.truncate(60) }}</td>
+                    <td>{{ recette.instructions|u.truncate(60) }}</td>
+                    <td>{{ recette.tempsPreparation }}&nbsp;min</td>
+                    <td>{{ recette.difficulte }}</td>
+                    <td>
+                        {% if recette.validation %}
+                            <span class="badge text-bg-success">Validée</span>
+                        {% else %}
+                            <form
+                                    method="post"
+                                    action="{{ path('recette_valider', { id: recette.id }) }}"
+                                    class="d-inline"
+                                    onsubmit="if(confirm('Valider cette recette ?')){ this.querySelector('button[type=submit]').disabled = true; return true; } return false;"
+                            >
+                                <input type="hidden" name="_token" value="{{ csrf_token('valider' ~ recette.id) }}">
+                                <button class="btn btn-outline-primary btn-sm" aria-label="Valider la recette {{ recette.titre }}">Valider</button>
+                            </form>
+                        {% endif %}
+                    </td>
+                    <td>{{ recette.portions }}</td>
+                    <td>
+                        {% if moyennes[recette.id] is defined %}
+                            <span class="badge text-bg-secondary">{{ moyennes[recette.id] }}/5</span>
+                        {% else %}
+                            <span class="text-muted">Pas notée</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-end">
+                        <div class="d-inline-flex gap-1">
+                            <a
+                                    href="{{ path('recette_show', { id: recette.id, from: 'admin' }) }}"
+                                    class="btn btn-outline-primary btn-sm"
+                                    aria-label="Afficher la recette {{ recette.titre }}"
+                            >Afficher</a>
 
-    <a href="{{ path('recette_new') }}" class="btn btn-success mt-3">Ajouter une nouvelle recette</a>
+                            <a
+                                    href="{{ path('recette_edit', { id: recette.id }) }}"
+                                    class="btn btn-secondary btn-sm"
+                                    aria-label="Modifier la recette {{ recette.titre }}"
+                            >Modifier</a>
+
+                            <form
+                                    method="post"
+                                    action="{{ path('recette_delete', { id: recette.id }) }}"
+                                    class="d-inline"
+                                    onsubmit="if(confirm('Confirmer la suppression ?')){ this.querySelector('button[type=submit]').disabled = true; return true; } return false;"
+                            >
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ recette.id) }}">
+                                <button class="btn btn-outline-danger btn-sm" aria-label="Supprimer la recette {{ recette.titre }}">Supprimer</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="10" class="text-center text-muted py-4">Aucune recette trouvée.</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <a href="{{ path('recette_new') }}" class="btn btn-primary mt-3">
+        Ajouter une nouvelle recette
+    </a>
 {% endblock %}

@@ -1,257 +1,209 @@
-/* Palette du site */
+/* =========================================================
+   theme.css — Santé & Nature
+   Palette, typographies, accessibilité, dark mode (root.dark)
+   Compatible Bootstrap 5.3+
+   ========================================================= */
+
+/* -------------------------
+   Variables globales (clair)
+   ------------------------- */
 :root{
-    --c-vert:#5c9a74; --c-vert-dark:#497c5c; --c-beige:#f6f3ee;
-    --c-texte:#1b1f23; --c-texte-inv:#ffffff;
+    /* Charte couleurs */
+    --c-vert:       #4CAF50;    /* primaire */
+    --c-vert-dark:  #2E7D32;    /* hover / accent / barres */
+    --c-beige:      #F5F5DC;    /* fond général */
+    --c-blanccasse: #FAFAFA;    /* surfaces claires (cartes) */
+    --c-brun:       #8D6E63;    /* texte secondaire / footer */
+    --c-texte:      #1B1F23;    /* texte principal */
+    --c-gris:       #6B7280;    /* utilitaire */
 
-    /* Bootstrap – couleurs principales */
-    --bs-primary:var(--c-vert);         --bs-primary-rgb:92,154,116;
-    --bs-secondary:var(--c-vert);       --bs-secondary-rgb:92,154,116; /* <- rendre secondary vert */
-    --bs-success:#5cb85c;               --bs-success-rgb:92,184,92;
-    --bs-warning:#f0ad4e;               --bs-warning-rgb:240,173,78;
-    --bs-danger:#d9534f;                --bs-danger-rgb:217,83,79;
-    --bs-info:#5bc0de;                  --bs-info-rgb:91,192,222;
+    /* Typographies (définir les imports Google Fonts dans <head>) */
+    --font-title: "Poppins", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    --font-text:  "Open Sans", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
 
-    --bs-link-color:var(--c-vert);
-    --bs-link-hover-color:#497c5c;
-    --bs-focus-ring-color:rgba(var(--bs-primary-rgb),.25);
+    /* Ombres / rayons */
+    --shadow: 0 8px 20px rgba(0,0,0,.06);
+    --radius: .75rem;
 
-    --bs-body-bg:var(--c-beige);
-    --bs-body-color:var(--c-texte);
+    /* Mapping Bootstrap */
+    --bs-primary: var(--c-vert);
+    --bs-primary-rgb: 76,175,80;
+    --bs-secondary: var(--c-vert);
+    --bs-secondary-rgb: 76,175,80;
+    --bs-body-bg: var(--c-beige);
+    --bs-body-color: var(--c-texte);
+    --bs-link-color: var(--c-vert);
+    --bs-link-hover-color: var(--c-vert-dark);
+    --bs-border-color: rgba(0,0,0,.08);
+    --bs-border-radius: .75rem;
+    --bs-border-radius-sm: .5rem;
+    --bs-border-radius-lg: 1rem;
+    --bs-box-shadow: var(--shadow);
+    --bs-focus-ring-color: rgba(var(--bs-primary-rgb), .25);
 
-    --bs-border-radius:.75rem;
-    --bs-border-radius-sm:.5rem;
-    --bs-border-radius-lg:1rem;
-    --bs-border-color:rgba(0,0,0,.08);
-    --bs-box-shadow:0 8px 20px rgba(0,0,0,.06);
-
-    --bs-body-font-family:'Inter',system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans","Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji",sans-serif;
+    /* Cibles tactiles */
+    --tap-size: 44px;
 }
 
-/* Dark mode */
+/* -------------------------
+   Dark mode (ajouté par JS)
+   ------------------------- */
 :root.dark{
-    --bs-body-bg:#0f1115;
-    --bs-body-color:#eaeaea;
-    --bs-border-color:#2a2f3a;
-    --bs-box-shadow:0 8px 20px rgba(0,0,0,.35);
-    --bs-primary:#4d8b67; --bs-primary-rgb:77,139,103;
-    --bs-link-color:var(--bs-primary);
-    --bs-link-hover-color:#3d6e52;
+    color-scheme: dark;
+    --bs-body-bg: #0F1115;
+    --bs-body-color: #EAEAEA;
+    --bs-border-color: #2A2F3A;
+    --bs-box-shadow: 0 8px 20px rgba(0,0,0,.35);
+    --bs-link-color: var(--c-vert);
+    --bs-link-hover-color: #3D6E52;
 }
 
-/* Boutons */
-.btn{ border-radius:var(--bs-border-radius); box-shadow:var(--bs-box-shadow); }
-.btn-primary{
-    --bs-btn-bg:var(--bs-primary); --bs-btn-border-color:var(--bs-primary);
-    --bs-btn-hover-bg:#497c5c; --bs-btn-hover-border-color:#497c5c; --bs-btn-color:#fff;
+/* -------------------------
+   Reset léger & base
+   ------------------------- */
+html, body{ height: 100%; }
+body{
+    background: var(--bs-body-bg);
+    color: var(--bs-body-color);
+    font-family: var(--font-text);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
-/* rendre secondary vert aussi */
-.btn-secondary{
-    --bs-btn-bg:var(--bs-secondary); --bs-btn-border-color:var(--bs-secondary);
-    --bs-btn-hover-bg:#497c5c; --bs-btn-hover-border-color:#497c5c; --bs-btn-color:#fff;
-}
-.btn-outline-secondary{
-    --bs-btn-color:var(--bs-secondary); --bs-btn-border-color:var(--bs-secondary);
-    --bs-btn-hover-color:#fff; --bs-btn-hover-bg:var(--bs-secondary); --bs-btn-hover-border-color:var(--bs-secondary);
-}
-.btn-outline-primary{
-    --bs-btn-color:var(--bs-primary); --bs-btn-border-color:var(--bs-primary);
-    --bs-btn-hover-color:#fff; --bs-btn-hover-bg:var(--bs-primary); --bs-btn-hover-border-color:var(--bs-primary);
-}
-/* Pas de soulignement pour les boutons (même si <a class="btn">) */
-.btn,
-a.btn,
-button.btn {
-    text-decoration: none !important;
-}
-.btn:hover,
-a.btn:hover,
-button.btn:hover,
-.btn:focus,
-a.btn:focus,
-button.btn:focus {
-    text-decoration: none !important;
-}
+h1, h2, h3, .navbar-brand, .btn{ font-family: var(--font-title); }
 
-/*  les liens normaux (non boutons) ont une déco propre */
-a:not(.btn) {
+/* Liens */
+a{ text-decoration: none; color: var(--bs-link-color); }
+a:hover{ text-decoration: underline; color: var(--bs-link-hover-color); }
+a:not(.btn){
     text-underline-offset: .15em;
     text-decoration-thickness: .08em;
 }
-.btn-link { text-decoration: none !important; }
-.btn-link:hover, .btn-link:focus { text-decoration: none !important; }
 
-
-/* Cards / Alerts */
-.card{ border:1px solid var(--bs-border-color); box-shadow:var(--bs-box-shadow); border-radius:var(--bs-border-radius-lg); }
-.alert{ border:1px solid var(--bs-border-color); border-radius:var(--bs-border-radius); }
-.alert-success{
-    --bs-alert-bg:color-mix(in srgb, var(--bs-success) 15%, transparent);
-    --bs-alert-color:#0f5132;
-    --bs-alert-border-color:color-mix(in srgb, var(--bs-success) 35%, transparent);
-}
-.alert-warning{
-    --bs-alert-bg:color-mix(in srgb, var(--bs-warning) 18%, transparent);
-    --bs-alert-color:#664d03;
-    --bs-alert-border-color:color-mix(in srgb, var(--bs-warning) 40%, transparent);
-}
-.alert-danger{
-    --bs-alert-bg:color-mix(in srgb, var(--bs-danger) 15%, transparent);
-    --bs-alert-color:#842029;
-    --bs-alert-border-color:color-mix(in srgb, var(--bs-danger) 38%, transparent);
-}
-
-/* Form controls */
-.form-control,.form-select{ border-radius:var(--bs-border-radius); border-color:var(--bs-border-color); }
-.form-control:focus,.form-select:focus{ box-shadow:0 0 0 .25rem var(--bs-focus-ring-color); border-color:var(--bs-primary); }
-
-/* Pagination */
-.page-link{ color:var(--bs-primary); }
-.page-link:hover{ color:#3d6e52; }
-.page-item.active .page-link{ background-color:var(--bs-primary); border-color:var(--bs-primary); }
-
-/* Responsive petits ajustements */
-@media (max-width: 576px){
-    .btn{ font-size:.95rem; }
-    .card .ratio{ min-height:180px; }
-}
-/* Taille minimale tactile (WCAG ~44px) */
-:root { --tap-size: 44px; }
-
-.btn,
-.page-link,
-.form-control,
-.form-select,
-.nav-link {
-    min-height: var(--tap-size);
-}
-
-/* Un peu plus d’air pour les boutons */
-.btn { padding: .6rem 1rem; }
-
-/* Sur écrans tactiles : encore plus confortable */
-@media (pointer: coarse) {
-    .btn, .page-link, .form-control, .form-select, .nav-link {
-        min-height: 48px;
-        padding: .75rem 1.1rem;
-    }
-}
-
-/* Focus visible accessible (clavier/lecteurs d’écran) */
-:focus-visible {
-    outline: 3px solid rgba(var(--bs-primary-rgb), .5);
+/* Focus visible (clavier/lecteurs d’écran) */
+:focus-visible{
+    outline: 3px solid var(--bs-focus-ring-color);
     outline-offset: 2px;
-    border-radius: .5rem;
+    border-radius: .35rem;
 }
 
-/* Petits écrans : cartes & images s’adaptent bien */
-@media (max-width: 576px) {
-    .card .ratio { min-height: 180px; }
-    .btn { width: 100%; } /* actions plus faciles à toucher */
-}
+/* Images */
+img{ max-width: 100%; height: auto; }
+.cover{ object-fit: cover; object-position: center; }
 
-/* ===== Navbar (palette + responsive + dark) ===== */
-.site-navbar {
-    background: var(--bs-body-bg) !important;
-    --bs-navbar-color: var(--bs-body-color);
-    --bs-navbar-hover-color: var(--bs-primary);
-    --bs-navbar-disabled-color: rgba(0,0,0,.35);
-    --bs-navbar-brand-color: var(--bs-body-color);
-    --bs-navbar-brand-hover-color: var(--bs-primary);
-    --bs-navbar-toggler-border-color: var(--bs-border-color);
-    --bs-navbar-active-color: var(--bs-primary);
-    --nav-link-y: .65rem;
-    --nav-link-x: .85rem;
-}
-.site-navbar .navbar-brand { font-size: 1.125rem; color: var(--bs-body-color); }
-.site-navbar .navbar-brand:hover { color: var(--bs-primary); text-decoration: none; }
+/* Transitions douces (réduites si l’OS le demande) */
+*{ transition: color .2s ease, background-color .2s ease, border-color .2s ease, box-shadow .2s ease; }
+:root.reduce-motion *{ transition: none !important; }
 
-.site-navbar .nav-link{
-    color: var(--bs-body-color);
-    padding: var(--nav-link-y) var(--nav-link-x);
-    border-radius: .5rem;
-}
-.site-navbar .nav-link:hover,
-.site-navbar .nav-link:focus{
-    color: var(--bs-primary);
-    background: rgba(0,0,0,.03);
-    text-decoration: none;
-}
-
-/* Toggler (avec .navbar-light dans le HTML) */
-.site-navbar .navbar-toggler{ border-color: var(--bs-border-color); padding:.5rem .7rem; border-radius:.6rem; }
-.site-navbar .navbar-toggler-icon{ filter: invert(40%); }
-
-/* Recherche pill du header */
-.header-search .form-control{
-    background: #fff;
-    border-color: var(--bs-border-color);
-    min-height: 40px;
-}
-.header-search .btn{ min-height: 40px; }
-
-/* Dark mode header */
-:root.dark .site-navbar{
-    background:#181b21 !important;
-    --bs-navbar-color:#eaeaea;
-    --bs-navbar-hover-color:#cde7d7;
-    --bs-navbar-brand-color:#eaeaea;
-    --bs-navbar-brand-hover-color:#cde7d7;
-    border-color:#2a2f3a!important;
-}
-:root.dark .site-navbar .navbar-toggler{ border-color:#2a2f3a; }
-:root.dark .site-navbar .navbar-toggler-icon{ filter: invert(80%); }
-
-/* Dropdown cohérents */
-.dropdown-menu {
-    border-radius: var(--bs-border-radius);
-    border-color: var(--bs-border-color);
-    box-shadow: var(--bs-box-shadow);
-}
-:root.dark .dropdown-menu {
-    background: #1b1f26;
-    color: var(--bs-body-color);
-    border-color: #2a2f3a;
-}
-/* ===== Hero (bannière d’accueil) ===== */
-.hero-plant{
-    background: var(--bs-body-bg);
+/* -------------------------
+   Composants généraux
+   ------------------------- */
+.card{
+    border: 1px solid var(--bs-border-color);
     border-radius: var(--bs-border-radius-lg);
     box-shadow: var(--bs-box-shadow);
+    background: var(--c-blanccasse);
 }
-.hero-plant .hero-bg{
-    position:absolute; inset:0;
-    background-size: cover; background-position: center;
-    filter: saturate(.95) contrast(.98);
-}
-.hero-plant::after{
-    content:""; position:absolute; inset:0;
-    /* voile pour lire le texte sur l'image (clair) */
-    background: linear-gradient(90deg,
-    rgba(246,243,238,.96) 0%,
-    rgba(246,243,238,.75) 45%,
-    rgba(246,243,238,.10) 100%);
-}
-.hero-plant .container{ position:relative; z-index:1; }
-.hero-title{ text-shadow: 0 1px 0 rgba(255,255,255,.6); }
-.text-vert{ color: var(--c-vert-dark) }
+:root.dark .card{ background: #181B21; }
 
-/* Dark mode du hero */
-:root.dark .hero-plant::after{
-    background: linear-gradient(90deg,
-    rgba(15,17,21,.85) 0%,
-    rgba(15,17,21,.55) 45%,
-    rgba(15,17,21,.10) 100%);
+.alert{
+    border: 1px solid var(--bs-border-color);
+    border-radius: var(--bs-border-radius);
 }
-:root.dark .hero-title{ text-shadow:none; }
+.alert-success{
+    --bs-alert-bg: color-mix(in srgb, var(--bs-primary) 15%, transparent);
+    --bs-alert-color:#0f5132;
+    --bs-alert-border-color: color-mix(in srgb, var(--bs-primary) 35%, transparent);
+}
+.alert-warning{
+    --bs-alert-bg: color-mix(in srgb, #F0AD4E 18%, transparent);
+    --bs-alert-color:#664d03;
+    --bs-alert-border-color: color-mix(in srgb, #F0AD4E 40%, transparent);
+}
+.alert-danger{
+    --bs-alert-bg: color-mix(in srgb, #D9534F 15%, transparent);
+    --bs-alert-color:#842029;
+    --bs-alert-border-color: color-mix(in srgb, #D9534F 38%, transparent);
+}
 
-/* Responsive */
-@media (max-width: 991.98px){
-    .hero-title{ font-size: clamp(1.6rem, 4.5vw, 2.25rem); }
+.form-control,.form-select{
+    border-radius: var(--bs-border-radius);
+    border-color: var(--bs-border-color);
+    min-height: var(--tap-size);
 }
-@media (max-width: 575.98px){
-    .hero-plant{ border-radius: var(--bs-border-radius); }
+.form-control:focus,.form-select:focus{
+    border-color: var(--bs-primary);
+    box-shadow: 0 0 0 .25rem var(--bs-focus-ring-color);
 }
-/* ===== FAB accessibilité (discret) ===== */
+
+.page-link{ color: var(--bs-primary); }
+.page-link:hover{ color: var(--bs-link-hover-color); }
+.page-item.active .page-link{
+    background-color: var(--bs-primary);
+    border-color: var(--bs-primary);
+}
+
+/* Boutons */
+.btn{
+    border-radius: var(--bs-border-radius);
+    box-shadow: var(--bs-box-shadow);
+    min-height: var(--tap-size);
+    padding: .6rem 1rem;
+}
+.btn-primary{
+    --bs-btn-color:#fff;
+    --bs-btn-bg: var(--c-vert);
+    --bs-btn-border-color: var(--c-vert);
+    --bs-btn-hover-bg: var(--c-vert-dark);
+    --bs-btn-hover-border-color: var(--c-vert-dark);
+}
+.btn-secondary{
+    --bs-btn-color:#fff;
+    --bs-btn-bg: var(--c-vert);
+    --bs-btn-border-color: var(--c-vert);
+    --bs-btn-hover-bg: var(--c-vert-dark);
+    --bs-btn-hover-border-color: var(--c-vert-dark);
+}
+.btn-outline-primary{
+    --bs-btn-color: var(--c-vert);
+    --bs-btn-border-color: var(--c-vert);
+    --bs-btn-hover-color:#fff;
+    --bs-btn-hover-bg: var(--c-vert-dark);
+    --bs-btn-hover-border-color: var(--c-vert-dark);
+}
+.btn-outline-secondary{
+    --bs-btn-color: var(--c-vert);
+    --bs-btn-border-color: var(--c-vert);
+    --bs-btn-hover-color:#fff;
+    --bs-btn-hover-bg: var(--c-vert-dark);
+    --bs-btn-hover-border-color: var(--c-vert-dark);
+}
+
+/* Éviter le soulignement sur les <a class="btn"> */
+.btn, a.btn, button.btn { text-decoration: none !important; }
+.btn:hover, a.btn:hover, button.btn:hover,
+.btn:focus, a.btn:focus, button.btn:focus { text-decoration: none !important; }
+
+/* Utilitaires */
+.shadow-soft{ box-shadow: var(--shadow); }
+.text-muted-2{ color: var(--c-gris); }
+.bg-beige{ background: var(--c-beige) !important; }
+.text-vert{ color: var(--c-vert-dark) !important; }
+.border-soft{ border:1px solid var(--bs-border-color); }
+
+/* -------------------------
+   Accessibilité (skip-link)
+   ------------------------- */
+.skip-link{
+    position:absolute; left:-9999px; top:auto; width:1px; height:1px; overflow:hidden;
+}
+.skip-link:focus{
+    left:1rem; top:1rem; width:auto; height:auto; padding:.5rem .75rem;
+    background:#000; color:#fff; z-index:10000; border-radius:.5rem;
+}
+
+/* ---------------------------------
+   FAB d’accessibilité (A+/A/dark/TTS)
+   --------------------------------- */
 .a11y-fab{
     position: fixed;
     right: 1rem;
@@ -273,15 +225,144 @@ a:not(.btn) {
     padding: .6rem;
     min-width: 220px;
     backdrop-filter: blur(6px);
+    color: var(--bs-body-color);
 }
 :root.dark .a11y-panel{
     background: rgba(24,27,33,.95);
-    border-color: #2a2f3a;
-    color: var(--bs-body-color);
+    border-color: #2A2F3A;
 }
 .a11y-panel[hidden]{ display:none !important; }
 
+/* -------------------------
+   Navbar (palette + responsive)
+   ------------------------- */
+.site-navbar{
+    background: var(--bs-body-bg) !important;
+    --bs-navbar-color: var(--bs-body-color);
+    --bs-navbar-hover-color: var(--bs-primary);
+    --bs-navbar-brand-color: var(--bs-body-color);
+    --bs-navbar-brand-hover-color: var(--bs-primary);
+    --bs-navbar-active-color: var(--bs-primary);
+    --bs-navbar-disabled-color: rgba(0,0,0,.35);
+    --nav-link-y: .65rem;
+    --nav-link-x: .85rem;
+    border-bottom: 1px solid var(--bs-border-color);
+}
+.site-navbar .navbar-brand{
+    font-size: 1.125rem;
+    color: var(--bs-body-color);
+}
+.site-navbar .navbar-brand:hover{
+    color: var(--bs-primary); text-decoration: none;
+}
+.site-navbar .nav-link{
+    color: var(--bs-body-color);
+    padding: var(--nav-link-y) var(--nav-link-x);
+    border-radius: .5rem;
+}
+.site-navbar .nav-link:hover,
+.site-navbar .nav-link:focus{
+    color: var(--bs-primary);
+    background: rgba(0,0,0,.03);
+    text-decoration: none;
+}
+.site-navbar .navbar-toggler{
+    border-color: var(--bs-border-color);
+    padding:.5rem .7rem; border-radius:.6rem;
+}
+.site-navbar .navbar-toggler-icon{ filter: invert(40%); }
+
+/* Header – recherche “pill” optionnelle */
+.header-search .form-control{
+    background: #fff;
+    border-color: var(--bs-border-color);
+    min-height: 40px;
+}
+.header-search .btn{ min-height: 40px; }
+
+/* Dark mode header */
+:root.dark .site-navbar{
+    background:#181B21 !important;
+    --bs-navbar-color:#EAEAEA;
+    --bs-navbar-hover-color:#CDE7D7;
+    --bs-navbar-brand-color:#EAEAEA;
+    --bs-navbar-brand-hover-color:#CDE7D7;
+    border-color:#2A2F3A !important;
+}
+:root.dark .site-navbar .navbar-toggler{ border-color:#2A2F3A; }
+:root.dark .site-navbar .navbar-toggler-icon{ filter: invert(80%); }
+
+/* Dropdowns */
+.dropdown-menu{
+    border-radius: var(--bs-border-radius);
+    border-color: var(--bs-border-color);
+    box-shadow: var(--bs-box-shadow);
+}
+:root.dark .dropdown-menu{
+    background: #1B1F26;
+    color: var(--bs-body-color);
+    border-color: #2A2F3A;
+}
+
+/* -------------------------
+   Hero (ex. page d’accueil)
+   ------------------------- */
+.hero-plant{
+    position: relative;
+    background: var(--bs-body-bg);
+    border-radius: var(--bs-border-radius-lg);
+    box-shadow: var(--bs-box-shadow);
+    overflow: hidden;
+}
+.hero-plant .hero-bg{
+    position:absolute; inset:0;
+    background-size: cover; background-position: center;
+    filter: saturate(.95) contrast(.98);
+}
+.hero-plant::after{
+    content:""; position:absolute; inset:0;
+    background: linear-gradient(90deg,
+    rgba(245,245,220,.96) 0%,
+    rgba(245,245,220,.75) 45%,
+    rgba(245,245,220,.10) 100%);
+}
+.hero-plant .container{ position:relative; z-index:1; }
+.hero-title{ text-shadow: 0 1px 0 rgba(255,255,255,.6); }
+.text-vert{ color: var(--c-vert-dark) !important; }
+:root.dark .hero-plant::after{
+    background: linear-gradient(90deg,
+    rgba(15,17,21,.85) 0%,
+    rgba(15,17,21,.55) 45%,
+    rgba(15,17,21,.10) 100%);
+}
+:root.dark .hero-title{ text-shadow: none; }
+
+/* -------------------------
+   Footer
+   ------------------------- */
+.site-footer{
+    color: var(--c-brun);
+    border-top: 1px solid var(--bs-border-color);
+}
+
+/* -------------------------
+   Responsive / ergonomie
+   ------------------------- */
+@media (max-width: 991.98px){
+    .a11y-fab{ right:.75rem; bottom:.75rem; }
+    .hero-title{ font-size: clamp(1.6rem, 4.5vw, 2.25rem); }
+}
 @media (max-width: 576px){
     .a11y-fab-btn{ width:44px; height:44px; }
     .a11y-panel{ min-width: 200px; }
+    .card .ratio{ min-height: 180px; }
+    .btn{ width: 100%; } /* cibles tactiles plus faciles */
+}
+
+/* Écrans tactiles : cibles plus grandes */
+@media (pointer: coarse){
+    .btn, .page-link, .form-control, .form-select, .nav-link{
+        min-height: 48px;
+        padding: .75rem 1.1rem;
+    }
 }

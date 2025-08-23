@@ -1,44 +1,75 @@
 {% extends 'base.html.twig' %}
 
 {% block title %}Liste des utilisateurs{% endblock %}
-
 {% block page_title %}Liste des utilisateurs{% endblock %}
 
 {% block content %}
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <p class="mb-0 text-muted-2">Gestion des comptes (administration)</p>
+        <a href="{{ path('utilisateurs_ajouter') }}" class="btn btn-primary">
+            <i class="bi bi-person-plus"></i> Ajouter un utilisateur
+        </a>
+    </div>
+
     <div class="table-responsive">
-        <table class="table table-striped table-hover">
+        <table class="table table-striped table-hover align-middle">
+            <caption class="visually-hidden">Tableau listant les utilisateurs avec actions Voir, Modifier et Supprimer</caption>
             <thead>
             <tr>
-                <th>ID</th>
-                <th>Email</th>
-                <th>Nom</th>
-                <th>Prénom</th>
-                <th>Rôles</th>
-                <th>Actions</th>
+                <th scope="col">ID</th>
+                <th scope="col">Email</th>
+                <th scope="col">Nom</th>
+                <th scope="col">Prénom</th>
+                <th scope="col">Rôles</th>
+                <th scope="col" class="text-end">Actions</th>
             </tr>
             </thead>
             <tbody>
             {% for utilisateur in utilisateurs %}
                 <tr>
-                    <td>{{ utilisateur.id }}</td>
+                    <th scope="row">{{ utilisateur.id }}</th>
                     <td>{{ utilisateur.email }}</td>
                     <td>{{ utilisateur.nom }}</td>
                     <td>{{ utilisateur.prenom }}</td>
                     <td>{{ utilisateur.roles | join(', ') }}</td>
-                    <td>
-                        <a href="{{ path('utilisateurs_afficher', {id: utilisateur.id}) }}" class="btn btn-info btn-sm">Voir</a>
-                        <a href="{{ path('utilisateurs_modifier', {id: utilisateur.id}) }}" class="btn btn-warning btn-sm">Modifier</a>
-                        <form method="post" action="{{ path('utilisateurs_supprimer', {id: utilisateur.id}) }}"
-                              style="display:inline-block;"
-                              onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?');">
+                    <td class="text-end">
+                        <a
+                                href="{{ path('utilisateurs_afficher', { id: utilisateur.id }) }}"
+                                class="btn btn-outline-primary btn-sm me-1"
+                                aria-label="Voir le profil de {{ utilisateur.prenom }} {{ utilisateur.nom }}"
+                        >
+                            Voir
+                        </a>
+
+                        <a
+                                href="{{ path('utilisateurs_modifier', { id: utilisateur.id }) }}"
+                                class="btn btn-secondary btn-sm me-1"
+                                aria-label="Modifier l'utilisateur {{ utilisateur.prenom }} {{ utilisateur.nom }}"
+                        >
+                            Modifier
+                        </a>
+
+                        <form
+                                method="post"
+                                action="{{ path('utilisateurs_supprimer', { id: utilisateur.id }) }}"
+                                class="d-inline"
+                                onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?');"
+                        >
                             <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ utilisateur.id) }}">
-                            <button class="btn btn-danger btn-sm">Supprimer</button>
+                            <button
+                                    class="btn btn-danger btn-sm"
+                                    aria-label="Supprimer l'utilisateur {{ utilisateur.prenom }} {{ utilisateur.nom }}"
+                            >
+                                Supprimer
+                            </button>
                         </form>
                     </td>
                 </tr>
             {% else %}
                 <tr>
-                    <td colspan="6" class="text-center">Aucun utilisateur trouvé.</td>
+                    <td colspan="6" class="text-center text-muted py-4">
+                        Aucun utilisateur trouvé.
+                    </td>
                 </tr>
             {% endfor %}
             </tbody>

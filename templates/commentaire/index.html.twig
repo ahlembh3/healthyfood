@@ -1,43 +1,73 @@
+{# templates/commentaire/index.html.twig #}
 {% extends 'base.html.twig' %}
 
 {% block title %}Liste des commentaires{% endblock %}
+{% block page_title %}Tous les commentaires{% endblock %}
 
-{% block body %}
-    <h1 class="mb-4">Tous les commentaires</h1>
-   {% if is_granted('ROLE_ADMIN') %}
-  <div class="btn-group mb-4" role="group" aria-label="Filtres commentaires">
-    <a href="{{ path('commentaire_index') }}" class="btn btn-outline-primary {% if not app.request.get('signale') %}active{% endif %}">Tous</a>
-    <a href="{{ path('commentaire_index', {'signale': 1}) }}" class="btn btn-outline-danger {% if app.request.get('signale') %}active{% endif %}">Signalés uniquement</a>
-  </div>
-{% endif %}
+{% block content %}
+    {# Filtres admin #}
+    {% if is_granted('ROLE_ADMIN') %}
+        {% set onlySignaled = app.request.query.get('signale') %}
+        <div class="btn-group mb-4" role="group" aria-label="Filtres commentaires">
+            <a href="{{ path('commentaire_index') }}"
+               class="btn btn-outline-primary {{ not onlySignaled ? 'active' : '' }}"
+                    {{ not onlySignaled ? 'aria-pressed=true aria-current=page' : '' }}>
+                Tous
+            </a>
 
+            <a href="{{ path('commentaire_index', {'signale': 1}) }}"
+               class="btn btn-outline-danger {{ onlySignaled ? 'active' : '' }}"
+                    {{ onlySignaled ? 'aria-pressed=true aria-current=page' : '' }}>
+                Signalés uniquement
+            </a>
+        </div>
+    {% endif %}
 
     {% if commentaires is empty %}
         <div class="alert alert-info">Aucun commentaire trouvé.</div>
     {% else %}
-        <div class="list-group">
+        <div class="list-group list-group-flush">
             {% for commentaire in commentaires %}
-               <div class="list-group-item mb-3 border rounded p-3 shadow-sm {% if commentaire.signaler %}border-danger bg-light{% endif %}">
-    <div class="d-flex justify-content-between">
-        <div>
-            <h5 class="mb-1">{{ commentaire.utilisateur.email }}</h5>
-            <small class="text-muted">{{ commentaire.date|date('d/m/Y H:i') }}</small>
-        </div>
-        <span class="badge bg-{{ commentaire.signaler ? 'danger' : 'success' }}">
-            {{ commentaire.signaler ? 'Signalé' : 'Valide' }}
-        </span>
-    </div>
-    <p class="mt-2 mb-1">{{ commentaire.contenu }}</p>
-    <p class="mb-2"><strong>Note :</strong> {{ commentaire.note ?? 'Non notée' }}</p>
+                {% set isSignaled = commentaire.signaler|default(false) %}
+                <article class="list-group-item mb-3 border rounded p-3 shadow-sm {{ isSignaled ? 'border-danger bg-light' : '' }}">
+                    <header class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h3 class="h6 mb-1">
+                                {{ commentaire.utilisateur ? commentaire.utilisateur.email : 'Compte supprimé' }}
+                            </h3>
+                            <small class="text-muted">
+                                {{ commentaire.date ? commentaire.date|date('d/m/Y H:i') : '' }}
+                            </small>
+                        </div>
+                        <span class="badge bg-{{ isSignaled ? 'danger' : 'success' }}">
+              {{ isSignaled ? 'Signalé' : 'Valide' }}
+            </span>
+                    </header>
 
-    <a href="{{ path('commentaire_show', {'id': commentaire.id}) }}" class="btn btn-sm btn-outline-primary">Voir</a>
-</div>
+                    <p class="mt-2 mb-1">{{ commentaire.contenu }}</p>
+                    <p class="mb-2">
+                        <strong>Note :</strong> {{ commentaire.note is not null ? commentaire.note : 'Non notée' }}
+                    </p>
 
+                    <div class="d-flex gap-2">
+                        <a href="{{ path('commentaire_show', { id: commentaire.id }) }}"
+                           class="btn btn-sm btn-outline-primary">
+                            Voir
+                        </a>
+                        {# Exemple : si tu as une route pour désignaler #}
+                        {# {% if is_granted('ROLE_ADMIN') and isSignaled %}
+              <a href="{{ path('commentaires_designaler', { id: commentaire.id }) }}"
+                 class="btn btn-sm btn-outline-secondary">
+                Désignaler
+              </a>
+            {% endif %} #}
+                    </div>
+                </article>
             {% endfor %}
         </div>
     {% endif %}
-    <div class="pagination justify-content-center mt-4">
-        {{ knp_pagination_render(commentaires) }}
-    </div>
 
+    <div class="pagination justify-content-center mt-4">
+        {{ knp_pagination_render(commentaires, null, { query: app.request.query.all }) }}
+    </div>
 {% endblock %}

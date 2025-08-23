@@ -1,47 +1,87 @@
+{# templates/commentaire/show.html.twig #}
 {% extends 'base.html.twig' %}
 
 {% block title %}Détail du commentaire{% endblock %}
+{% block page_title %}Détail du commentaire{% endblock %}
 
-{% block body %}
-    <h1 class="mb-4">Détail du commentaire</h1>
-
-    <div class="card shadow-sm mb-3">
+{% block content %}
+    <article class="card shadow-sm mb-3 {{ commentaire.signaler ? 'border border-danger' : '' }}">
         <div class="card-body">
-            <h5 class="card-title">{{ commentaire.utilisateur.email }}</h5>
-            <h6 class="card-subtitle mb-2 text-muted">{{ commentaire.date|date('d/m/Y H:i') }}</h6>
-            <p class="card-text mt-3">{{ commentaire.contenu }}</p>
-            <p><strong>Note :</strong> {{ commentaire.note ?? 'Non notée' }}</p>
+            <header class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+                <div>
+                    <h2 class="h5 card-title mb-1">
+                        {{ commentaire.utilisateur ? commentaire.utilisateur.email : 'Compte supprimé' }}
+                    </h2>
+                    <p class="card-subtitle text-muted small mb-0">
+                        {{ commentaire.date ? commentaire.date|date('d/m/Y H:i') : '' }}
+                    </p>
+                </div>
+                <span class="badge bg-{{ commentaire.signaler ? 'danger' : 'success' }}">
+          {{ commentaire.signaler ? 'Signalé' : 'Valide' }}
+        </span>
+            </header>
+
+            <hr class="my-3">
+
+            <p class="card-text mb-2">{{ commentaire.contenu }}</p>
+            <p class="mb-2"><strong>Note :</strong> {{ commentaire.note is not null ? commentaire.note : 'Non notée' }}</p>
+
+            {# Lien vers le contenu associé #}
             {% if commentaire.recette %}
-                <p><strong>Recette :</strong> {{ commentaire.recette.titre }}</p>
+                <p class="mb-2">
+                    <strong>Recette :</strong>
+                    <a href="{{ path('recette_show', { id: commentaire.recette.id }) }}">
+                        {{ commentaire.recette.titre }}
+                    </a>
+                </p>
             {% elseif commentaire.article %}
-                <p><strong>Article :</strong> {{ commentaire.article.titre }}</p>
+                <p class="mb-2">
+                    <strong>Article :</strong>
+                    <a href="{{ path('article_show', { id: commentaire.article.id }) }}">
+                        {{ commentaire.article.titre }}
+                    </a>
+                </p>
             {% else %}
-                <p><strong>Contenu :</strong> Non lié</p>
+                <p class="mb-2"><strong>Contenu :</strong> Non lié</p>
             {% endif %}
-
-
-            <p><strong>Signalé :</strong> {{ commentaire.signaler ? 'Oui' : 'Non' }}</p>
         </div>
+    </article>
+
+    <div class="d-flex gap-2 flex-wrap mt-3 align-items-center">
+        {# Suppression : réservé aux rôles autorisés (vérifie côté contrôleur aussi) #}
+        <form method="post"
+              action="{{ path('commentaire_delete', { id: commentaire.id }) }}"
+              class="d-inline"
+              onsubmit="if(confirm('Voulez-vous vraiment supprimer ce commentaire ?')){ this.querySelector('button[type=submit]').disabled = true; return true;} return false;">
+            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ commentaire.id) }}">
+            <button class="btn btn-danger">Supprimer</button>
+        </form>
+
+        {# Désignaler : admin uniquement quand il est signalé #}
+        {% if commentaire.signaler and is_granted('ROLE_ADMIN') %}
+            <form method="post"
+                  action="{{ path('commentaire_designaler', { id: commentaire.id }) }}"
+                  class="d-inline"
+                  onsubmit="if(confirm('Voulez-vous désignaliser ce commentaire ?')){ this.querySelector('button[type=submit]').disabled = true; return true;} return false;">
+                <input type="hidden" name="_token" value="{{ csrf_token('designaler' ~ commentaire.id) }}">
+                <button class="btn btn-success">Désignaler</button>
+            </form>
+        {% endif %}
+
+        {# Signaler : utilisateur connecté, non-admin, non-auteur, et pas déjà signalé #}
+        {% if is_granted('IS_AUTHENTICATED_FULLY')
+            and not is_granted('ROLE_ADMIN')
+            and not commentaire.signaler
+            and commentaire.utilisateur and app.user and commentaire.utilisateur.id != app.user.id %}
+            <form method="post"
+                  action="{{ path('commentaire_signaler', { id: commentaire.id }) }}"
+                  class="d-inline"
+                  onsubmit="if(confirm('Voulez-vous signaler ce commentaire ?')){ this.querySelector('button[type=submit]').disabled = true; return true;} return false;">
+                <input type="hidden" name="_token" value="{{ csrf_token('signaler' ~ commentaire.id) }}">
+                <button class="btn btn-warning">Signaler</button>
+            </form>
+        {% endif %}
+
+        <a href="{{ path('commentaire_index') }}" class="btn btn-outline-secondary">Retour à la liste</a>
     </div>
-<div class="d-flex gap-2 flex-wrap mt-3 align-items-center">
-    <form method="post" action="{{ path('commentaire_delete', {'id': commentaire.id}) }}" class="d-inline" onsubmit="return confirm('Voulez-vous vraiment supprimer ce commentaire ?');">
-        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ commentaire.id) }}">
-        <button class="btn btn-danger">Supprimer</button>
-    </form>
-
-    {% if commentaire.signaler and is_granted('ROLE_ADMIN') %}
-        <form method="post" action="{{ path('commentaire_designaler', {'id': commentaire.id}) }}" class="d-inline" onsubmit="return confirm('Voulez-vous désignaliser ce commentaire ?');">
-            <input type="hidden" name="_token" value="{{ csrf_token('designaler' ~ commentaire.id) }}">
-            <button class="btn btn-success">Désignaler</button>
-        </form>
-    {% elseif not commentaire.signaler and not is_granted('ROLE_ADMIN') %}
-        <form method="post" action="{{ path('commentaire_signaler', {'id': commentaire.id}) }}" class="d-inline" onsubmit="return confirm('Voulez-vous signaler ce commentaire ?');">
-            <input type="hidden" name="_token" value="{{ csrf_token('signaler' ~ commentaire.id) }}">
-            <button class="btn btn-warning">Signaler</button>
-        </form>
-    {% endif %}
-
-    <a href="{{ path('commentaire_index') }}" class="btn btn-secondary">Retour à la liste</a>
-</div>
-
 {% endblock %}
