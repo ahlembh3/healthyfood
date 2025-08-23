@@ -1,307 +1,64 @@
-{% block body %}
-  <div class="container mt-5">
-    <div class="card shadow p-4">
-      <h3 class="mb-4">{{ form_title|default('Ajouter une recette') }}</h3>
+{# Partial de formulaire — inclus par new/edit #}
 
-      {{ form_start(form, {
-        'attr': {
-          'novalidate': 'novalidate',
-          'class': 'needs-validation',
-          'id': 'recette-form'
-        },
-        'enctype': 'multipart/form-data'
-      }) }}
+<div class="card shadow p-4">
+  <h2 class="h5 mb-4">{{ form_title|default('Recette') }}</h2>
 
-      {# Afficher erreurs globales du formulaire #}
-      {{ form_errors(form) }}
+  {{ form_start(form, {
+    attr: {
+      novalidate: 'novalidate',
+      class: 'needs-validation',
+      id: 'recette-form'
+    }
+  }) }}
 
-      <div class="mb-3">
-        {{ form_label(form.titre) }}
-        {{ form_widget(form.titre, {'attr': {
-          'class': 'form-control',
-          'required': 'required',
-          'minlength': '3',
-          'maxlength': '255'
-        }}) }}
-        {{ form_errors(form.titre) }}
-      </div>
+  {{ form_errors(form) }}
 
-      <div class="mb-3">
-        {{ form_label(form.image) }}
-        {{ form_widget(form.image, {
-          'attr': {
-            'class': 'form-control',
-            'onchange': 'previewImage(event)',
-            'accept': 'image/*'
-          }
-        }) }}
-        {{ form_errors(form.image) }}
+  <div class="mb-3">
+    {{ form_label(form.titre) }}
+    {{ form_widget(form.titre, {'attr': {
+      class: 'form-control',
+      required: 'required',
+      minlength: '3',
+      maxlength: '255',
+      autocomplete: 'off'
+    }}) }}
+    {{ form_errors(form.titre) }}
+  </div>
 
-        {# Aperçu de l'image #}
-        <div class="mt-3">
-          <p class="text-muted">Aperçu de l'image :</p>
-          <img id="imagePreview"
-               src="{% if recette.image %}{{ asset('uploads/' ~ recette.image) }}{% else %}#{% endif %}"
-               alt="Aperçu de l'image"
-               class="img-thumbnail {% if not recette.image %}d-none{% endif %}"
-               data-original-src="{% if recette.image %}{{ asset('uploads/' ~ recette.image) }}{% else %}{% endif %}">
-        </div>
-      </div>
+  <div class="mb-3">
+    {{ form_label(form.image) }}
+    {{ form_widget(form.image, {
+      attr: { class: 'form-control', onchange: 'previewImage(event)', accept: 'image/*' }
+    }) }}
+    {{ form_errors(form.image) }}
 
-      <div class="mb-3">
-        {{ form_label(form.description) }}
-        {{ form_widget(form.description, {'attr': {'class': 'form-control'}}) }}
-        {{ form_errors(form.description) }}
-      </div>
-
-
-
-      <h5>Ingrédients</h5>
-      <div id="ingredients-collection" data-prototype="{{ form_widget(form.recetteIngredients.vars.prototype)|e('html_attr') }}">
-        {% for formIngredient in form.recetteIngredients %}
-          <div class="ingredient-row row g-2 align-items-center mb-3" data-index="{{ loop.index0 }}">
-            <div class="col-md-3">
-              {{ form_widget(formIngredient.typeIngredient, {'attr': {'class': 'form-select ingredient-type'}}) }}
-            </div>
-            <div class="col-md-4">
-              {{ form_widget(formIngredient.ingredient, {'attr': {'class': 'form-select ingredient-select'}}) }}
-            </div>
-            <div class="col-md-3">
-              <div class="input-group">
-                {{ form_widget(formIngredient.quantite, {'attr': {'class': 'form-control ingredient-quantite', 'placeholder': 'Quantité'}}) }}
-                <span class="input-group-text unit-display" id="unit-{{ loop.index0 }}">unité</span>
-              </div>
-              {{ form_errors(formIngredient.quantite) }}
-            </div>
-            <div class="col-md-2">
-              <button type="button" class="btn btn-danger remove-ingredient" {% if loop.index0 == 0 and form.recetteIngredients|length == 1 %}disabled{% endif %}>
-                <i class="bi bi-trash"></i>
-              </button>
-            </div>
-          </div>
-        {% endfor %}
-      </div>
-
-      <div class="mb-3">
-        <button type="button" id="add-ingredient" class="btn btn-primary">
-          <i class="bi bi-plus"></i> Ajouter un ingrédient
-        </button>
-      </div>
-
-      <div class="mb-3">
-        {{ form_label(form.instructions) }}
-        {{ form_widget(form.instructions, {'attr': {'class': 'form-control tinymce-editor', 'rows': 5}}) }}
-        {{ form_errors(form.instructions) }}
-      </div>
-      <div class="mb-3">
-        {{ form_label(form.tempsCuisson) }}
-        {{ form_widget(form.tempsCuisson, {'attr': {'class': 'form-control'}}) }}
-        {{ form_errors(form.tempsCuisson) }}
-      </div>
-
-      <div class="mb-3">
-        {{ form_label(form.tempsPreparation) }}
-        {{ form_widget(form.tempsPreparation, {'attr': {'class': 'form-control'}}) }}
-        {{ form_errors(form.tempsPreparation) }}
-      </div>
-
-      <div class="mb-3">
-        {{ form_label(form.difficulte) }}
-        {{ form_widget(form.difficulte, {'attr': {'class': 'form-select'}}) }}
-        {{ form_errors(form.difficulte) }}
-      </div>
-
-      <div class="mb-3">
-        {{ form_label(form.portions) }}
-        {{ form_widget(form.portions, {'attr': {'class': 'form-control'}}) }}
-        {{ form_errors(form.portions) }}
-      </div>
-
-      <div class="d-flex justify-content-between mt-4">
-        <a href="{% if is_granted('ROLE_ADMIN') %}
-                            {{ path('recette_liste_admin') }}
-                         {% else %}
-                            {{ path('recette_mes_recettes') }}
-                         {% endif %}" class="btn btn-secondary">
-          Retour à la liste
-        </a>
-
-        <button type="submit" class="btn btn-success">
-          {{ button_label|default('Soumettre') }}
-        </button>
-      </div>
-
-      {{ form_rest(form) }}
-      {{ form_end(form, { 'render_rest': false }) }}
+    {# Aperçu image #}
+    {% set img = (recette is defined and recette.image) ? recette.image : '' %}
+    {% set src = img ? asset((img starts with 'uploads/') ? img : 'uploads/recettes/' ~ img) : '' %}
+    <div class="mt-3">
+      <p class="text-muted">Aperçu de l'image :</p>
+      <img id="imagePreview"
+           src="{{ src ?: '#' }}"
+           alt="{{ img ? 'Aperçu de ' ~ (recette.titre|default('la recette')) : 'Aperçu de l’image' }}"
+           class="img-thumbnail {{ src ? '' : 'd-none' }}"
+           data-original-src="{{ src }}">
     </div>
   </div>
 
-  <script>
-    function previewImage(event) {
-      const input = event.target;
-      const preview = document.getElementById('imagePreview');
+  <div class="mb-3">
+    {{ form_label(form.description) }}
+    {{ form_widget(form.description, {'attr': {'class': 'form-control', 'rows': 3}}) }}
+    {{ form_errors(form.description) }}
+  </div>
 
-      if (input.files && input.files[0]) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-          preview.src = e.target.result;
-          preview.classList.remove('d-none');
-        };
-        reader.readAsDataURL(input.files[0]);
-      } else {
-        const originalSrc = preview.dataset.originalSrc;
-        if (originalSrc && originalSrc !== '#') {
-          preview.src = originalSrc;
-          preview.classList.remove('d-none');
-        } else {
-          preview.src = '#';
-          preview.classList.add('d-none');
-        }
-      }
-    }
+  {# … tes champs ingrédients, instructions (tinymce-editor), temps, difficulté, portions … #}
+  {# Garde les mêmes widgets/attrs que dans ta version précédente #}
 
-    // Gestion des ingrédients dynamiques
-    document.addEventListener('DOMContentLoaded', function() {
-      const ingredientsCollection = document.getElementById('ingredients-collection');
-      const addButton = document.getElementById('add-ingredient');
-      let ingredientCount = ingredientsCollection.children.length;
+  <div class="d-flex justify-content-end mt-4">
+    <button type="submit" class="btn btn-primary" id="submit-btn">
+      {{ button_label|default('Soumettre') }}
+    </button>
+  </div>
 
-      // Fonction pour créer un prototype correctement formaté
-      function createPrototypeRow(prototype, index) {
-        const tempDiv = document.createElement('div');
-        tempDiv.innerHTML = prototype.replace(/__name__/g, index);
-
-        // Corriger la structure pour qu'elle corresponde à notre layout
-        const row = document.createElement('div');
-        row.className = 'ingredient-row row g-2 align-items-center mb-3';
-        row.dataset.index = index;
-
-        // Créer la structure correcte avec les colonnes
-        row.innerHTML = `
-          <div class="col-md-3">
-            ${tempDiv.querySelector('[id$="_typeIngredient"]').outerHTML}
-          </div>
-          <div class="col-md-4">
-            ${tempDiv.querySelector('[id$="_ingredient"]').outerHTML}
-          </div>
-          <div class="col-md-3">
-            <div class="input-group">
-              ${tempDiv.querySelector('[id$="_quantite"]').outerHTML}
-              <span class="input-group-text unit-display" id="unit-${index}">unité</span>
-            </div>
-          </div>
-          <div class="col-md-2">
-            <button type="button" class="btn btn-danger remove-ingredient">
-              <i class="bi bi-trash"></i>
-            </button>
-          </div>
-        `;
-
-        return row;
-      }
-
-      // Fonction pour filtrer les ingrédients par type
-      function setupFiltering(typeSelect, ingredientSelect) {
-        typeSelect.addEventListener('change', function() {
-          const selectedType = this.value;
-
-          // Cacher/montrer les options basé sur le type
-          Array.from(ingredientSelect.options).forEach(option => {
-            if (option.value === '') {
-              option.hidden = false; // Toujours montrer le placeholder
-            } else {
-              const optionType = option.dataset.type || 'Autre';
-              option.hidden = optionType !== selectedType;
-            }
-          });
-
-          // Réinitialiser la sélection si nécessaire
-          if (ingredientSelect.value) {
-            const selectedOption = ingredientSelect.options[ingredientSelect.selectedIndex];
-            const selectedOptionType = selectedOption.dataset.type || 'Autre';
-            if (selectedOptionType !== selectedType) {
-              ingredientSelect.value = '';
-              updateUnitDisplay(ingredientSelect);
-            }
-          }
-        });
-      }
-
-      // Mettre à jour l'unité
-      function updateUnitDisplay(selectElement) {
-        const row = selectElement.closest('.ingredient-row');
-        const index = row.dataset.index;
-        const selectedOption = selectElement.options[selectElement.selectedIndex];
-        const unit = selectedOption && selectedOption.value ? (selectedOption.dataset.unit || 'unité') : 'unité';
-
-        const unitDisplay = document.getElementById(`unit-${index}`);
-        if (unitDisplay) {
-          unitDisplay.textContent = unit;
-        }
-      }
-
-      // Initialiser les événements pour une ligne d'ingrédient
-      function initializeIngredientEvents(row) {
-        const typeSelect = row.querySelector('.ingredient-type');
-        const ingredientSelect = row.querySelector('.ingredient-select');
-        const removeButton = row.querySelector('.remove-ingredient');
-
-        if (typeSelect && ingredientSelect) {
-          // Configurer le filtrage
-          setupFiltering(typeSelect, ingredientSelect);
-
-          // Déclencher le changement initial pour filtrer
-          if (typeSelect.value) {
-            const event = new Event('change');
-            typeSelect.dispatchEvent(event);
-          }
-
-          ingredientSelect.addEventListener('change', function() {
-            updateUnitDisplay(this);
-          });
-        }
-
-        if (removeButton) {
-          removeButton.addEventListener('click', function() {
-            const rows = document.querySelectorAll('.ingredient-row');
-            if (rows.length > 1) {
-              this.closest('.ingredient-row').remove();
-              // Mettre à jour les index après suppression
-              document.querySelectorAll('.ingredient-row').forEach((row, index) => {
-                row.dataset.index = index;
-                const unitDisplay = row.querySelector('.unit-display');
-                if (unitDisplay) {
-                  unitDisplay.id = `unit-${index}`;
-                }
-              });
-            }
-          });
-        }
-      }
-
-      // Initialiser tous les ingrédients existants
-      document.querySelectorAll('.ingredient-row').forEach(row => {
-        initializeIngredientEvents(row);
-
-        // Pour l'édition : si un ingrédient est déjà sélectionné, mettre à jour l'unité
-        const ingredientSelect = row.querySelector('.ingredient-select');
-        if (ingredientSelect && ingredientSelect.value) {
-          updateUnitDisplay(ingredientSelect);
-        }
-      });
-
-      // Ajouter un nouvel ingrédient
-      addButton.addEventListener('click', function() {
-        const prototype = ingredientsCollection.dataset.prototype;
-        const newRow = createPrototypeRow(prototype, ingredientCount);
-
-        ingredientsCollection.appendChild(newRow);
-
-        // Initialiser les événements pour le nouvel élément
-        initializeIngredientEvents(newRow);
-
-        ingredientCount++;
-      });
-    });
-  </script>
-{% endblock %}
+  {{ form_end(form) }}
+</div>

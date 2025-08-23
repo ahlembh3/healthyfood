@@ -1,60 +1,86 @@
 {% extends 'base.html.twig' %}
 
 {% block title %}Mes recettes{% endblock %}
+{% block page_title %}Mes recettes{% endblock %}
 
-{% block body %}
-    <div class="container mt-4">
-        <h1 class="mb-4">Mes recettes</h1>
+{% block content %}
+    {% if recettes is empty %}
+        <div class="alert alert-info">Vous n'avez encore créé aucune recette.</div>
+    {% else %}
+        <div class="row g-4">
+            {% for recette in recettes %}
+                <div class="col-md-6 col-lg-4">
+                    <article class="card h-100 shadow-sm">
+                        <div class="ratio ratio-16x9 bg-light">
+                            {# Image (fallback placeholder) #}
+                            {% set img = recette.image|default('')|trim %}
+                            {% set src = img ? asset('uploads/recettes/' ~ img) : asset('images/placeholder-recipe.jpg') %}
+                            <img
+                                    src="{{ src }}"
+                                    alt="{{ img ? 'Photo de ' ~ recette.titre : 'Image générique de recette' }}"
+                                    class="rounded-top w-100 h-100"
+                                    style="object-fit: cover;"
+                                    loading="lazy"
+                            >
+                        </div>
 
-        {% if recettes is empty %}
-            <div class="alert alert-info">
-                Vous n'avez encore créé aucune recette.
-            </div>
-        {% else %}
-            <div class="row">
-                {% for recette in recettes %}
-                    <div class="col-md-4 mb-4">
-                        <div class="card h-100 shadow-sm">
-                            {% if recette.image %}
-                                <img src="{{ asset('uploads/' ~ recette.image) }}" class="card-img-top" alt="{{ recette.titre }}">
-                            {% endif %}
-                            <div class="card-body">
-                                <h5 class="card-title">{{ recette.titre }}</h5>
-                                <p class="card-text">{{ recette.description|u.truncate(100, '...') }}</p>
+                        <div class="card-body">
+                            <h2 class="h5 card-title mb-2">{{ recette.titre }}</h2>
 
+                            <p class="card-text text-muted">{{ recette.description|u.truncate(100, '…') }}</p>
+
+                            <ul class="list-inline text-muted small mb-2">
                                 {% if recette.difficulte %}
-                                    <span class="badge bg-secondary">{{ recette.difficulte }}</span>
+                                    <li class="list-inline-item">
+                                        <span class="badge text-bg-secondary">{{ recette.difficulte }}</span>
+                                    </li>
                                 {% endif %}
-
                                 {% if recette.tempsPreparation %}
-                                    <p class="mt-2"><strong>Préparation :</strong> {{ recette.tempsPreparation }} min</p>
+                                    <li class="list-inline-item">⏱ Préparation : {{ recette.tempsPreparation }} min</li>
                                 {% endif %}
                                 {% if recette.tempsCuisson %}
-                                    <p><strong>Cuisson :</strong> {{ recette.tempsCuisson }} min</p>
+                                    <li class="list-inline-item">🔥 Cuisson : {{ recette.tempsCuisson }} min</li>
                                 {% endif %}
-                            </div>
-
-                            <div class="card-footer d-flex justify-content-between align-items-center">
-                                <a class="btn btn-outline-success"
-                                   href="{{ path('recette_show', {'id': recette.id, 'from': 'mes'}) }}">
-                                    Voir la recette
-                                </a>
-
-                                {% if not recette.validation %}
-                                    <div class="btn-group">
-                                        <a href="{{ path('recette_edit', { id: recette.id }) }}" class="btn btn-sm btn-outline-secondary">Modifier</a>
-
-                                        <form method="post" action="{{ path('recette_delete', { id: recette.id }) }}" onsubmit="return confirm('Confirmer la suppression ?');">
-                                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ recette.id) }}">
-                                            <button class="btn btn-sm btn-outline-danger">Supprimer</button>
-                                        </form>
-                                    </div>
-                                {% endif %}
-                            </div>
+                            </ul>
                         </div>
-                    </div>
-                {% endfor %}
-            </div>
-        {% endif %}
-    </div>
+
+                        <div class="card-footer d-flex justify-content-between align-items-center gap-2">
+                            <a
+                                    class="btn btn-outline-primary flex-grow-1"
+                                    href="{{ path('recette_show', { id: recette.id, from: 'mes' }) }}"
+                                    aria-label="Voir la recette {{ recette.titre }}"
+                            >
+                                Voir la recette
+                            </a>
+
+                            {# Actions modif/supp seulement si non validée (selon ta règle actuelle) #}
+                            {% if not recette.validation %}
+                                <div class="btn-group">
+                                    <a
+                                            href="{{ path('recette_edit', { id: recette.id }) }}"
+                                            class="btn btn-sm btn-secondary"
+                                            aria-label="Modifier la recette {{ recette.titre }}"
+                                    >
+                                        Modifier
+                                    </a>
+
+                                    <form
+                                            method="post"
+                                            action="{{ path('recette_delete', { id: recette.id }) }}"
+                                            class="d-inline"
+                                            onsubmit="if(confirm('Confirmer la suppression ?')){ this.querySelector('button[type=submit]').disabled = true; return true; } return false;"
+                                    >
+                                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ recette.id) }}">
+                                        <button class="btn btn-sm btn-outline-danger" aria-label="Supprimer la recette {{ recette.titre }}">Supprimer</button>
+                                    </form>
+                                </div>
+                            {% else %}
+                                <span class="badge text-bg-success">Validée</span>
+                            {% endif %}
+                        </div>
+                    </article>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
 {% endblock %}

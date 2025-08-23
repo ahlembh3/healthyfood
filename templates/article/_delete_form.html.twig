@@ -1,4 +1,17 @@
-<form method="post" action="{{ path('article_delete', {'id': article.id}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet article ?');">
-    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ article.id) }}">
-    <button class="btn btn-danger btn-sm">supprimer</button>
-</form>
+{# Afficher le bouton uniquement si l'utilisateur a le droit de supprimer #}
+{% if canEdit is not defined or canEdit %}
+    <form method="post"
+          action="{{ path('article_delete', { id: article.id }) }}"
+          class="d-inline"
+          onsubmit="if (confirm('Supprimer « {{ article.titre|e('js') }} » ? Cette action est irréversible.')) { this.querySelector('button[type=submit]').disabled = true; return true; } return false;">
+        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ article.id) }}">
+        {# Ajoute ceci SI ta route attend la méthode DELETE (facultatif si elle attend POST) #}
+        {# <input type="hidden" name="_method" value="DELETE"> #}
+
+        <button type="submit"
+                class="btn btn-sm btn-outline-danger"
+                aria-label="Supprimer l’article « {{ article.titre }} »">
+            🗑 Supprimer
+        </button>
+    </form>
+{% endif %}

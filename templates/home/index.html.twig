@@ -1,19 +1,21 @@
+{# templates/home/index.html.twig (exemple) #}
 {% extends 'base.html.twig' %}
 {% block title %}Accueil{% endblock %}
+{% block page_title %}Bienvenue sur Santé & Nature{% endblock %}
 
-{% block body %}
+{% block content %}
     {# --- HERO --- #}
     <section class="hero-plant position-relative overflow-hidden mb-4" aria-label="Découvrir une vie plus saine">
-        <div class="hero-bg" style="background-image:url('{{ asset('images/img_2.png') }}')"></div>
+        <div class="hero-bg" aria-hidden="true" style="background-image:url('{{ asset('images/img_2.png') }}')"></div>
         <div class="container position-relative">
             <div class="row align-items-center" style="min-height: clamp(260px, 40vw, 420px);">
                 <div class="col-lg-7 py-5">
-                    <h1 class="display-5 fw-bold lh-1 hero-title mb-3">
+                    <h2 class="display-5 fw-bold lh-1 hero-title mb-3">
                         Découvrez <br> une vie <span class="d-inline-block">plus saine</span><br>
                         <span class="text-vert">une tisane</span> à la fois
-                    </h1>
+                    </h2>
                     <div class="d-flex flex-wrap gap-2">
-                        <a class="btn btn-primary btn-lg" href="{{ path('recette_liste') }}">Voir les recettes</a>
+                        <a class="btn btn-primary btn-lg" href="{{ path('recette_index') }}">Voir les recettes</a>
                         <a class="btn btn-outline-primary btn-lg" href="{{ path('tisane_index') }}">Explorer les tisanes</a>
                     </div>
                 </div>
@@ -21,31 +23,49 @@
         </div>
     </section>
 
+    {# --- CARDS D'ACCÈS RAPIDE --- #}
+    <section class="container text-center mt-5" aria-labelledby="explore-title">
+        <h2 id="explore-title" class="mb-4 h3">Explorez le monde des plantes et de la nutrition</h2>
+        <div class="row g-4 justify-content-center">
+            <div class="col-12 col-sm-6 col-lg-3">
+                <div class="card h-100 shadow-sm border-0">
+                    <div class="card-body">
+                        <h3 class="h5">🌿 Plantes médicinales</h3>
+                        <p class="text-muted">Découvrez les bienfaits naturels</p>
+                        <a href="{{ path('plante_index') }}" class="btn btn-outline-primary">Voir</a>
+                    </div>
+                </div>
+            </div>
 
+            <div class="col-12 col-sm-6 col-lg-3">
+                <div class="card h-100 shadow-sm border-0">
+                    <div class="card-body">
+                        <h3 class="h5">🍵 Tisanes</h3>
+                        <p class="text-muted">Choisissez selon vos besoins : sommeil, digestion…</p>
+                        <a href="{{ path('tisane_index') }}" class="btn btn-outline-primary">Voir</a>
+                    </div>
+                </div>
+            </div>
 
-<div class="container text-center mt-5">
-        <h2 class="mb-4">Explorez le monde des plantes et de la nutrition</h2>
-        <div class="row justify-content-center">
-            <div class="col-md-3 m-3 p-3 border rounded bg-white shadow-sm">
-                <h5>🌿 Plantes Médicinales</h5>
-                <p>Découvrez les bienfaits naturels</p>
-                <a href="{{ path('plante_index') }}" class="btn btn-outline-success">Voir</a>
+            <div class="col-12 col-sm-6 col-lg-3">
+                <div class="card h-100 shadow-sm border-0">
+                    <div class="card-body">
+                        <h3 class="h5">🥗 Recettes</h3>
+                        <p class="text-muted">Des idées saines et savoureuses à cuisiner</p>
+                        <a href="{{ path('recette_index') }}" class="btn btn-outline-primary">Voir</a>
+                    </div>
+                </div>
             </div>
-            <div class="col-md-3 m-3 p-3 border rounded bg-white shadow-sm">
-                <h5>🍵 Tisanes</h5>
-                <p>Choisissez selon vos besoins : sommeil, digestion...</p>
-                <a href="{{ path('tisane_index') }}" class="btn btn-outline-success">Voir</a>
-            </div>
-            <div class="col-md-3 m-3 p-3 border rounded bg-white shadow-sm">
-                <h5>🥗 Recettes</h5>
-                <p>Des idées saines et savoureuses à cuisiner</p>
-                <a href="{{ path('recette_index') }}" class="btn btn-outline-success">Voir</a>
-            </div>
-            <div class="col-md-3 m-3 p-3 border rounded bg-white shadow-sm">
-                <h5>📝 Blog</h5>
-                <p>Conseils bien-être et astuces nutrition</p>
-                <a href="{{ path('article_index') }}" class="btn btn-outline-success">Voir</a>
+
+            <div class="col-12 col-sm-6 col-lg-3">
+                <div class="card h-100 shadow-sm border-0">
+                    <div class="card-body">
+                        <h3 class="h5">📝 Blog</h3>
+                        <p class="text-muted">Conseils bien-être et astuces nutrition</p>
+                        <a href="{{ path('article_liste') }}" class="btn btn-outline-primary">Voir</a>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
+    </section>
 {% endblock %}

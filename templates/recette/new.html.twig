@@ -1,40 +1,45 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}{{ 'Ajouter une recette' }}{% endblock %}
+{% block title %}Ajouter une recette{% endblock %}
+{% block page_title %}Ajouter une recette{% endblock %}
 
-{% block body %}
+{% block content %}
+    {# Le partial _form NE DOIT PAS faire {% extends %} ni contenir de lien "Retour" #}
     {% include 'recette/_form.html.twig' with {
-        'button_label': 'Créer',
-        'form_title': 'Ajouter une recette'
+        button_label: 'Créer',
+        form_title: 'Ajouter une recette'
     } %}
 
-    <a href="{% if is_granted('ROLE_ADMIN') %}
-                    {{ path('recette_liste_admin') }}
-                 {% else %}
-                    {{ path('recette_mes_recettes') }}
-                 {% endif %}" class="btn btn-secondary">
-        Retour à la liste
-    </a>
+    <div class="d-flex justify-content-between mt-4">
+        <a href="{% if is_granted('ROLE_ADMIN') %}
+                {{ path('recette_liste_admin') }}
+              {% else %}
+                {{ path('recette_mes_recettes') }}
+              {% endif %}"
+           class="btn btn-outline-secondary">
+            Retour à la liste
+        </a>
+    </div>
 {% endblock %}
 
 {% block javascripts %}
     {{ parent() }}
     <script>
+        // Aperçu image — ne duplique pas cette fonction ailleurs
         function previewImage(event) {
-            const input = event.target;
+            const input   = event.target;
             const preview = document.getElementById('imagePreview');
+            if (!preview) return;
 
             if (input.files && input.files[0]) {
                 const reader = new FileReader();
-
-                reader.onload = function(e) {
+                reader.onload = (e) => {
                     preview.src = e.target.result;
                     preview.classList.remove('d-none');
                 };
-
                 reader.readAsDataURL(input.files[0]);
             } else {
-                preview.src = "#";
+                preview.src = '#';
                 preview.classList.add('d-none');
             }
         }

@@ -1,0 +1,105 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Inscription{% endblock %}
+{% block page_title %}Créer un compte{% endblock %}
+
+{% block content %}
+    <div class="row justify-content-center my-5">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h2 class="h5 mb-0">Inscription</h2>
+                </div>
+
+                <div class="card-body">
+                    {# Zone d'annonces pour lecteurs d’écran #}
+                    <div aria-live="polite" aria-atomic="true">
+                        {% for label, messages in app.flashes %}
+                            {% for message in messages %}
+                                <div
+                                        class="alert alert-{{ label == 'success' ? 'success'
+                                        : (label in ['danger','error'] ? 'danger'
+                                        : (label == 'warning' ? 'warning' : 'info')) }} mb-3"
+                                        role="status">
+                                    {{ message }}
+                                </div>
+                            {% endfor %}
+                        {% endfor %}
+                    </div>
+
+                    {# Erreurs globales du formulaire #}
+                    {{ form_errors(form) }}
+
+                    {{ form_start(form, { attr: { novalidate: 'novalidate' } }) }}
+
+                    {# Email #}
+                    {% if form.email is defined %}
+                        {{ form_row(form.email, {
+                            label: 'Email',
+                            attr: { autocomplete: 'email' }
+                        }) }}
+                    {% endif %}
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            {% if form.nom is defined %}
+                                {{ form_row(form.nom, {
+                                    label: 'Nom',
+                                    attr: { autocomplete: 'family-name' }
+                                }) }}
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            {% if form.prenom is defined %}
+                                {{ form_row(form.prenom, {
+                                    label: 'Prénom',
+                                    attr: { autocomplete: 'given-name' }
+                                }) }}
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    {% if form.preferences is defined %}
+                        {{ form_row(form.preferences, { label: 'Préférences' }) }}
+                    {% endif %}
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            {% if form.password is defined %}
+                                {{ form_row(form.password, {
+                                    label: 'Mot de passe',
+                                    attr: { autocomplete: 'new-password' }
+                                }) }}
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            {% if form.confirmPassword is defined %}
+                                {{ form_row(form.confirmPassword, {
+                                    label: 'Confirmer le mot de passe',
+                                    attr: { autocomplete: 'new-password' }
+                                }) }}
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2 mt-3">
+                        <button type="submit" class="btn btn-primary">
+                            Créer mon compte
+                        </button>
+                        <a href="{{ path('app_login') }}" class="btn btn-outline-secondary">
+                            J’ai déjà un compte
+                        </a>
+                    </div>
+
+                    {{ form_end(form) }}
+                </div>
+            </div>
+
+            <p class="text-muted small mt-3">
+                En créant un compte, vous acceptez nos
+                {# Remplace 'app_terms' par la route de tes CGU si elle existe #}
+                <a href="{{ path('app_terms') }}" class="link-secondary" rel="nofollow">conditions d’utilisation</a>.
+            </p>
+        </div>
+    </div>
+{% endblock %}

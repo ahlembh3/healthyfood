@@ -4,12 +4,13 @@ namespace App\Controller;
 
 use App\Entity\Commentaire;
 use App\Repository\CommentaireRepository;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpFoundation\Request;
 use Doctrine\ORM\EntityManagerInterface;
 use Knp\Component\Pager\PaginatorInterface;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Bundle\SecurityBundle\Attribute\IsGranted;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Annotation\Route;
 
 #[Route('/commentaires')]
 class CommentaireController extends AbstractController
@@ -20,20 +21,21 @@ class CommentaireController extends AbstractController
         CommentaireRepository $commentaireRepository,
         PaginatorInterface $paginator
     ): Response {
-        $signale = $request->query->get('signale');
+        $signale = $request->query->get('signale'); // "1" ou null
 
-        $queryBuilder = $commentaireRepository->createQueryBuilder('c')
+        $qb = $commentaireRepository->createQueryBuilder('c')
             ->orderBy('c.signaler', 'DESC')
             ->addOrderBy('c.date', 'DESC');
 
-        if ($signale) {
-            $queryBuilder->where('c.signaler = true');
+        // Ne permettre le filtre 'signalés uniquement' qu'aux admins
+        if ($signale && $this->isGranted('ROLE_ADMIN')) {
+            $qb->andWhere('c.signaler = :true')->setParameter('true', true);
         }
 
         $pagination = $paginator->paginate(
-            $queryBuilder->getQuery(),
+            $qb->getQuery(),
             $request->query->getInt('page', 1),
-            5 // Nombre de commentaires par page
+            5
         );
 
         return $this->render('commentaire/index.html.twig', [
@@ -41,90 +43,87 @@ class CommentaireController extends AbstractController
         ]);
     }
 
-
-
     #[Route('/voir/{id}', name: 'commentaire_show', methods: ['GET'])]
-    public function show(Commentaire $commentaire): Response
+    public function show(Commentaire $commentaire = null): Response
     {
-           if (!$commentaire) {
-        throw $this->createNotFoundException("Commentaire introuvable.");
-    }
+        if (!$commentaire) {
+            throw $this->createNotFoundException('Commentaire introuvable.');
+        }
+
         return $this->render('commentaire/show.html.twig', [
             'commentaire' => $commentaire,
         ]);
     }
 
     #[Route('/supprimer/{id}', name: 'commentaire_delete', methods: ['POST'])]
+    #[IsGranted('ROLE_ADMIN')]
     public function delete(Request $request, Commentaire $commentaire, EntityManagerInterface $em): Response
     {
         if ($this->isCsrfTokenValid('delete' . $commentaire->getId(), $request->request->get('_token'))) {
             $em->remove($commentaire);
             $em->flush();
+            $this->addFlash('success', 'Commentaire supprimé.');
         }
 
         return $this->redirectToRoute('commentaire_index');
     }
 
-   #[Route('/signaler/{id}', name: 'commentaire_signaler', methods: ['POST'])]
-public function signaler(Request $request, Commentaire $commentaire, EntityManagerInterface $em): Response
-{
+    #[Route('/signaler/{id}', name: 'commentaire_signaler', methods: ['POST'])]
+    public function signaler(Request $request, Commentaire $commentaire, EntityManagerInterface $em): Response
+    {
+        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
 
-    $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
-    if ($this->isCsrfTokenValid('signaler' . $commentaire->getId(), $request->request->get('_token'))) {
-        $utilisateur = $this->getUser();
+        if ($this->isCsrfTokenValid('signaler' . $commentaire->getId(), $request->request->get('_token'))) {
+            $utilisateur = $this->getUser();
 
-        // Empêche de signaler son propre commentaire
-        if ($commentaire->getUtilisateur() === $utilisateur) {
-            $this->addFlash('danger', 'Vous ne pouvez pas signaler votre propre commentaire.');
-        } elseif ($commentaire->isSignaler() || $commentaire->getSignalePar() === $utilisateur) {
-            $this->addFlash('warning', 'Ce commentaire a étais déja signaler.');
-        } else {
-            $commentaire->setSignaler(true);
-            $commentaire->setSignalePar($utilisateur);
-            $commentaire->setSignaleLe(new \DateTimeImmutable());
-
-            $em->flush();
-            $this->addFlash('success', 'Le commentaire a été signalé.');
+            if ($commentaire->getUtilisateur() === $utilisateur) {
+                $this->addFlash('danger', 'Vous ne pouvez pas signaler votre propre commentaire.');
+            } elseif ($commentaire->isSignaler() && $commentaire->getSignalePar() === $utilisateur) {
+                $this->addFlash('warning', 'Vous avez déjà signalé ce commentaire.');
+            } else {
+                $commentaire->setSignaler(true);
+                $commentaire->setSignalePar($utilisateur);
+                $commentaire->setSignaleLe(new \DateTimeImmutable());
+                $em->flush();
+                $this->addFlash('success', 'Le commentaire a été signalé.');
+            }
         }
+
+        // Redirige vers le contenu lié si possible, sinon vers l’accueil
+        if ($commentaire->getRecette()) {
+            return $this->redirectToRoute('recette_show', ['id' => $commentaire->getRecette()->getId()]);
+        }
+        if ($commentaire->getArticle()) {
+            return $this->redirectToRoute('article_show', ['id' => $commentaire->getArticle()->getId()]);
+        }
+        return $this->redirectToRoute('app_home');
     }
-
-    // Redirection conditionnelle selon le type de contenu
-    if ($commentaire->getType() === 1 && $commentaire->getRecette()) {
-        return $this->redirectToRoute('recette_show', ['id' => $commentaire->getRecette()->getId()]);
-    } elseif ($commentaire->getType() === 2 && $commentaire->getArticle()) {
-        return $this->redirectToRoute('article_show', ['id' => $commentaire->getArticle()->getId()]);
-    }
-
-    return $this->redirectToRoute('home');
-}
-
 
     #[Route('/signales', name: 'commentaire_signales', methods: ['GET'])]
-public function commentairesSignales(CommentaireRepository $commentaireRepository): Response
-{
-    $this->denyAccessUnlessGranted('ROLE_ADMIN');
-    $commentaires = $commentaireRepository->findBy(['signaler' => true]);
+    #[IsGranted('ROLE_ADMIN')]
+    public function commentairesSignales(CommentaireRepository $commentaireRepository): Response
+    {
+        $commentaires = $commentaireRepository->findBy(['signaler' => true], ['signaleLe' => 'DESC', 'date' => 'DESC']);
 
-    return $this->render('commentaire/signales.html.twig', [
-        'commentaires' => $commentaires,
-    ]);
-}
-
-#[Route('/designaler/{id}', name: 'commentaire_designaler', methods: ['POST'])]
-public function designaler(Request $request, Commentaire $commentaire, EntityManagerInterface $em): Response
-{
-    if ($this->isCsrfTokenValid('designaler' . $commentaire->getId(), $request->request->get('_token'))) {
-        $commentaire->setSignaler(false);
-        $em->flush();
-
-        $this->addFlash('success', 'Le commentaire a été désignalé.');
+        return $this->render('commentaire/signales.html.twig', [
+            'commentaires' => $commentaires,
+        ]);
     }
 
-    return $this->redirectToRoute('commentaire_signales');
-}
+    #[Route('/designaler/{id}', name: 'commentaire_designaler', methods: ['POST'])]
+    #[IsGranted('ROLE_ADMIN')]
+    public function designaler(Request $request, Commentaire $commentaire, EntityManagerInterface $em): Response
+    {
+        if ($this->isCsrfTokenValid('designaler' . $commentaire->getId(), $request->request->get('_token'))) {
+            $commentaire->setSignaler(false);
+            // (optionnel) nettoyer l’info de signalement
+            $commentaire->setSignalePar(null);
+            $commentaire->setSignaleLe(null);
 
+            $em->flush();
+            $this->addFlash('success', 'Le commentaire a été désignalé.');
+        }
 
-
-
-
+        return $this->redirectToRoute('commentaire_signales');
+    }
 }

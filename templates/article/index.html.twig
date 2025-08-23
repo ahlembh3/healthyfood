@@ -1,45 +1,64 @@
+{# templates/article/index_admin.html.twig (exemple) #}
 {% extends 'base.html.twig' %}
 
-{% block title %}Article index{% endblock %}
+{% block title %}Articles (admin){% endblock %}
+{% block page_title %}Liste des articles{% endblock %}
 
-{% block body %}
-    <h1>Liste des articles</h1>
+{% block content %}
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
+            <tr>
+                <th scope="col">ID</th>
+                <th scope="col">Titre</th>
+                <th scope="col">Auteur</th>
+                <th scope="col">Créé le</th>
+                <th scope="col">Validation</th>
+                <th scope="col" class="text-nowrap">Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for article in articles %}
+                <tr>
+                    <th scope="row">{{ article.id }}</th>
+                    <td class="fw-semibold">{{ article.titre }}</td>
+                    <td>{{ article.utilisateur ? article.utilisateur.email : '—' }}</td>
+                    <td>{{ article.date ? article.date|date('d/m/Y') : '—' }}</td>
+                    <td>
+                        {% if article.validation %}
+                            <span class="badge bg-success">Validé</span>
+                        {% else %}
+                            <span class="badge bg-warning text-dark">En attente</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="d-flex gap-1 flex-wrap">
+                            <a href="{{ path('article_show', { id: article.id, from: 'admin' }) }}" class="btn btn-sm btn-outline-primary">Afficher</a>
+                            <a href="{{ path('article_edit', { id: article.id }) }}" class="btn btn-sm btn-outline-secondary">Modifier</a>
 
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Id</th>
-                <th>Titre</th>
-                <th>Auteur</th>
-                <th>Date de création</th>
-                <th>Validations</th>
-                <th>actions</th>
-            </tr>
-        </thead>
-        <tbody>
-        {% for article in articles %}
-            <tr>
-                <td>{{ article.id }}</td>
-                <td>{{ article.titre }}</td>
-                <td>{{ article.utilisateur.email }}</td>
-                <td>{{ article.date ? article.date|date('d/m/Y') : '' }}</td>
-                <td>{{ article.validation ? 'Oui' : 'Non' }}</td>
-                <td>
-                    <div class="d-flex gap-2 mt-4">
-                        <a href="{{ path('article_show', {'id': article.id, 'from':'admin'}) }}"
-                           class="btn btn-secondary btn-sm">afficher</a>
-                        <a href="{{ path('article_edit', {'id': article.id}) }}" class="btn btn-primary btn-sm">modifier</a>
-                    </div>
-                </td>
-            </tr>
-        {% else %}
-            <tr>
-                <td colspan="6">Aucun article trouvé</td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+                            {# Optionnel : bouton "Valider" si tu as la route correspondante (cf. security.yaml ^/articles/\d+/valider) #}
+                            {#
+                            {% if not article.validation %}
+                              <form method="post"
+                                    action="{{ path('article_valider', { id: article.id }) }}"
+                                    class="d-inline"
+                                    onsubmit="return confirm('Valider cet article ?');">
+                                <input type="hidden" name="_token" value="{{ csrf_token('valider' ~ article.id) }}">
+                                <button class="btn btn-sm btn-warning">Valider</button>
+                              </form>
+                            {% endif %}
+                            #}
+                        </div>
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="6" class="text-center text-muted">Aucun article trouvé.</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
 
-    <a href="{{ path('article_new') }}" class="btn btn-success">Ajouter un nouvel article</a>
+    <a href="{{ path('article_new') }}" class="btn btn-success mt-3">Ajouter un nouvel article</a>
 {% endblock %}
-

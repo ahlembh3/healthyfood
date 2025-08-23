@@ -1,103 +1,100 @@
+{# templates/recette/show.html.twig #}
 {% extends 'base.html.twig' %}
 
 {% block title %}{{ recette.titre }} — Recette{% endblock %}
+{% block page_title %}{{ recette.titre }}{% endblock %}
 
-{% block body %}
-    <div class="container my-5">
+{% block content %}
 
-        <h1 class="mb-4 text-center">{{ recette.titre }}</h1>
+    {# --- Image principale --- #}
+    {% set img = recette.image|default('')|trim %}
+    {% set src = img
+        ? (img starts with 'http' ? img : asset((img starts with 'uploads/' ? img : 'uploads/recettes/' ~ img)))
+        : asset('images/placeholder-recipe.jpg')
+    %}
+    <div class="mb-4">
+        <img
+                src="{{ src }}"
+                alt="{{ img ? 'Photo de ' ~ recette.titre : 'Image générique de recette' }}"
+                class="img-fluid rounded shadow w-100"
+                style="max-height:480px;object-fit:cover;"
+                loading="lazy"
+                onerror="this.onerror=null;this.src='{{ asset('images/placeholder-recipe.jpg') }}';"
+        />
+    </div>
 
-        {# --- Grande image --- #}
-        <div class="mb-4">
-
-            {% set img = recette.image|default('') %}
-            <img
-                    src="{% if img %}
-         {% if img starts with 'http' %}
-           {{ img }}
-         {% else %}
-           {{ asset(img starts with 'uploads/' ? img : 'uploads/recettes/' ~ img) }}
-         {% endif %}
-       {% else %}
-         {{ asset('images/placeholder-recipe.jpg') }}
-       {% endif %}"
-                    alt="{{ recette.titre }}"
-                    class="img-fluid rounded shadow w-100"
-                    style="max-height:480px;object-fit:cover;"
-                    onerror="this.onerror=null;this.src='{{ asset('images/placeholder-recipe.jpg') }}';"
-            />
-        </div>
-
-        <div class="row g-4">
-            {# --- Résumé infos pratiques --- #}
-            <div class="col-lg-4">
-                <div class="card shadow-sm h-100">
-                    <div class="card-body">
-                        <h5 class="card-title mb-3">ℹ️ Infos pratiques</h5>
-                        <ul class="list-unstyled mb-0">
-                            <li><strong>Préparation :</strong> {{ recette.tempsPreparation }} min</li>
-                            {% if recette.tempsCuisson is not null %}
-                                <li><strong>Cuisson :</strong> {{ recette.tempsCuisson }} min</li>
-                            {% endif %}
-                            <li><strong>Difficulté :</strong> {{ recette.difficulte ?? '—' }}</li>
-                            <li><strong>Portions :</strong> {{ recette.portions ?? 1 }} personne(s)</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-
-            {# --- Ingrédients --- #}
-            <div class="col-lg-5">
-                <div class="card shadow-sm h-100">
-                    <div class="card-body">
-                        <h5 class="card-title mb-3">📦 Ingrédients</h5>
-
-                        {% if recette.recetteIngredients is not empty %}
-                            <ul class="mb-0">
-                                {% for ri in recette.recetteIngredients %}
-                                    {% set ing = ri.ingredient %}
-                                    <li>
-                                        {% if ing %}
-                                            <strong>{{ ing.nom }}</strong> — {{ ri.quantite }}
-                                            {% if ing.unite %} {{ ing.unite }}{% endif %}
-                                            {% if ing.allergenes %}<span class="badge text-bg-warning ms-2">Allergènes : {{ ing.allergenes }}</span>{% endif %}
-                                        {% else %}
-                                            <em>Ingrédient supprimé</em>
-                                        {% endif %}
-                                    </li>
-                                {% endfor %}
-                            </ul>
-                        {% else %}
-                            <p class="text-muted mb-0">Aucun ingrédient.</p>
+    <div class="row g-4">
+        {# --- Infos pratiques --- #}
+        <section class="col-lg-4" aria-labelledby="info-pratiques">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h2 id="info-pratiques" class="h5 card-title mb-3">ℹ️ Infos pratiques</h2>
+                    <ul class="list-unstyled mb-0">
+                        <li><strong>Préparation :</strong> {{ recette.tempsPreparation }} min</li>
+                        {% if recette.tempsCuisson is not null %}
+                            <li><strong>Cuisson :</strong> {{ recette.tempsCuisson }} min</li>
                         {% endif %}
-                    </div>
+                        <li><strong>Difficulté :</strong> {{ recette.difficulte ?? '—' }}</li>
+                        <li><strong>Portions :</strong> {{ recette.portions ?? 1 }} personne(s)</li>
+                    </ul>
                 </div>
             </div>
+        </section>
 
-            {# --- Encadré nutritionnel (≈ pour 1 recette) --- #}
-            <div class="col-lg-3">
-                <div class="card shadow-sm h-100">
-                    <div class="card-body">
-                        <h5 class="card-title mb-3">🍽️ Valeurs nutritionnelles</h5>
+        {# --- Ingrédients --- #}
+        <section class="col-lg-5" aria-labelledby="ingredients">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h2 id="ingredients" class="h5 card-title mb-3">📦 Ingrédients</h2>
 
-                        {# Totaux calculés à partir des ingrédients en gramme / millilitre #}
-                        {% set calories = 0 %}
-                        {% set proteines = 0 %}
-                        {% set glucides  = 0 %}
-                        {% set lipides   = 0 %}
+                    {% if recette.recetteIngredients is not empty %}
+                        <ul class="mb-0">
+                            {% for ri in recette.recetteIngredients %}
+                                {% set ing = ri.ingredient %}
+                                <li>
+                                    {% if ing %}
+                                        <strong>{{ ing.nom }}</strong> — {{ ri.quantite }}
+                                        {% if ing.unite %} {{ ing.unite }}{% endif %}
+                                        {% if ing.allergenes %}
+                                            <span class="badge text-bg-warning ms-2">Allergènes : {{ ing.allergenes }}</span>
+                                        {% endif %}
+                                    {% else %}
+                                        <em>Ingrédient supprimé</em>
+                                    {% endif %}
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="text-muted mb-0">Aucun ingrédient.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </section>
 
-                        {% for ri in recette.recetteIngredients %}
-                            {% set ing = ri.ingredient %}
-                            {% if ing and (ing.unite in ['gramme','millilitre']) %}
-                                {% set factor = (ri.quantite / 100) %}
-                                {% set calories = calories + (ing.calories   ?? 0) * factor %}
-                                {% set proteines = proteines + (ing.proteines ?? 0) * factor %}
-                                {% set glucides  = glucides  + (ing.glucides  ?? 0) * factor %}
-                                {% set lipides   = lipides   + (ing.lipides   ?? 0) * factor %}
-                            {% endif %}
-                        {% endfor %}
+        {# --- Nutrition (approx.) --- #}
+        <section class="col-lg-3" aria-labelledby="nutrition">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h2 id="nutrition" class="h5 card-title mb-3">🍽️ Valeurs nutritionnelles</h2>
+                    {% set calories = 0 %}
+                    {% set proteines = 0 %}
+                    {% set glucides  = 0 %}
+                    {% set lipides   = 0 %}
+                    {% for ri in recette.recetteIngredients %}
+                        {% set ing = ri.ingredient %}
+                        {% if ing and (ing.unite in ['gramme','millilitre']) %}
+                            {% set q = ri.quantite|default(0) %}
+                            {% set factor = q / 100 %}
+                            {% set calories = calories + (ing.calories|default(0)) * factor %}
+                            {% set proteines = proteines + (ing.proteines|default(0)) * factor %}
+                            {% set glucides  = glucides  + (ing.glucides|default(0))  * factor %}
+                            {% set lipides   = lipides   + (ing.lipides|default(0))   * factor %}
+                        {% endif %}
+                    {% endfor %}
 
+                    <div class="table-responsive">
                         <table class="table table-sm mb-2">
+                            <caption class="visually-hidden">Totaux approximatifs pour la recette</caption>
                             <tbody>
                             <tr><th scope="row">Calories</th><td>{{ calories|round(0, 'common') }} kcal</td></tr>
                             <tr><th scope="row">Protéines</th><td>{{ proteines|round(1, 'common') }} g</td></tr>
@@ -105,120 +102,118 @@
                             <tr><th scope="row">Lipides</th><td>{{ lipides|round(1, 'common') }} g</td></tr>
                             </tbody>
                         </table>
-
-                        <small class="text-muted d-block">
-                            * Calcul basé sur les ingrédients en g/ml (≈ pour 100 g/ml).
-                            Les unités en “pièce/gousse” ne sont pas comptabilisées.
-                        </small>
                     </div>
+
+                    <small class="text-muted d-block">
+                        * Calcul basé sur les ingrédients en g/ml (≈ pour 100 g/ml). Les unités en “pièce/gousse” ne sont pas comptabilisées.
+                    </small>
                 </div>
             </div>
-        </div>
+        </section>
+    </div>
 
-        {# --- Étapes numérotées --- #}
-        <div class="card shadow-sm my-4">
+    {# --- Étapes (jamais de |raw) --- #}
+    <section class="card shadow-sm my-4" aria-labelledby="etapes">
+        <div class="card-body">
+            <h2 id="etapes" class="h5 card-title mb-3">👨‍🍳 Étapes</h2>
+            {% set instr = recette.instructions|default('') %}
+            {% set normalized = instr
+                |replace({'\r\n':'\n','\r':'\n','<br>':'\n','<br/>':'\n','<br />':'\n'})
+                |striptags
+            %}
+            {% set steps = normalized|split('\n')|filter(s => s|trim != '') %}
+            {% if steps|length > 0 %}
+                <ol class="mb-0">
+                    {% for step in steps %}
+                        <li class="mb-2">{{ step|trim }}</li>
+                    {% endfor %}
+                </ol>
+            {% else %}
+                <p class="text-muted mb-0">Aucune instruction détaillée.</p>
+            {% endif %}
+        </div>
+    </section>
+
+    {# --- Tisanes suggérées --- #}
+    {% if tisanesSuggerees is defined and tisanesSuggerees|length > 0 %}
+        <section class="card shadow-sm mb-4" aria-labelledby="tisanes-sugg">
             <div class="card-body">
-                <h5 class="card-title mb-3">👨‍🍳 Étapes</h5>
-                {% set instr = recette.instructions|default('') %}
-
-                {# Si on détecte du HTML, on affiche tel quel #}
-                {% if instr matches('/<[^>]+>/') %}
-                    <div class="content-body">
-                        {{ instr|raw }}
-                    </div>
-                {% else %}
-                    {# Sinon on normalise les retours à la ligne (gère aussi les <br> résiduels) #}
-                    {% set normalized = instr|replace({'<br>':'\n','<br/>':'\n','<br />':'\n'})|striptags %}
-                    {% set steps = normalized|split('\n')|filter(s => s|trim != '') %}
-                    {% if steps is not empty %}
-                        <ol class="mb-0">
-                            {% for step in steps %}
-                                <li class="mb-2">{{ step|trim }}</li>
-                            {% endfor %}
-                        </ol>
-                    {% else %}
-                        <p class="text-muted mb-0">Aucune instruction détaillée.</p>
-                    {% endif %}
-                {% endif %}
-            </div>
-        </div>
-
-
-        {# --- Suggestions de tisanes associées --- #}
-        {% if tisanesSuggerees is defined and tisanesSuggerees|length > 0 %}
-            <div class="card shadow-sm mb-4">
-                <div class="card-body">
-                    <h5 class="card-title mb-3">🌿 Tisanes suggérées</h5>
-
-                    <div class="row g-3">
-                        {% for tisane in tisanesSuggerees %}
-                            <div class="col-md-4">
-                                <div class="border rounded h-100 p-3 d-flex">
-                                    <img
-                                            src="{{ tisane.image ? asset('uploads/tisanes/' ~ tisane.image) : asset('images/placeholder-tea.jpg') }}"
-                                            alt="{{ tisane.nom }}"
-                                            class="rounded me-3"
-                                            style="width:80px;height:80px;object-fit:cover;"
-                                    >
-                                    <div>
-                                        <a href="{{ path('tisane_show', {'id': tisane.id}) }}" class="fw-semibold d-block mb-1">
-                                            {{ tisane.nom }}
-                                        </a>
-
-                                        {# Liste courte des bienfaits (compatible toutes versions de Twig) #}
-                                        {% if tisane.bienfaits|default([])|length > 0 %}
-                                            <small class="text-muted d-block">
-                                                Bienfaits :
-                                                {% for b in tisane.bienfaits %}
-                                                    {{ loop.first ? '' : ', ' }}{{ b.nom }}
-                                                {% endfor %}
-                                            </small>
-                                        {% endif %}
-
-
-
-                                    </div>
+                <h2 id="tisanes-sugg" class="h5 card-title mb-3">🌿 Tisanes suggérées</h2>
+                <div class="row g-3">
+                    {% for tisane in tisanesSuggerees %}
+                        <div class="col-md-4">
+                            <div class="border rounded h-100 p-3 d-flex">
+                                <img
+                                        src="{{ tisane.image ? asset('uploads/tisanes/' ~ tisane.image) : asset('images/placeholder-tea.jpg') }}"
+                                        alt="{{ tisane.nom }}"
+                                        class="rounded me-3"
+                                        style="width:80px;height:80px;object-fit:cover;"
+                                        loading="lazy"
+                                >
+                                <div>
+                                    <a href="{{ path('tisane_show', {'id': tisane.id}) }}" class="fw-semibold d-block mb-1">
+                                        {{ tisane.nom }}
+                                    </a>
+                                    {% if tisane.bienfaits|default([])|length > 0 %}
+                                        <small class="text-muted d-block">
+                                            Bienfaits :
+                                            {% for b in tisane.bienfaits %}
+                                                {{ loop.first ? '' : ', ' }}{{ b.nom }}
+                                            {% endfor %}
+                                        </small>
+                                    {% endif %}
                                 </div>
                             </div>
-                        {% endfor %}
-                    </div>
+                        </div>
+                    {% endfor %}
                 </div>
             </div>
-        {% endif %}
+        </section>
+    {% endif %}
 
-
-        {# --- Note moyenne (si tu veux la garder) --- #}
-        {% if moyenne is defined %}
-            <div class="mb-3">
-                <h6>⭐ Note moyenne</h6>
-                {% if moyenne is not null %}
-                    {% for i in 1..5 %}
-                        {{ i <= moyenne ? '⭐' : '☆' }}
-                    {% endfor %}
+    {# --- Note moyenne (option) --- #}
+    {% if moyenne is defined %}
+        <section class="mb-3" aria-labelledby="note-moyenne">
+            <h2 id="note-moyenne" class="visually-hidden">Note moyenne</h2>
+            {% if moyenne is not null %}
+                <div aria-label="Note moyenne {{ moyenne }}/5">
+                    {% for i in 1..5 %}{{ i <= moyenne ? '⭐' : '☆' }}{% endfor %}
                     ({{ moyenne|number_format(1, '.', ' ') }}/5)
-                {% else %}
-                    <p class="text-muted">Pas encore de note.</p>
-                {% endif %}
-            </div>
-        {% endif %}
+                </div>
+            {% else %}
+                <p class="text-muted">Pas encore de note.</p>
+            {% endif %}
+        </section>
+    {% endif %}
 
-        {# --- Commentaires --- #}
-        <h2 class="mb-3">💬 Commentaires</h2>
+    {# --- Commentaires --- #}
+    <section aria-labelledby="commentaires">
+        <h2 id="commentaires" class="h5 mb-3">💬 Commentaires</h2>
 
         {% for commentaire in commentaires %}
-            <div class="mb-3 p-3 border rounded shadow-sm bg-light">
+            <article class="mb-3 p-3 border rounded shadow-sm bg-light" aria-labelledby="cmt-{{ commentaire.id }}">
                 <div class="d-flex justify-content-between">
+                    <h3 id="cmt-{{ commentaire.id }}" class="h6 mb-1">
+                        {{ commentaire.utilisateur ? commentaire.utilisateur.prenom ~ ' ' ~ commentaire.utilisateur.nom : 'Utilisateur supprimé' }}
+                    </h3>
                     <small class="text-muted">{{ commentaire.date|date('d/m/Y H:i') }}</small>
-                    {% if app.user and commentaire.SignalePar is null and commentaire.utilisateur != app.user %}
-                        <form method="post" action="{{ path('commentaire_signaler', {'id': commentaire.id}) }}" onsubmit="return confirm('Voulez-vous signaler ce commentaire ?');">
-                            <input type="hidden" name="_token" value="{{ csrf_token('signaler' ~ commentaire.id) }}">
-                            <button class="btn btn-sm btn-warning">Signaler</button>
-                        </form>
-                    {% endif %}
                 </div>
+
                 <p class="mb-1">Note : {{ commentaire.note ?? "non noté" }}</p>
                 <p class="mb-0">{{ commentaire.contenu }}</p>
-            </div>
+
+                {% if app.user and commentaire.SignalePar is null and commentaire.utilisateur != app.user %}
+                    <form
+                            method="post"
+                            action="{{ path('commentaire_signaler', {'id': commentaire.id}) }}"
+                            class="mt-2 d-inline"
+                            onsubmit="if(confirm('Voulez-vous signaler ce commentaire ?')){ this.querySelector('button[type=submit]').disabled = true; return true; } return false;"
+                    >
+                        <input type="hidden" name="_token" value="{{ csrf_token('signaler' ~ commentaire.id) }}">
+                        <button class="btn btn-sm btn-outline-warning">Signaler</button>
+                    </form>
+                {% endif %}
+            </article>
         {% else %}
             <p class="text-muted">Aucun commentaire pour cette recette.</p>
         {% endfor %}
@@ -226,15 +221,18 @@
         {% if app.user %}
             <div class="card my-4 shadow-sm">
                 <div class="card-body">
-                    <h5 class="card-title">✍️ Laisser un commentaire</h5>
-                    {{ form_start(form) }}
+                    <h2 class="h5 card-title">✍️ Laisser un commentaire</h2>
+                    {{ form_start(form, { attr: { novalidate: 'novalidate' } }) }}
+                    {{ form_errors(form) }}
                     <div class="mb-3">
                         {{ form_label(form.contenu, 'Votre commentaire') }}
                         {{ form_widget(form.contenu, {'attr': {'class': 'form-control', 'rows': 3}}) }}
+                        {{ form_errors(form.contenu) }}
                     </div>
                     <div class="mb-3">
                         {{ form_label(form.note, 'Votre note') }}
                         {{ form_widget(form.note, {'attr': {'class': 'form-control', 'min': 0, 'max': 5}}) }}
+                        {{ form_errors(form.note) }}
                     </div>
                     <button class="btn btn-primary">Envoyer</button>
                     {{ form_end(form) }}
@@ -245,20 +243,20 @@
                 Vous devez <a href="{{ path('app_login') }}" class="alert-link">vous connecter</a> pour commenter.
             </div>
         {% endif %}
+    </section>
 
-        <div class="d-flex gap-2 mt-4">
-            <a href="{{ path(backRoute, backParams) }}" class="btn btn-secondary">
-                Retour à la liste
-            </a>
-            {% set isOwner = app.user and recette.utilisateur and app.user.id == recette.utilisateur.id %}
-            {% set canManage = is_granted('ROLE_ADMIN') or (isOwner and not recette.validation) %}
+    {# --- Navigation & gestion --- #}
+    {% set routeRetour = backRoute|default('recette_index') %}
+    {% set paramsRetour = backParams|default({}) %}
+    <div class="d-flex flex-wrap gap-2 mt-4">
+        <a href="{{ path(routeRetour, paramsRetour) }}" class="btn btn-outline-secondary">Retour à la liste</a>
 
-            {% if canManage %}
-                <a href="{{ path('recette_edit', {'id': recette.id}) }}" class="btn btn-primary">Modifier</a>
-                {{ include('recette/_delete_form.html.twig') }}
-            {% endif %}
-        </div> {# ferme le bloc boutons #}
-
-
+        {% set isOwner = app.user and recette.utilisateur and app.user.id == recette.utilisateur.id %}
+        {% set canManage = is_granted('ROLE_ADMIN') or (isOwner and not recette.validation) %}
+        {% if canManage %}
+            <a href="{{ path('recette_edit', {'id': recette.id}) }}" class="btn btn-primary">Modifier</a>
+            {{ include('recette/_delete_form.html.twig') }}
+        {% endif %}
     </div>
+
 {% endblock %}

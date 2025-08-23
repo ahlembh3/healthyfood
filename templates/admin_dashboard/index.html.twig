@@ -1,68 +1,63 @@
+{# templates/admin/dashboard.html.twig #}
 {% extends 'base.html.twig' %}
 
 {% block title %}Dashboard Admin{% endblock %}
-
 {% block page_title %}Tableau de bord administrateur{% endblock %}
 
 {% block content %}
-    <div class="container">
-        <div class="row g-4">
+    <div class="row g-4">
 
-            <div class="col-md-4">
-                <div class="card border-success shadow-sm h-100">
-                    <div class="card-body">
-                        <h5 class="card-title">👨‍🍳 Recettes</h5>
-                        <p class="card-text">Gérez les recettes créées par les utilisateurs.</p>
-                        <a href="{{ path('recette_liste_admin') }}" class="btn btn-success">Gérer les recettes</a>
-                    </div>
+        <section class="col-12 col-md-6 col-lg-3" role="region" aria-labelledby="card-recettes">
+            <div class="card shadow-sm h-100 border-0">
+                <div class="card-body">
+                    <h2 id="card-recettes" class="h5 card-title">👨‍🍳 Recettes</h2>
+                    <p class="card-text">Gérez les recettes créées par les utilisateurs.</p>
+                    <a href="{{ path('recette_liste_admin') }}" class="btn btn-primary">Gérer les recettes</a>
                 </div>
             </div>
+        </section>
 
-            <div class="col-md-4">
-                <div class="card border-danger shadow-sm h-100">
-                    <div class="card-body">
-                        <h5 class="card-title">💬 Commentaires</h5>
+        <section class="col-12 col-md-6 col-lg-3" role="region" aria-labelledby="card-commentaires">
+            <div class="card shadow-sm h-100 border-0">
+                <div class="card-body">
+                    <h2 id="card-commentaires" class="h5 card-title">💬 Commentaires</h2>
 
+                    <div class="d-flex flex-column gap-2 mb-2">
                         <a href="{{ path('commentaire_signales') }}" class="btn btn-outline-warning">
-                            Signalés <span class="badge bg-danger">{{ nbSignalements }}</span>
+                            Signalés
+                            <span class="badge text-bg-danger ms-1">{{ nbSignalements|default(0) }}</span>
                         </a>
-                        <a href="{{ path('commentaire_signales') }}" class="btn btn-outline-warning btn-sm mt-2">Voir les signalés</a>
-
-                        <p class="card-text">Modérez les commentaires signalés ou inappropriés.</p>
                         <a href="{{ path('commentaire_index') }}" class="btn btn-danger">Modérer les commentaires</a>
                     </div>
+
+                    <p class="card-text mb-0">Modérez les commentaires signalés ou inappropriés.</p>
                 </div>
             </div>
+        </section>
 
-
-
-
-            <div class="col-md-4">
-                <div class="card border-warning shadow-sm h-100">
-                    <div class="card-body">
-                        <h5 class="card-title">📰 Articles</h5>
-                        <p class="card-text">Publiez ou modifiez des articles informatifs.</p>
-                        <a href="{{ path('article_liste_admin') }}" class="btn btn-warning">Gérer les articles</a>
-                    </div>
+        <section class="col-12 col-md-6 col-lg-3" role="region" aria-labelledby="card-articles">
+            <div class="card shadow-sm h-100 border-0">
+                <div class="card-body">
+                    <h2 id="card-articles" class="h5 card-title">📰 Articles</h2>
+                    <p class="card-text">Publiez ou modifiez des articles informatifs.</p>
+                    <a href="{{ path('article_liste_admin') }}" class="btn btn-primary">Gérer les articles</a>
                 </div>
             </div>
+        </section>
 
-
-
-            <div class="col-md-4">
-                <div class="card border-dark shadow-sm h-100">
-                    <div class="card-body">
-                        <h5 class="card-title">👥 Utilisateurs</h5>
-                        <p class="card-text">Consultez la liste des utilisateurs inscrits.</p>
-                        <a href="{{ path('utilisateurs_liste') }}" class="btn btn-dark">Gérer les utilisateurs</a>
-                    </div>
+        <section class="col-12 col-md-6 col-lg-3" role="region" aria-labelledby="card-users">
+            <div class="card shadow-sm h-100 border-0">
+                <div class="card-body">
+                    <h2 id="card-users" class="h5 card-title">👥 Utilisateurs</h2>
+                    <p class="card-text">Consultez la liste des utilisateurs inscrits.</p>
+                    <a href="{{ path('utilisateurs_liste') }}" class="btn btn-primary">Gérer les utilisateurs</a>
                 </div>
             </div>
+        </section>
 
-        </div>
-
-        <div class="mt-5">
-            <p class="text-muted">Connecté en tant que : <strong>{{ app.user.email }}</strong></p>
-        </div>
     </div>
+
+    <p class="text-muted mt-4">
+        Connecté en tant que : <strong>{{ app.user.email }}</strong>
+    </p>
 {% endblock %}

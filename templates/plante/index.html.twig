@@ -1,43 +1,73 @@
+{# templates/plante/index.html.twig #}
 {% extends 'base.html.twig' %}
 
 {% block title %}Liste des plantes{% endblock %}
+{% block page_title %}🌿 Nos plantes médicinales{% endblock %}
 
-{% block body %}
-    <div class="container mt-4">
-        <h1 class="mb-4">🌿 Nos plantes médicinales</h1>
-
-        <form method="get" action="{{ path('plante_index') }}" class="mb-4">
+{% block content %}
+    <section aria-labelledby="recherche-plantes" class="mb-4">
+        <h2 id="recherche-plantes" class="visually-hidden">Recherche de plantes</h2>
+        <form method="get" action="{{ path('plante_index') }}" role="search" aria-label="Rechercher une plante">
             <div class="input-group">
-                <input type="text" name="q" class="form-control" placeholder="Rechercher une plante...">
-                <button class="btn btn-outline-success" type="submit">Rechercher</button>
+                <label for="q" class="visually-hidden">Rechercher une plante</label>
+                <input
+                        type="text"
+                        id="q"
+                        name="q"
+                        class="form-control"
+                        placeholder="Rechercher une plante…"
+                        value="{{ app.request.query.get('q') }}"
+                        autocomplete="off"
+                >
+                <button class="btn btn-primary" type="submit">Rechercher</button>
             </div>
         </form>
+    </section>
 
-        {% if pagination.items is empty %}
-            <p>Aucune plante trouvée.</p>
-        {% else %}
-            <div class="row">
+    {% if pagination.items is empty %}
+        <div class="alert alert-info mb-0">Aucune plante trouvée.</div>
+    {% else %}
+        <section aria-labelledby="liste-plantes">
+            <h2 id="liste-plantes" class="visually-hidden">Liste des plantes</h2>
+            <div class="row g-4">
                 {% for plante in pagination %}
-                    <div class="col-md-4 mb-3">
-                        <div class="card h-100 shadow-sm">
-                            {% if plante.image %}
-                                <img src="{{ asset('uploads/plantes/' ~ plante.image) }}" class="card-img-top" alt="{{ plante.nomCommun }}">
-                            {% endif %}
-                            <div class="card-body">
-                                <h5 class="card-title">{{ plante.nomCommun }}</h5>
-                                <p class="card-text">{{ plante.description|slice(0, 100) ~ '...' }}</p>
-                                <a href="{{ path('plante_show', {id: plante.id}) }}" class="btn btn-success">En savoir plus</a>
+                    <div class="col-sm-6 col-md-4">
+                        <article class="card h-100 shadow-sm border-0">
+                            <div class="ratio ratio-4x3 bg-light">
+                                {% set img = plante.image|default('')|trim %}
+                                {% set src = img ? asset('uploads/plantes/' ~ img) : asset('images/placeholder-plant.jpg') %}
+                                <img
+                                        src="{{ src }}"
+                                        alt="{{ img ? 'Photo de ' ~ plante.nomCommun : 'Image générique de plante' }}"
+                                        class="rounded-top w-100 h-100"
+                                        style="object-fit: cover;"
+                                        loading="lazy"
+                                >
                             </div>
-                        </div>
+
+                            <div class="card-body">
+                                <h3 class="h5 card-title mb-2">{{ plante.nomCommun }}</h3>
+                                <p class="card-text text-muted mb-3">
+                                    {{ plante.description|striptags|u.truncate(120, '…') }}
+                                </p>
+                                <a
+                                        href="{{ path('plante_show', { id: plante.id }) }}"
+                                        class="btn btn-outline-primary"
+                                        aria-label="En savoir plus sur {{ plante.nomCommun }}"
+                                >
+                                    En savoir plus
+                                </a>
+                            </div>
+                        </article>
                     </div>
                 {% endfor %}
             </div>
 
             <div class="mt-4 d-flex justify-content-center">
                 {{ knp_pagination_render(pagination) }}
+                {# si besoin de conserver explicitement la query:
+           {{ knp_pagination_render(pagination, null, { query: app.request.query.all }) }} #}
             </div>
-        {% endif %}
-    </div>
-
-
+        </section>
+    {% endif %}
 {% endblock %}

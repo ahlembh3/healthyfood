@@ -1,16 +1,25 @@
-{% set is_edit = form.vars.value.id is defined and form.vars.value.id %}
 {% extends 'base.html.twig' %}
 
-{% block title %}Modifier Utilisateur{% endblock %}
+{% block title %}Modifier utilisateur{% endblock %}
+{% block page_title %}
+    {{ is_granted('ROLE_ADMIN') ? 'Modifier un utilisateur' : 'Modifier mon profil' }}
+{% endblock %}
 
-{% block body %}
+{% block content %}
+    {# Formulaire : on adapte le titre/bouton selon le rôle #}
     {% include 'utilisateur/_form.html.twig' with {
-        'button_label': 'Modifier',
-        'form_title': 'Modifier utilisateur',
-        'is_edit': is_edit
+        button_label: 'Enregistrer',
+        form_title: is_granted('ROLE_ADMIN') ? 'Modifier un utilisateur' : 'Modifier mon profil'
     } %}
-    <div class="d-flex gap-2 mt-4">
-        <a href="{{ path('utilisateurs_liste') }}" class="btn btn-secondary">Retour à la liste</a>
-        {{ include('utilisateur/_delete_form.html.twig') }}
+
+    <div class="d-flex flex-wrap gap-2 mt-4">
+        {% if is_granted('ROLE_ADMIN') %}
+            <a href="{{ path('utilisateurs_liste') }}" class="btn btn-outline-secondary">Retour à la liste</a>
+            {# Supprimer : seulement pour les admins sur la page admin #}
+            {{ include('utilisateur/_delete_form.html.twig') }}
+        {% else %}
+            <a href="{{ path('utilisateurs_mon_profil') }}" class="btn btn-outline-secondary">Retour à mon profil</a>
+            <a href="{{ path('utilisateurs_dashboard') }}" class="btn btn-link">Mon tableau de bord</a>
+        {% endif %}
     </div>
 {% endblock %}

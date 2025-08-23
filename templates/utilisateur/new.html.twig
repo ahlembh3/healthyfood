@@ -1,12 +1,18 @@
+{# templates/utilisateur/new.html.twig #}
 {% extends 'base.html.twig' %}
 
-{% block title %}Nouveau Utilisateur{% endblock %}
+{% block title %}Nouvel utilisateur{% endblock %}
+{% block page_title %}Créer un utilisateur{% endblock %}
 
-{% block body %}
-{% include 'utilisateur/_form.html.twig' with {'button_label': "S'inscrire", 'form_title': 'Inscription'} %}
+{% block content %}
+    {% include 'utilisateur/_form.html.twig' with {
+        button_label: 'Créer',
+        form_title: 'Créer un utilisateur'
+    } %}
 
-<div class="d-flex gap-2 mt-4">
-    <a href="{{ path('utilisateurs_liste') }}" class="btn btn-secondary"> Retour à la liste</a>
-
-</div>
+    <div class="d-flex gap-2 mt-4">
+        <a href="{{ path('utilisateurs_liste') }}" class="btn btn-outline-secondary">
+            Retour à la liste
+        </a>
+    </div>
 {% endblock %}

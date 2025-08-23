@@ -1,57 +1,64 @@
 {% extends 'base.html.twig' %}
 
 {% block title %}Mon tableau de bord{% endblock %}
+{% block page_title %}Mon tableau de bord{% endblock %}
 
-{% block body %}
-    <div class="container mt-5">
-        <h1 class="mb-4">Bienvenue, {{ utilisateur.prenom }} !</h1>
+{% block content %}
+    <div class="row g-4">
+        <!-- Mes recettes -->
+        <section class="col-md-6" aria-labelledby="mes-recettes">
+            <h2 id="mes-recettes" class="h5">Mes recettes</h2>
+            <ul class="list-group">
+                {% for recette in mesRecettes %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <a href="{{ path('recette_show', { id: recette.id }) }}" class="text-decoration-none">
+                            {{ recette.nom }}
+                        </a>
+                        <span class="badge {{ recette.validation ? 'text-bg-success' : 'text-bg-warning' }}">
+              {{ recette.validation ? 'Validée' : 'En attente' }}
+            </span>
+                    </li>
+                {% else %}
+                    <li class="list-group-item text-muted">Aucune recette créée.</li>
+                {% endfor %}
+            </ul>
+        </section>
 
-        <div class="row g-4">
-            <!-- Mes recettes -->
-            <div class="col-md-6">
-                <h2> Mes recettes</h2>
-                <ul class="list-group">
-                    {% for recette in mesRecettes %}
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                            <a href="{{ path('recette_show', {id: recette.id}) }}">{{ recette.nom }}</a>
-                            <span class="badge bg-{{ recette.validation ? 'success' : 'warning' }}">
-                            {{ recette.validation ? 'Validée' : 'En attente' }}
-                        </span>
-                        </li>
-                    {% else %}
-                        <li class="list-group-item">Aucune recette créée.</li>
-                    {% endfor %}
-                </ul>
-            </div>
+        <!-- Mes articles -->
+        <section class="col-md-6" aria-labelledby="mes-articles">
+            <h2 id="mes-articles" class="h5">Mes articles</h2>
+            <ul class="list-group">
+                {% for article in mesArticles %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <a href="{{ path('article_show', { id: article.id }) }}" class="text-decoration-none">
+                            {{ article.titre }}
+                        </a>
+                        <span class="badge {{ article.validation ? 'text-bg-success' : 'text-bg-warning' }}">
+              {{ article.validation ? 'Validé' : 'En attente' }}
+            </span>
+                    </li>
+                {% else %}
+                    <li class="list-group-item text-muted">Aucun article rédigé.</li>
+                {% endfor %}
+            </ul>
+        </section>
 
-            <!-- Mes articles -->
-            <div class="col-md-6">
-                <h2> Mes articles</h2>
-                <ul class="list-group">
-                    {% for article in mesArticles %}
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                            <a href="{{ path('article_show', {id: article.id}) }}">{{ article.titre }}</a>
-                            <span class="badge bg-{{ article.validation ? 'success' : 'warning' }}">
-                            {{ article.validation ? 'Validé' : 'En attente' }}
-                        </span>
-                        </li>
-                    {% else %}
-                        <li class="list-group-item">Aucun article rédigé.</li>
-                    {% endfor %}
-                </ul>
-            </div>
-
-            <!-- Mon profil -->
-            <div class="col-12">
-                <div class="card shadow-sm mt-4">
-                    <div class="card-body">
-                        <h5 class="card-title"> Mon profil</h5>
-                        <p><strong>Nom :</strong> {{ utilisateur.nom }}</p>
-                        <p><strong>Email :</strong> {{ utilisateur.email }}</p>
-                        <a href="{{ path('utilisateurs_modifier_mon_profil') }}" class="btn btn-outline-primary btn-sm">Modifier mon profil</a>
-                    </div>
+        <!-- Mon profil -->
+        <section class="col-12" aria-labelledby="mon-profil">
+            <div class="card shadow-sm mt-2">
+                <div class="card-body">
+                    <h2 id="mon-profil" class="h5 card-title">Mon profil</h2>
+                    <dl class="row mb-3">
+                        <dt class="col-sm-3">Nom</dt>
+                        <dd class="col-sm-9 mb-0">{{ utilisateur.nom }}</dd>
+                        <dt class="col-sm-3">Email</dt>
+                        <dd class="col-sm-9 mb-0">{{ utilisateur.email }}</dd>
+                    </dl>
+                    <a href="{{ path('utilisateurs_modifier_mon_profil') }}" class="btn btn-outline-primary btn-sm">
+                        Modifier mon profil
+                    </a>
                 </div>
             </div>
-        </div>
+        </section>
     </div>
 {% endblock %}

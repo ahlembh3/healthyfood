@@ -1,66 +1,137 @@
+{# templates/article/_form.html.twig #}
 <div class="d-flex justify-content-center mt-5">
     <div class="card shadow p-4" style="max-width: 600px; width: 100%;">
         <h1 class="text-center mb-4" id="form-title">{{ form_title|default('Ajouter un article') }}</h1>
 
+        {# NB: pas besoin de 'enctype' → géré automatiquement par Symfony #}
         {{ form_start(form, {
-            'attr': {
-                'class': 'needs-validation',
-                'novalidate': 'novalidate',
-                'aria-labelledby': 'form-title',
-                'enctype': 'multipart/form-data'
+            attr: {
+                class: 'needs-validation',
+                novalidate: 'novalidate',
+                'aria-labelledby': 'form-title'
             }
         }) }}
 
+        {# Titre #}
         <div class="mb-3">
-            <label class="form-label" for="{{ form.titre.vars.id }}">{{ form_label(form.titre) }}</label>
-            {{ form_widget(form.titre, { 'attr': { 'class': 'form-control' } }) }}
-            <div class="text-danger">{{ form_errors(form.titre) }}</div>
-        </div>
-
-        <div class="mb-3">
-            <label class="form-label" for="{{ form.contenu.vars.id }}">{{ form_label(form.contenu) }}</label>
-            {{ form_widget(form.contenu, { 'attr': {'class': 'form-control tinymce-editor', 'rows': 5 } })}}
-            <div class="text-danger">{{ form_errors(form.contenu) }}</div>
-        </div>
-
-        <div class="mb-3">
-            <label class="form-label" for="{{ form.categorie.vars.id }}">{{ form_label(form.categorie) }}</label>
-            {{ form_widget(form.categorie, { 'attr': { 'class': 'form-select' } }) }}
-            <div class="text-danger">{{ form_errors(form.categorie) }}</div>
-        </div>
-
-        <div class="mb-3">
-            <label class="form-label" for="{{ form.image.vars.id }}">{{ form_label(form.image) }}</label>
-            {{ form_widget(form.image, {
-                'attr': {
-                    'class': 'form-control',
-                    'onchange': 'previewImage(event)',
-                    'accept': 'image/*'
+            {{ form_label(form.titre, null, { label_attr: { class: 'form-label' } }) }}
+            {% set titre_errors_id = form.titre.vars.id ~ '_errors' %}
+            {{ form_widget(form.titre, {
+                attr: {
+                    class: 'form-control',
+                    'aria-describedby': titre_errors_id,
+                    'aria-invalid': form.titre.vars.valid ? 'false' : 'true',
+                    autocomplete: 'off'
                 }
             }) }}
-            <div class="text-danger">{{ form_errors(form.image) }}</div>
+            <div id="{{ titre_errors_id }}" class="text-danger" role="alert">
+                {{ form_errors(form.titre) }}
+            </div>
+        </div>
 
-            {# Afficher l’image actuelle si elle existe (édition) #}
+        {# Contenu (TinyMCE) #}
+        <div class="mb-3">
+            {{ form_label(form.contenu, null, { label_attr: { class: 'form-label' } }) }}
+            {% set contenu_errors_id = form.contenu.vars.id ~ '_errors' %}
+            {{ form_widget(form.contenu, {
+                attr: {
+                    class: 'form-control tinymce-editor',
+                    rows: 5,
+                    'aria-describedby': contenu_errors_id,
+                    'aria-invalid': form.contenu.vars.valid ? 'false' : 'true'
+                }
+            }) }}
+            <div id="{{ contenu_errors_id }}" class="text-danger" role="alert">
+                {{ form_errors(form.contenu) }}
+            </div>
+            <small class="text-muted">
+                Conseil : structurez vos idées en paragraphes. (Le HTML sera nettoyé côté serveur pour la sécurité.)
+            </small>
+        </div>
+
+        {# Catégorie #}
+        <div class="mb-3">
+            {{ form_label(form.categorie, null, { label_attr: { class: 'form-label' } }) }}
+            {% set cat_errors_id = form.categorie.vars.id ~ '_errors' %}
+            {{ form_widget(form.categorie, {
+                attr: {
+                    class: 'form-select',
+                    'aria-describedby': cat_errors_id,
+                    'aria-invalid': form.categorie.vars.valid ? 'false' : 'true'
+                }
+            }) }}
+            <div id="{{ cat_errors_id }}" class="text-danger" role="alert">
+                {{ form_errors(form.categorie) }}
+            </div>
+        </div>
+
+        {# Image #}
+        <div class="mb-3">
+            {{ form_label(form.image, null, { label_attr: { class: 'form-label' } }) }}
+            {% set img_errors_id = form.image.vars.id ~ '_errors' %}
+            {{ form_widget(form.image, {
+                attr: {
+                    class: 'form-control',
+                    accept: 'image/*',
+                    onchange: 'previewArticleImage(event)',
+                    'aria-describedby': img_errors_id,
+                    'aria-invalid': form.image.vars.valid ? 'false' : 'true'
+                }
+            }) }}
+            <div id="{{ img_errors_id }}" class="text-danger" role="alert">
+                {{ form_errors(form.image) }}
+            </div>
+
+            {# Image actuelle (édition) #}
             {% if article is defined and article.image %}
                 <div class="mt-3">
-                    <p class="mb-1">Image actuelle :</p>
-                    <img src="{{ asset('uploads/' ~ article.image) }}"
-                         alt="Image actuelle"
-                         class="img-fluid border rounded"
-                         style="max-height: 200px;" />
+                    <p class="mb-1 text-muted">Image actuelle :</p>
+                    <img
+                            src="{{ asset('uploads/' ~ article.image) }}"
+                            alt="Image actuelle de l’article"
+                            class="img-fluid border rounded"
+                            style="max-height: 200px;"
+                            loading="lazy">
                 </div>
             {% endif %}
 
-            {# Prévisualisation nouvelle image sélectionnée #}
+            {# Aperçu nouvelle image #}
             <div class="mt-3">
-                <img id="imagePreview" src="#" alt="Aperçu de l’image" class="img-fluid d-none border rounded" style="max-height: 300px;" />
+                <img id="imagePreview"
+                     src="#"
+                     alt="Aperçu de l’image sélectionnée"
+                     class="img-fluid d-none border rounded"
+                     style="max-height: 300px;">
             </div>
         </div>
 
         <button type="submit" class="btn btn-primary w-100 mt-2">
-            <i class="bi bi-check-circle me-2"></i>{{ button_label|default('Enregistrer') }}
+            <i class="bi bi-check-circle me-2" aria-hidden="true"></i>{{ button_label|default('Enregistrer') }}
         </button>
 
         {{ form_end(form) }}
     </div>
 </div>
+
+{# Aperçu image : safe fallback si la fonction n’existe pas encore #}
+<script>
+    if (typeof previewArticleImage !== 'function') {
+        function previewArticleImage(e) {
+            const input = e.target;
+            const preview = document.getElementById('imagePreview');
+            if (!preview) return;
+
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    preview.src = ev.target.result;
+                    preview.classList.remove('d-none');
+                };
+                reader.readAsDataURL(input.files[0]);
+            } else {
+                preview.src = '#';
+                preview.classList.add('d-none');
+            }
+        }
+    }
+</script>

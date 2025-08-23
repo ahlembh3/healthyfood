@@ -1,44 +1,23 @@
+{# templates/article/edit.html.twig #}
 {% extends 'base.html.twig' %}
 
-{% block title %}Modifier l'article{% endblock %}
+{% block title %}Modifier l’article{% endblock %}
+{% block page_title %}Modifier l’article{% endblock %}
 
-{% block body %}
-    <div class="container mt-5">
-        <h1 class="mb-4">Modifier l'article</h1>
+{% block content %}
+    {# On passe l'objet article pour afficher l'image actuelle dans le partial #}
+    {{ include('article/_form.html.twig', {
+        button_label: 'Modifier',
+        form_title: 'Modifier l’article',
+        article: article
+    }) }}
 
+    {% set backHref = is_granted('ROLE_ADMIN')
+        ? path('article_liste_admin')
+        : path('article_mes_articles')
+    %}
 
-        {{ include('article/_form.html.twig', {'button_label': 'Modifier'}) }}
-
-        <a href="{% if is_granted('ROLE_ADMIN') %}
-                    {{ path('article_liste_admin') }}
-                 {% else %}
-                    {{ path('article_mes_articles') }}
-                 {% endif %}" class="btn btn-secondary">
-            ← Retour à la liste
-        </a>
+    <div class="mt-3">
+        <a href="{{ backHref }}" class="btn btn-outline-secondary">← Retour à la liste</a>
     </div>
-{% endblock %}
-
-{% block javascripts %}
-    {{ parent() }}
-    <script>
-        function previewImage(event) {
-            const input = event.target;
-            const preview = document.getElementById('imagePreview');
-
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-
-                reader.onload = function(e) {
-                    preview.src = e.target.result;
-                    preview.classList.remove('d-none');
-                };
-
-                reader.readAsDataURL(input.files[0]);
-            } else {
-                preview.src = "#";
-                preview.classList.add('d-none');
-            }
-        }
-    </script>
 {% endblock %}

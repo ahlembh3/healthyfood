@@ -1,4 +1,15 @@
-<form method="post" action="{{ path('utilisateurs_supprimer', {'id': utilisateur.id}) }}" onsubmit="return confirm('Etes vous sur de vouloir supprimer cet utilisateur?');">
+<form
+        method="post"
+        action="{{ path('utilisateurs_supprimer', {'id': utilisateur.id}) }}"
+        class="d-inline"
+        onsubmit="if(confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?')){ this.querySelector('button[type=submit]').disabled = true; return true; } return false;"
+>
     <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ utilisateur.id) }}">
-     <button class="btn btn-danger"> Supprimer</button>
+    <button
+            type="submit"
+            class="btn btn-danger btn-sm"
+            aria-label="Supprimer l’utilisateur {{ utilisateur.prenom }} {{ utilisateur.nom }}"
+    >
+        Supprimer
+    </button>
 </form>

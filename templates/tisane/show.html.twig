@@ -1,30 +1,81 @@
+{# templates/tisane/show.html.twig #}
 {% extends 'base.html.twig' %}
 
 {% block title %}Tisane : {{ tisane.nom }}{% endblock %}
+{% block page_title %}{{ tisane.nom }}{% endblock %}
 
-{% block body %}
-    <h1>{{ tisane.nom }}</h1>
+{% block content %}
+    <div class="card shadow-lg border-0 rounded-4">
+        <div class="row g-0">
 
-    <p><strong>Mode de préparation :</strong></p>
-    <p>{{ tisane.modePreparation }}</p>
+            {# Image (avec fallback) #}
+            <div class="col-lg-5">
+                {% set img = tisane.image|default('')|trim %}
+                {% set src = img ? asset('uploads/tisanes/' ~ img) : asset('images/placeholder-tea.jpg') %}
+                <div class="ratio ratio-4x3">
+                    <img
+                            src="{{ src }}"
+                            alt="{{ img ? 'Photo de la tisane ' ~ tisane.nom : 'Image générique de tisane' }}"
+                            class="rounded-start w-100 h-100"
+                            style="object-fit: cover;"
+                            loading="lazy"
+                            onerror="this.onerror=null;this.src='{{ asset('images/placeholder-tea.jpg') }}';"
+                    >
+                </div>
+            </div>
 
-    <h3>Bienfaits</h3>
-    <ul>
-        {% for bienfait in tisane.bienfaits %}
-            <li>{{ bienfait.nom }}</li>
-        {% else %}
-            <li>Aucun bienfait associé.{{ dump(tisane.bienfaits) }}</li>
-        {% endfor %}
-    </ul>
+            <div class="col-lg-7">
+                <div class="card-body p-4">
+                    {# Mode de préparation #}
+                    {% if tisane.modePreparation %}
+                        <section class="mb-4" aria-labelledby="prep">
+                            <h2 id="prep" class="h5 mb-2">Mode de préparation</h2>
+                            <p class="mb-0">{{ tisane.modePreparation|e|nl2br }}</p>
+                        </section>
+                    {% endif %}
 
-    <h3>Plantes utilisées</h3>
-    <ul>
-        {% for plante in tisane.plantes %}
-            <li>{{ plante.nomCommun }}</li>
-        {% else %}
-            <li>Aucune plante associée.{{ dump(tisane.plantes) }}</li>
-        {% endfor %}
-    </ul>
+                    {# Bienfaits #}
+                    <section class="mb-4" aria-labelledby="bienfaits">
+                        <h2 id="bienfaits" class="h5 mb-2">Bienfaits</h2>
+                        {% if tisane.bienfaits|length > 0 %}
+                            <ul class="list-inline mb-0">
+                                {% for b in tisane.bienfaits %}
+                                    <li class="list-inline-item mb-1">
+                                        <span class="badge bg-success-subtle text-success">{{ b.nom }}</span>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <p class="text-muted mb-0">Aucun bienfait associé.</p>
+                        {% endif %}
+                    </section>
 
-    <p><a href="{{ path('tisane_index') }}">Retour à la liste</a></p>
+                    {# Plantes associées #}
+                    <section class="mb-4" aria-labelledby="plantes">
+                        <h2 id="plantes" class="h5 mb-2">Plantes utilisées</h2>
+                        {% if tisane.plantes|length > 0 %}
+                            <ul class="mb-0">
+                                {% for p in tisane.plantes %}
+                                    <li>
+                                        <a href="{{ path('plante_show', { id: p.id }) }}" class="text-decoration-none">
+                                            {{ p.nomCommun }}
+                                        </a>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <p class="text-muted mb-0">Aucune plante associée.</p>
+                        {% endif %}
+                    </section>
+
+                    <div class="d-flex justify-content-between flex-wrap gap-2 mt-3">
+                        <a href="{{ path('tisane_index') }}" class="btn btn-outline-primary">
+                            Retour à la liste
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
 {% endblock %}
