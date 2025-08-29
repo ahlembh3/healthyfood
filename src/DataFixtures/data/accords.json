@@ -1,0 +1,173 @@
+[
+  {
+    "plante": "Thym",
+    "ingredients": [
+      "Miel",
+      "Poulet",
+      "Huile d'olive",
+      "Pomme de terre"
+    ],
+    "types": [
+      "Viande",
+      "Légume",
+      "Céréale"
+    ],
+    "score": 0.9
+  },
+  {
+    "plante": "Sauge officinale",
+    "ingredients": [
+      "Porc",
+      "Pâtes (blé)",
+      "Beurre"
+    ],
+    "types": [
+      "Viande",
+      "Céréale",
+      "Laitier"
+    ],
+    "score": 0.85
+  },
+  {
+    "plante": "Menthe poivrée",
+    "ingredients": [
+      "Citron",
+      "Chocolat noir 70%",
+      "Concombre",
+      "Yaourt nature"
+    ],
+    "types": [
+      "Sucré",
+      "Légume",
+      "Boisson",
+      "Laitier"
+    ],
+    "score": 1.0
+  },
+  {
+    "plante": "Camomille matricaire",
+    "ingredients": [
+      "Miel",
+      "Pomme",
+      "Lait"
+    ],
+    "types": [
+      "Laitier",
+      "Sucre",
+      "Fruit"
+    ],
+    "score": 0.8
+  },
+  {
+    "plante": "Verveine odorante",
+    "ingredients": [
+      "Citron",
+      "Fraise",
+      "Myrtille"
+    ],
+    "types": [
+      "Fruit",
+      "Boisson",
+      "Sucré"
+    ],
+    "score": 0.9
+  },
+  {
+    "plante": "Hibiscus sabdariffa",
+    "ingredients": [
+      "Fraise",
+      "Myrtille",
+      "Citron",
+      "Sirop d'érable"
+    ],
+    "types": [
+      "Boisson",
+      "Sucré",
+      "Fruit"
+    ],
+    "score": 1.1
+  },
+  {
+    "plante": "Lavande vraie",
+    "ingredients": [
+      "Miel",
+      "Yaourt nature",
+      "Pêche"
+    ],
+    "types": [
+      "Laitier",
+      "Sucré",
+      "Fruit"
+    ],
+    "score": 0.8
+  },
+  {
+    "plante": "Romarin",
+    "ingredients": [
+      "Pomme de terre",
+      "Agneau",
+      "Huile d'olive"
+    ],
+    "types": [
+      "Viande",
+      "Légume",
+      "Céréale"
+    ],
+    "score": 1.0
+  },
+  {
+    "plante": "Tilleul",
+    "ingredients": [
+      "Miel",
+      "Pomme"
+    ],
+    "types": [
+      "Sucre",
+      "Fruit",
+      "Boisson"
+    ],
+    "score": 0.75
+  },
+  {
+    "plante": "Origan",
+    "ingredients": [
+      "Tomate",
+      "Mozzarella",
+      "Pain complet"
+    ],
+    "types": [
+      "Légume",
+      "Laitier",
+      "Céréale"
+    ],
+    "score": 0.95
+  },
+  {
+    "plante": "Fenouil",
+    "ingredients": [
+      "Saumon",
+      "Cabillaud",
+      "Orange"
+    ],
+    "types": [
+      "Poisson",
+      "Légume",
+      "Fruit"
+    ],
+    "score": 0.9
+  },
+  {
+    "plante": "Citronnelle",
+    "ingredients": [
+      "Poulet",
+      "Riz complet",
+      "Crevette"
+    ],
+    "types": [
+      "Viande",
+      "Céréale",
+      "Poisson"
+    ],
+    "score": 0.9
+  }
+]

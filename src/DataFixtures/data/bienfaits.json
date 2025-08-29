@@ -1,22 +1,58 @@
 [
   {
     "nom": "Relaxation",
-    "description": "Aide à calmer le système nerveux, idéale en période de stress ou d'anxiété."
-  },
-  {
-    "nom": "Digestion",
-    "description": "Facilite la digestion après les repas lourds, réduit les ballonnements et les gaz."
-  },
-  {
-    "nom": "Détox",
-    "description": "Aide à l’élimination des toxines du foie et des reins."
+    "description": "Aide à calmer le système nerveux et la tension intérieure. Utile en période de stress."
   },
   {
     "nom": "Sommeil",
-    "description": "Favorise l’endormissement naturel et améliore la qualité du sommeil."
+    "description": "Favorise l’endormissement naturel et un sommeil plus réparateur."
+  },
+  {
+    "nom": "Digestion",
+    "description": "Soutient la digestion après les repas, limite ballonnements et inconforts."
+  },
+  {
+    "nom": "Respiration",
+    "description": "Apaise la sphère ORL et soutient le confort respiratoire."
+  },
+  {
+    "nom": "Antioxydant",
+    "description": "Aide à lutter contre le stress oxydatif lié aux radicaux libres."
+  },
+  {
+    "nom": "Cardio",
+    "description": "Participe au maintien d’une bonne santé cardiovasculaire."
+  },
+  {
+    "nom": "Tonique",
+    "description": "Apporte un effet stimulant/dynamisant doux (vitalité, énergie)."
+  },
+  {
+    "nom": "Détox",
+    "description": "Soutient les fonctions d’élimination (foie, reins) et l’équilibre métabolique."
   },
   {
     "nom": "Circulation sanguine",
-    "description": "Stimule la circulation sanguine et prévient les jambes lourdes."
+    "description": "Aide à activer la micro-circulation et à réduire la sensation de jambes lourdes."
+  },
+  {
+    "nom": "Anti-inflammatoire",
+    "description": "Contribue à apaiser les phénomènes inflammatoires légers."
+  },
+  {
+    "nom": "Antispasmodique",
+    "description": "Aide à limiter les spasmes digestifs et les crampes légères."
+  },
+  {
+    "nom": "Nausées",
+    "description": "Aide à réduire la sensation de nausée et le mal des transports."
+  },
+  {
+    "nom": "Hydratation",
+    "description": "Favorise une bonne hydratation, agréable en boisson chaude ou froide."
+  },
+  {
+    "nom": "Stress",
+    "description": "Aide à mieux gérer les tensions nerveuses et l’irritabilité."
   }
 ]

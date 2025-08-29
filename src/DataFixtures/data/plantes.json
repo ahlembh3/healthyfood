@@ -1,72 +1,417 @@
 [
     {
-        "nomCommun": "Camomille",
+        "nomCommun": "Camomille matricaire",
         "nomScientifique": "Matricaria chamomilla",
-        "description": "Utilisée pour calmer les troubles digestifs et favoriser le sommeil.",
-        "partieUtilisee": "Fleurs",
-        "precautions": "À éviter chez les personnes allergiques aux astéracées."
+        "description": "Fleurs aromatiques utilisées pour favoriser la relaxation, la digestion et le sommeil.",
+        "partieUtilisee": "Capitules (fleurs)",
+        "precautions": "Allergie possible aux Astéracées. Déconseillée en cas d’allergie connue.",
+        "image": null,
+        "bienfaits": [
+            "Relaxation",
+            "Sommeil",
+            "Digestion",
+            "Antispasmodique"
+        ]
     },
     {
         "nomCommun": "Menthe poivrée",
         "nomScientifique": "Mentha × piperita",
-        "description": "Efficace contre les nausées et les maux de tête.",
+        "description": "Feuilles rafraîchissantes, utiles après les repas et pour la sphère respiratoire.",
         "partieUtilisee": "Feuilles",
-        "precautions": "Ne pas utiliser en cas de reflux gastro-œsophagien."
+        "precautions": "Peut majorer le reflux gastro-œsophagien. Éviter chez l’enfant < 6 ans en HE.",
+        "image": null,
+        "bienfaits": [
+            "Digestion",
+            "Carminatif",
+            "Respiration"
+        ]
     },
     {
-        "nomCommun": "Gingembre",
-        "nomScientifique": "Zingiber officinale",
-        "description": "Stimule la digestion et possède des propriétés anti-inflammatoires.",
-        "partieUtilisee": "Racine",
-        "precautions": "À consommer avec modération chez les personnes sous traitement anticoagulant."
-    },
-    {
-        "nomCommun": "Thym",
-        "nomScientifique": "Thymus vulgaris",
-        "description": "Antiseptique naturel utilisé pour soulager les affections respiratoires.",
+        "nomCommun": "Verveine odorante",
+        "nomScientifique": "Aloysia citrodora",
+        "description": "Plante au parfum citronné, apaisante et digestive.",
         "partieUtilisee": "Feuilles",
-        "precautions": "Peut être irritant à forte dose."
-    },
-    {
-        "nomCommun": "Ortie",
-        "nomScientifique": "Urtica dioica",
-        "description": "Riche en minéraux, utilisée pour les douleurs articulaires.",
-        "partieUtilisee": "Feuilles",
-        "precautions": "Manipuler avec des gants pour éviter les piqûres."
-    },
-    {
-        "nomCommun": "Lavande",
-        "nomScientifique": "Lavandula angustifolia",
-        "description": "Apaisante, elle est utilisée pour réduire le stress et améliorer le sommeil.",
-        "partieUtilisee": "Fleurs",
-        "precautions": "Peut être allergisante chez certaines personnes."
-    },
-    {
-        "nomCommun": "Sauge",
-        "nomScientifique": "Salvia officinalis",
-        "description": "Utile contre les troubles de la ménopause et les maux de gorge.",
-        "partieUtilisee": "Feuilles",
-        "precautions": "Contre-indiquée chez la femme enceinte."
+        "precautions": "Aucune particulière aux doses usuelles.",
+        "image": null,
+        "bienfaits": [
+            "Relaxation",
+            "Sommeil",
+            "Digestion",
+            "Antistress"
+        ]
     },
     {
         "nomCommun": "Tilleul",
         "nomScientifique": "Tilia cordata",
-        "description": "Favorise la détente et le sommeil.",
-        "partieUtilisee": "Fleurs",
-        "precautions": "Peut provoquer de la somnolence."
+        "description": "Sommités fleuries calmantes, soutiennent le sommeil.",
+        "partieUtilisee": "Bractées et fleurs",
+        "precautions": "Aucune particulière aux doses usuelles.",
+        "image": null,
+        "bienfaits": [
+            "Sommeil",
+            "Relaxation",
+            "Sédatif léger"
+        ]
+    },
+    {
+        "nomCommun": "Fenouil",
+        "nomScientifique": "Foeniculum vulgare",
+        "description": "Graines carminatives pour la digestion et les spasmes.",
+        "partieUtilisee": "Graines (akènes)",
+        "precautions": "Attention aux antécédents hormonodépendants en usage prolongé.",
+        "image": null,
+        "bienfaits": [
+            "Digestion",
+            "Carminatif",
+            "Antispasmodique"
+        ]
+    },
+    {
+        "nomCommun": "Hibiscus sabdariffa",
+        "nomScientifique": "Hibiscus sabdariffa",
+        "description": "Calyces riches en anthocyanes, boisson acidulée antioxydante.",
+        "partieUtilisee": "Calyces",
+        "precautions": "Déconseillé pendant la grossesse; prudence si tension basse ou antihypertenseurs.",
+        "image": null,
+        "bienfaits": [
+            "Antioxydant",
+            "Cardio",
+            "Diurétique"
+        ]
+    },
+    {
+        "nomCommun": "Gingembre",
+        "nomScientifique": "Zingiber officinale",
+        "description": "Rhizome tonique et antinauséeux, utile aussi pour la digestion.",
+        "partieUtilisee": "Rhizome",
+        "precautions": "Prudence avec anticoagulants et troubles hémorragiques.",
+        "image": null,
+        "bienfaits": [
+            "Tonique",
+            "Digestion",
+            "Antinauséeux",
+            "Anti-inflammatoire"
+        ]
+    },
+    {
+        "nomCommun": "Citronnelle",
+        "nomScientifique": "Cymbopogon citratus",
+        "description": "Saveur citronnée, apaisante et digestive.",
+        "partieUtilisee": "Feuilles",
+        "precautions": "Aucune particulière aux doses usuelles.",
+        "image": null,
+        "bienfaits": [
+            "Digestion",
+            "Relaxation"
+        ]
+    },
+    {
+        "nomCommun": "Sauge officinale",
+        "nomScientifique": "Salvia officinalis",
+        "description": "Feuilles aromatiques, respiratoire et digestive.",
+        "partieUtilisee": "Feuilles",
+        "precautions": "Déconseillée grossesse/allaitement; prudence en cas d’antécédent convulsif (thuyone).",
+        "image": null,
+        "bienfaits": [
+            "Respiration",
+            "Digestion",
+            "Anti-inflammatoire"
+        ]
+    },
+    {
+        "nomCommun": "Lavande vraie",
+        "nomScientifique": "Lavandula angustifolia",
+        "description": "Sommités fleuries relaxantes, favorisent le sommeil.",
+        "partieUtilisee": "Sommités fleuries",
+        "precautions": "Aucune particulière aux doses usuelles.",
+        "image": null,
+        "bienfaits": [
+            "Relaxation",
+            "Sommeil",
+            "Antistress"
+        ]
+    },
+    {
+        "nomCommun": "Thym",
+        "nomScientifique": "Thymus vulgaris",
+        "description": "Antiseptique des voies respiratoires, aussi digestif.",
+        "partieUtilisee": "Sommités fleuries",
+        "precautions": "HE dermocaustique; infusion OK aux doses usuelles.",
+        "image": null,
+        "bienfaits": [
+            "Respiration",
+            "Digestion",
+            "Antitussif",
+            "Antiseptique"
+        ]
     },
     {
         "nomCommun": "Romarin",
         "nomScientifique": "Rosmarinus officinalis",
-        "description": "Stimulant digestif et tonique général.",
+        "description": "Plante tonique et digestive, soutien hépatique.",
         "partieUtilisee": "Feuilles",
-        "precautions": "À éviter chez les personnes épileptiques."
+        "precautions": "Éviter en cas d’hypertension non contrôlée (HE); infusion OK modération.",
+        "image": null,
+        "bienfaits": [
+            "Tonique",
+            "Digestion",
+            "Drainage hépatique",
+            "Antioxydant"
+        ]
+    },
+    {
+        "nomCommun": "Mélisse",
+        "nomScientifique": "Melissa officinalis",
+        "description": "Apaisante, digestive et légèrement sédative.",
+        "partieUtilisee": "Feuilles",
+        "precautions": "Aucune particulière aux doses usuelles.",
+        "image": null,
+        "bienfaits": [
+            "Relaxation",
+            "Sommeil",
+            "Digestion",
+            "Antispasmodique"
+        ]
+    },
+    {
+        "nomCommun": "Ortie",
+        "nomScientifique": "Urtica dioica",
+        "description": "Feuilles reminéralisantes, effet diurétique doux.",
+        "partieUtilisee": "Feuilles",
+        "precautions": "Diurétique léger; surveiller si traitement diurétique.",
+        "image": null,
+        "bienfaits": [
+            "Diurétique",
+            "Antioxydant"
+        ]
+    },
+    {
+        "nomCommun": "Réglisse",
+        "nomScientifique": "Glycyrrhiza glabra",
+        "description": "Racine adoucissante digestive; peut élever la tension à fortes doses.",
+        "partieUtilisee": "Racine",
+        "precautions": "Déconseillée en cas d’hypertension, rétention hydrique ou insuffisance rénale.",
+        "image": null,
+        "bienfaits": [
+            "Digestion",
+            "Antitussif",
+            "Anti-inflammatoire"
+        ]
+    },
+    {
+        "nomCommun": "Passiflore",
+        "nomScientifique": "Passiflora incarnata",
+        "description": "Sédative légère pour stress et insomnie d’endormissement.",
+        "partieUtilisee": "Parties aériennes",
+        "precautions": "Somnolence possible; prudence si conduite.",
+        "image": null,
+        "bienfaits": [
+            "Sommeil",
+            "Relaxation",
+            "Sédatif léger"
+        ]
     },
     {
         "nomCommun": "Valériane",
         "nomScientifique": "Valeriana officinalis",
-        "description": "Réputée pour ses effets calmants et sédatifs.",
+        "description": "Racine sédative, facilite l’endormissement.",
         "partieUtilisee": "Racine",
-        "precautions": "Ne pas associer avec des somnifères chimiques."
+        "precautions": "Somnolence; éviter avec sédatifs sans avis médical.",
+        "image": null,
+        "bienfaits": [
+            "Sommeil",
+            "Sédatif léger"
+        ]
+    },
+    {
+        "nomCommun": "Bardane",
+        "nomScientifique": "Arctium lappa",
+        "description": "Racine dépurative, utile pour la peau et le foie.",
+        "partieUtilisee": "Racine",
+        "precautions": "Diurétique doux; prudence si traitement hypoglycémiant.",
+        "image": null,
+        "bienfaits": [
+            "Détox",
+            "Drainage hépatique",
+            "Diurétique"
+        ]
+    },
+    {
+        "nomCommun": "Échinacée",
+        "nomScientifique": "Echinacea purpurea",
+        "description": "Stimulation de l’immunité en cures courtes.",
+        "partieUtilisee": "Parties aériennes/racine",
+        "precautions": "Éviter maladies auto-immunes sans avis médical.",
+        "image": null,
+        "bienfaits": [
+            "Immunité",
+            "Antioxydant"
+        ]
+    },
+    {
+        "nomCommun": "Pissenlit",
+        "nomScientifique": "Taraxacum officinale",
+        "description": "Feuilles et racines dépuratives; soutien hépatobiliaire.",
+        "partieUtilisee": "Feuilles et racines",
+        "precautions": "Calculs biliaires : avis médical préalable.",
+        "image": null,
+        "bienfaits": [
+            "Détox",
+            "Drainage hépatique",
+            "Diurétique"
+        ]
+    },
+    {
+        "nomCommun": "Achillée millefeuille",
+        "nomScientifique": "Achillea millefolium",
+        "description": "Plante digestive et antispasmodique légère.",
+        "partieUtilisee": "Sommités fleuries",
+        "precautions": "Allergie possible aux Astéracées.",
+        "image": null,
+        "bienfaits": [
+            "Digestion",
+            "Antispasmodique",
+            "Cicatrisant"
+        ]
+    },
+    {
+        "nomCommun": "Anis vert",
+        "nomScientifique": "Pimpinella anisum",
+        "description": "Graines carminatives et digestives, saveur anisée.",
+        "partieUtilisee": "Graines",
+        "precautions": "Aucune particulière aux doses usuelles.",
+        "image": null,
+        "bienfaits": [
+            "Digestion",
+            "Carminatif"
+        ]
+    },
+    {
+        "nomCommun": "Basilic sacré (Tulsi)",
+        "nomScientifique": "Ocimum tenuiflorum",
+        "description": "Adaptogène doux, antistress et respiratoire.",
+        "partieUtilisee": "Feuilles",
+        "precautions": "Aucune particulière aux doses usuelles.",
+        "image": null,
+        "bienfaits": [
+            "Antistress",
+            "Respiration",
+            "Antioxydant"
+        ]
+    },
+    {
+        "nomCommun": "Curcuma",
+        "nomScientifique": "Curcuma longa",
+        "description": "Rhizome anti-inflammatoire et digestif.",
+        "partieUtilisee": "Rhizome",
+        "precautions": "Prudence anticoagulants, calculs biliaires.",
+        "image": null,
+        "bienfaits": [
+            "Anti-inflammatoire",
+            "Digestion",
+            "Antioxydant"
+        ]
+    },
+    {
+        "nomCommun": "Eucalyptus globuleux",
+        "nomScientifique": "Eucalyptus globulus",
+        "description": "Feuilles pour voies respiratoires, expectorant.",
+        "partieUtilisee": "Feuilles",
+        "precautions": "HE à éviter chez l’enfant; infusion modérée.",
+        "image": null,
+        "bienfaits": [
+            "Respiration",
+            "Expectorant"
+        ]
+    },
+    {
+        "nomCommun": "Guimauve",
+        "nomScientifique": "Althaea officinalis",
+        "description": "Racine/feuilles émollientes pour muqueuses.",
+        "partieUtilisee": "Racine et feuilles",
+        "precautions": "Peut ralentir l’absorption de médicaments (mucilages).",
+        "image": null,
+        "bienfaits": [
+            "Émollient",
+            "Adoucissant",
+            "Digestion"
+        ]
+    },
+    {
+        "nomCommun": "Millepertuis",
+        "nomScientifique": "Hypericum perforatum",
+        "description": "Plante de l’humeur; interactions médicamenteuses.",
+        "partieUtilisee": "Sommités fleuries",
+        "precautions": "Nombreuses interactions (CYP3A4). Avis médical.",
+        "image": null,
+        "bienfaits": [
+            "Humeur",
+            "Antidépresseur léger",
+            "Cicatrisant"
+        ]
+    },
+    {
+        "nomCommun": "Plantain lancéolé",
+        "nomScientifique": "Plantago lanceolata",
+        "description": "Feuilles adoucissantes, respiratoire et peau.",
+        "partieUtilisee": "Feuilles",
+        "precautions": "Aucune particulière aux doses usuelles.",
+        "image": null,
+        "bienfaits": [
+            "Adoucissant",
+            "Respiration",
+            "Cicatrisant"
+        ]
+    },
+    {
+        "nomCommun": "Sureau noir",
+        "nomScientifique": "Sambucus nigra",
+        "description": "Fleurs/baies pour états grippaux, sueur/défense.",
+        "partieUtilisee": "Fleurs et baies",
+        "precautions": "Baies crues laxatives; cuire/infuser.",
+        "image": null,
+        "bienfaits": [
+            "Immunité",
+            "Sudorifique",
+            "Antioxydant"
+        ]
+    },
+    {
+        "nomCommun": "Souci (Calendula)",
+        "nomScientifique": "Calendula officinalis",
+        "description": "Fleurs adoucissantes et cicatrisantes.",
+        "partieUtilisee": "Capitules (fleurs)",
+        "precautions": "Allergie possible aux Astéracées.",
+        "image": null,
+        "bienfaits": [
+            "Cicatrisant",
+            "Adoucissant",
+            "Anti-inflammatoire"
+        ]
+    },
+    {
+        "nomCommun": "Chardon-Marie",
+        "nomScientifique": "Silybum marianum",
+        "description": "Soutien hépatique (silymarine), antioxydant.",
+        "partieUtilisee": "Graine",
+        "precautions": "Aucune particulière aux doses usuelles.",
+        "image": null,
+        "bienfaits": [
+            "Foie",
+            "Antioxydant",
+            "Détox"
+        ]
+    },
+    {
+        "nomCommun": "Ortosiphon (Thé de Java)",
+        "nomScientifique": "Orthosiphon aristatus",
+        "description": "Diurétique doux, draineur rénal.",
+        "partieUtilisee": "Feuilles",
+        "precautions": "Insuffisance rénale : avis médical.",
+        "image": null,
+        "bienfaits": [
+            "Diurétique",
+            "Drainage rénal"
+        ]
     }
 ]

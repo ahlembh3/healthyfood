@@ -2,92 +2,102 @@
 {% extends 'base.html.twig' %}
 
 {% block title %}{{ plante.nomCommun }}{% endblock %}
-{% block page_title %}{{ plante.nomCommun }}{% endblock %}
 
 {% block content %}
-<div class="card shadow-lg border-0 rounded-4 animate__animated animate__fadeIn">
-    <div class="row g-0">
+    <div class="container-content my-4">
+        <div class="card shadow-lg border-0 rounded-4 animate__animated animate__fadeIn">
+            <div class="row g-0 align-items-stretch">
 
-        {# Image (toujours affichée, avec placeholder si manquante) #}
-        <div class="col-lg-5">
-            {% set img = plante.image|default('')|trim %}
-            {% set src = img ? asset('uploads/plantes/' ~ img) : asset('images/placeholder-plant.jpg') %}
-            <div class="ratio ratio-4x3">
-                <img
-                        src="{{ src }}"
-                        alt="{{ img ? 'Photo de ' ~ plante.nomCommun : 'Image générique de plante' }}"
-                        class="rounded-start w-100 h-100"
-                        style="object-fit: cover;"
-                        loading="lazy"
-                        onerror="this.onerror=null;this.src='{{ asset('images/placeholder-plant.jpg') }}';"
-                >
+                {# Image (avec fallback + taille réduite) #}
+                <div class="col-12 col-lg-5">
+                    {% set img = (plante.image ?? '')|default('')|trim %}
+                    {% set src = img ? asset('uploads/plantes/' ~ img) : asset('images/placeholders/placeholder-plante.jpg') %}
+                    <figure class="p-3">
+                        <img
+                                src="{{ src }}"
+                                alt="{{ img ? 'Photo de ' ~ plante.nomCommun : 'Image générique de plante' }}"
+                                class="img-detail img-center"
+                                loading="lazy"
+                                decoding="async"
+                                onerror="this.onerror=null;this.src='{{ asset('images/images/placeholders/placeholder-plante.jpg') }}';"
+                        >
+                    </figure>
+                </div>
+
+                <div class="col-12 col-lg-7">
+                    <div class="card-body p-4">
+                        <h1 class="h4 card-title mb-2 text-vert">{{ plante.nomCommun }}</h1>
+
+                        {% if plante.nomScientifique %}
+                            <p class="text-muted fst-italic mb-3">{{ plante.nomScientifique }}</p>
+                        {% endif %}
+
+                        {% if plante.partieUtilisee %}
+                            <p class="mb-3"><strong>Partie utilisée :</strong> {{ plante.partieUtilisee }}</p>
+                        {% endif %}
+
+                        {% if plante.description %}
+                            <section class="mb-3" aria-labelledby="desc">
+                                <h2 id="desc" class="h6 mb-1">Description</h2>
+                                <p class="mb-0">{{ plante.description|e|nl2br }}</p>
+                            </section>
+                        {% endif %}
+
+                        {% if plante.precautions %}
+                            <section class="mb-3" aria-labelledby="precautions">
+                                <h2 id="precautions" class="h6 mb-1">Précautions</h2>
+                                <p class="mb-0 text-danger">{{ plante.precautions|e|nl2br }}</p>
+                            </section>
+                        {% endif %}
+
+                        {% if plante.bienfaits is defined and plante.bienfaits|length > 0 %}
+                            <section class="mb-3" aria-labelledby="bienfaits">
+                                <h2 id="bienfaits" class="h6 mb-2">Bienfaits associés</h2>
+                                <ul class="list-inline mb-0">
+                                    {% for bienfait in plante.bienfaits %}
+                                        <li class="list-inline-item mb-1">
+                                            <span class="badge bg-success-subtle text-success">{{ bienfait.nom }}</span>
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            </section>
+                        {% endif %}
+
+                        {% if plante.tisanes is defined and plante.tisanes|length > 0 %}
+                            <section class="mt-4" aria-labelledby="tisanes">
+                                <h2 id="tisanes" class="h6 mb-2">Tisanes associées</h2>
+                                <ul class="mb-0">
+                                    {% for tisane in plante.tisanes %}
+                                        <li>
+                                            <a href="{{ path('tisane_show', { id: tisane.id }) }}" class="text-decoration-none">
+                                                {{ tisane.nom }}
+                                            </a>
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            </section>
+                        {% endif %}
+
+                        <div class="mt-4 d-flex flex-wrap gap-2 justify-content-between align-items-center">
+                            <div class="flex-grow-1">
+                                {% if previousPlante is defined and previousPlante %}
+                                    <a href="{{ path('plante_show', { id: previousPlante.id }) }}"
+                                       class="btn btn-outline-secondary"
+                                       aria-label="Plante précédente : {{ previousPlante.nomCommun }}">
+                                        ← {{ previousPlante.nomCommun }}
+                                    </a>
+                                {% endif %}
+                            </div>
+
+                            <a href="{{ path('plante_index') }}" class="btn btn-outline-primary">
+                                Retour à la liste
+                            </a>
+                        </div>
+
+                    </div>
+                </div>
+
             </div>
         </div>
-
-        <div class="col-lg-7">
-            <div class="card-body p-4">
-                <h2 class="h4 card-title mb-2 text-vert">{{ plante.nomCommun }}</h2>
-                {% if plante.nomScientifique %}
-                    <p class="text-muted fst-italic mb-3">{{ plante.nomScientifique }}</p>
-                {% endif %}
-
-                {% if plante.partieUtilisee %}
-                    <p class="mb-3"><strong>Partie utilisée :</strong> {{ plante.partieUtilisee }}</p>
-                {% endif %}
-
-                {% if plante.description %}
-                    <section class="mb-3" aria-labelledby="desc">
-                        <h3 id="desc" class="h6 mb-1">Description</h3>
-                        <p class="mb-0">{{ plante.description|e|nl2br }}</p>
-                    </section>
-                {% endif %}
-
-                {% if plante.precautions %}
-                    <section class="mb-3" aria-labelledby="precautions">
-                        <h3 id="precautions" class="h6 mb-1">Précautions</h3>
-                        <p class="mb-0 text-danger">{{ plante.precautions|e|nl2br }}</p>
-                    </section>
-                {% endif %}
-
-                {% if plante.bienfaits|length > 0 %}
-                    <section class="mb-3" aria-labelledby="bienfaits">
-                        <h3 id="bienfaits" class="h6 mb-2">Bienfaits associés</h3>
-                        <ul class="list-inline mb-0">
-                            {% for bienfait in plante.bienfaits %}
-                                <li class="list-inline-item mb-1">
-                                    <span class="badge bg-success-subtle text-success">{{ bienfait.nom }}</span>
-                                </li>
-                            {% endfor %}
-                        </ul>
-                    </section>
-                {% endif %}
-
-                {% if plante.tisanes|length > 0 %}
-                    <section class="mt-4" aria-labelledby="tisanes">
-                        <h3 id="tisanes" class="h6 mb-2">Tisanes associées</h3>
-                        <ul class="mb-0">
-                            {% for tisane in plante.tisanes %}
-                                <li>
-                                    <a href="{{ path('tisane_show', { id: tisane.id }) }}"
-                                       class="text-decoration-none">
-                                        {{ tisane.nom }}
-                                    </a>
-                                </li>
-                            {% endfor %}
-                        </ul>
-                    </section>
-                {% endif %}
-
-                <div class="mt-4 d-flex flex-wrap gap-2 justify-content-between align-items-center">
-                    <div class="flex-grow-1">
-                        {% if previousPlante %}
-                            <a href="{{ path('plante_show', { id: previousPlante.id }) }}"
-                               class="btn btn-outline-secondary"
-                               aria-label="Plante précédente : {{ previousPlante.nomCommun }}">
-                                ← {{ previousPlante.nomCommun }}
-                            </a>
-                        {% endif %}
-                    </div>
-
-                    <a href="{{ path('plante_index') }}" class="btn btn-outline-primary">
-                        Retour à la liste
+    </div>
+{% endblock %}

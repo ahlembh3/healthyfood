@@ -1,0 +1,29 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier {{ tisane.nom }} - Admin{% endblock %}
+{% block page_title %}Modifier la tisane{% endblock %}
+
+{% block content %}
+
+    {# Barre d’action responsive en haut #}
+    <section class="mb-3">
+        <div class="d-flex flex-column flex-sm-row align-items-sm-center gap-2">
+            <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-cup-hot fs-4 text-success" aria-hidden="true"></i>
+                <h2 class="h6 mb-0">Modifier : {{ tisane.nom }}</h2>
+            </div>
+            <div class="ms-sm-auto d-flex gap-2">
+                <a href="{{ path('admin_tisane_index') }}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-1" aria-hidden="true"></i>Retour à la liste
+                </a>
+            </div>
+        </div>
+    </section>
+
+    {# Formulaire (même style que Recette via le partial commun) #}
+    {% include 'admin_dashboard/tisane/_form.html.twig' with {
+        form_title: 'Modifier : ' ~ (tisane.nom ?? 'Tisane'),
+        button_label: 'Enregistrer'
+    } %}
+
+{% endblock %}

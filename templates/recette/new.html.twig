@@ -4,28 +4,28 @@
 {% block page_title %}Ajouter une recette{% endblock %}
 
 {% block content %}
-    {# Le partial _form NE DOIT PAS faire {% extends %} ni contenir de lien "Retour" #}
-    {% include 'recette/_form.html.twig' with {
-        button_label: 'Créer',
-        form_title: 'Ajouter une recette'
-    } %}
+    <section class="container-content py-4">
+        {# Le partial _form NE DOIT PAS faire {% extends %} ni contenir de lien "Retour" #}
+        {% include 'recette/_form.html.twig' with {
+            button_label: 'Créer',
+            form_title: 'Ajouter une recette'
+        } %}
 
-    <div class="d-flex justify-content-between mt-4">
-        <a href="{% if is_granted('ROLE_ADMIN') %}
-                {{ path('recette_liste_admin') }}
-              {% else %}
-                {{ path('recette_mes_recettes') }}
-              {% endif %}"
-           class="btn btn-outline-secondary">
-            Retour à la liste
-        </a>
-    </div>
+        <div class="d-flex justify-content-between mt-4">
+            <a
+                    href="{{ is_granted('ROLE_ADMIN') ? path('recette_liste_admin') : path('recette_mes_recettes') }}"
+                    class="btn btn-outline-secondary"
+            >
+                Retour à la liste
+            </a>
+        </div>
+    </section>
 {% endblock %}
 
 {% block javascripts %}
     {{ parent() }}
     <script>
-        // Aperçu image — ne duplique pas cette fonction ailleurs
+        // ---------- Aperçu image ----------
         function previewImage(event) {
             const input   = event.target;
             const preview = document.getElementById('imagePreview');
@@ -39,9 +39,142 @@
                 };
                 reader.readAsDataURL(input.files[0]);
             } else {
-                preview.src = '#';
-                preview.classList.add('d-none');
+                const original = preview.dataset.originalSrc || '#';
+                preview.src = original;
+                if (original === '#') preview.classList.add('d-none');
             }
         }
+
+        // ---------- Helpers ----------
+        // Normalise une string : minuscules, sans accents, espaces compressés
+        function slug(str) {
+            return (str || '')
+                .toString()
+                .normalize('NFD')
+                .replace(/\p{Diacritic}/gu, '')
+                .toLowerCase()
+                .replace(/\s+/g, ' ')
+                .trim();
+        }
+
+        // Met à jour l'unité (placeholder + petit hint à côté du champ)
+        function updateUnitForWrapper(wrapper) {
+            const ingSelect = wrapper.querySelector('.ingredient-select');
+            const qtyInput  = wrapper.querySelector('.ingredient-quantite');
+            if (!ingSelect || !qtyInput) return;
+
+            const selected = ingSelect.options[ingSelect.selectedIndex];
+            const hasRealSelection = !!(selected && selected.value);
+            const unit = hasRealSelection ? (selected.getAttribute('data-unit') || 'unité') : 'unité';
+
+            // 1) Placeholder
+            qtyInput.placeholder = `Quantité (${unit})`;
+
+            // 2) Petit hint visuel à côté de l'input (créé si absent)
+            let hint = wrapper.querySelector('.unit-hint');
+            if (!hint) {
+                hint = document.createElement('small');
+                hint.className = 'text-muted unit-hint ms-2 d-inline-block';
+                qtyInput.insertAdjacentElement('afterend', hint);
+            }
+            hint.textContent = unit;
+        }
+
+        // Filtre les options d'ingrédient selon le type choisi + met à jour unité
+        function filterIngredientOptions(wrapper) {
+            const typeSelect = wrapper.querySelector('.ingredient-type');
+            const ingSelect  = wrapper.querySelector('.ingredient-select');
+            if (!typeSelect || !ingSelect) return;
+
+            const selectedTypeSlug = slug(typeSelect.value);
+            const options = ingSelect.options;
+            let selectedStillVisible = false;
+
+            for (let i = 0; i < options.length; i++) {
+                const option = options[i];
+
+                // Toujours laisser visible le placeholder
+                if (!option.value) {
+                    option.hidden = false;
+                    option.disabled = false;
+                    continue;
+                }
+
+                const optionTypeSlug = slug(option.getAttribute('data-type') || '');
+                const shouldShow = !selectedTypeSlug || optionTypeSlug === selectedTypeSlug;
+
+                option.hidden = !shouldShow;
+                option.disabled = !shouldShow;
+
+                if (option.selected && shouldShow) selectedStillVisible = true;
+            }
+
+            // Si l'option sélectionnée n'est plus visible => reset
+            if (!selectedStillVisible) {
+                ingSelect.value = '';
+            }
+
+            // Après filtrage, l'unité peut redevenir "unité"
+            updateUnitForWrapper(wrapper);
+        }
+
+        // ---------- Gestion CollectionType (ajout/suppression) ----------
+        document.addEventListener('click', function (e) {
+            // Add
+            if (e.target.matches('[data-add-ingredient]')) {
+                e.preventDefault();
+                const list = document.querySelector('[data-ingredients]');
+                if (!list) return;
+
+                const index = list.dataset.index ? parseInt(list.dataset.index,10) : list.children.length;
+                list.dataset.index = index + 1;
+                const proto = list.dataset.prototype.replace(/__name__/g, index);
+
+                const wrapper = document.createElement('div');
+                wrapper.className = 'border rounded p-3 mb-3 position-relative';
+                wrapper.innerHTML = proto +
+                    '<button type="button" class="btn btn-sm btn-outline-danger position-absolute top-0 end-0 m-2" data-remove-ingredient>&times;</button>';
+                list.appendChild(wrapper);
+
+                // Init filtre + unité pour ce nouveau bloc
+                setTimeout(() => {
+                    filterIngredientOptions(wrapper);
+                    updateUnitForWrapper(wrapper);
+                }, 0);
+            }
+
+            // Remove
+            if (e.target.matches('[data-remove-ingredient]')) {
+                e.preventDefault();
+                const block = e.target.closest('.border.rounded.p-3');
+                if (block) block.remove();
+            }
+        });
+
+        // ---------- Écoutes ----------
+        // Changement de TYPE => filtre + MAJ unité
+        document.addEventListener('change', function(e) {
+            if (e.target.matches('.ingredient-type')) {
+                const wrapper = e.target.closest('.border.rounded.p-3') || document;
+                filterIngredientOptions(wrapper);
+                updateUnitForWrapper(wrapper);
+            }
+        });
+
+        // Changement d'INGRÉDIENT => MAJ unité
+        document.addEventListener('change', function(e) {
+            if (e.target.matches('.ingredient-select')) {
+                const wrapper = e.target.closest('.border.rounded.p-3') || document;
+                updateUnitForWrapper(wrapper);
+            }
+        });
+
+        // Au chargement : applique filtre + unité pour chaque bloc existant
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.border.rounded.p-3').forEach(wrapper => {
+                filterIngredientOptions(wrapper);
+                updateUnitForWrapper(wrapper);
+            });
+        });
     </script>
 {% endblock %}

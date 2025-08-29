@@ -16,6 +16,9 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\String\Slugger\SluggerInterface;
+use Symfony\Component\HtmlSanitizer\HtmlSanitizerInterface;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
+use Twig\Markup;
 
 #[Route('/articles')]
 class ArticleController extends AbstractController
@@ -29,18 +32,18 @@ class ArticleController extends AbstractController
     #[Route('', name: 'article_index', methods: ['GET'])]
     public function home(Request $request): Response
     {
-        $user = $this->getUser();
+        //$user = $this->getUser();
 
-        if (!$user) {
+       // if (!$user) {
             // préserve ?q=...&categorie=...
             return $this->redirectToRoute('article_liste', $request->query->all());
-        }
+        //}
 
-        if ($this->isGranted('ROLE_ADMIN')) {
-            return $this->redirectToRoute('article_liste_admin');
-        }
+        //if ($this->isGranted('ROLE_ADMIN')) {
+          //  return $this->redirectToRoute('article_liste_admin');
+       // }
 
-        return $this->redirectToRoute('article_mes_articles');
+        //return $this->redirectToRoute('article_mes_articles');
     }
 
     // --- Liste publique (recherche + filtre + pagination) ---
@@ -153,7 +156,7 @@ class ArticleController extends AbstractController
             // Si contenu brut -> transforme en HTML simple (baseline)
             $contenu = $article->getContenu();
             if (strip_tags($contenu) === $contenu) {
-                $article->setContenu(nl2br(htmlspecialchars($contenu)));
+                $article->setContenu(nl2br($contenu));
             }
 
             // Upload image
@@ -188,9 +191,14 @@ class ArticleController extends AbstractController
     public function show(
         Request $request,
         Article $article,
+        #[Autowire(service: 'html_sanitizer.sanitizer.article.content')] HtmlSanitizerInterface $sanitizer,
         EntityManagerInterface $em,
         PaginatorInterface $paginator
     ): Response {
+        $decoded = html_entity_decode($article->getContenu() ?? '', ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $clean   = $sanitizer->sanitize($decoded);
+        $contenu = new \Twig\Markup($clean, 'UTF-8');
+
         // déterminer l’URL de retour
         $from     = (string) $request->query->get('from', '');
         $session  = $request->getSession();
@@ -258,6 +266,7 @@ class ArticleController extends AbstractController
             'formCommentaire' => $formView,
             'backUrl'         => $backUrl,
             'canEdit'         => $canEdit,
+            'contenu'  => $contenu,
         ]);
     }
 
@@ -281,7 +290,7 @@ class ArticleController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $contenu = $article->getContenu();
             if (strip_tags($contenu) === $contenu) {
-                $article->setContenu(nl2br(htmlspecialchars($contenu)));
+                $article->setContenu(nl2br($contenu));
             }
 
             $imageFile = $form->get('image')->getData();

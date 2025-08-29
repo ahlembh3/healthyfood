@@ -1,96 +1,14 @@
-{# templates/partials/_footer.html.twig #}
-<footer class="border-top mt-5 pt-4" role="contentinfo" aria-label="Pied de page">
-    <div class="container">
-        <div class="row gy-4">
-
-            {# Colonne marque #}
-            <div class="col-md-4">
-                <a href="{{ path('app_home') }}" class="d-inline-flex align-items-center gap-2 mb-2 text-decoration-none">
-                    <img
-                            src="{{ asset('images/logo.png') }}"
-                            alt="Santé &amp; Nature"
-                            width="40" height="40"
-                            class="rounded-circle border border-1"
-                            onerror="this.style.display='none'">
-                    <span class="fw-semibold">Santé &amp; Nature</span>
-                </a>
-                <p class="text-muted small mb-2">
-                    Ambiance apaisante, recettes et tisanes naturelles pour le quotidien.
-                </p>
-
-                {# Icônes sociales (placeholders) #}
-                <ul class="list-inline mb-0">
-                    <li class="list-inline-item">
-                        <a class="link-secondary" href="#" aria-label="Instagram (nouvelle fenêtre)" target="_blank" rel="noopener">
-                            <i class="bi bi-instagram" aria-hidden="true"></i>
-                        </a>
-                    </li>
-                    <li class="list-inline-item">
-                        <a class="link-secondary" href="#" aria-label="Facebook (nouvelle fenêtre)" target="_blank" rel="noopener">
-                            <i class="bi bi-facebook" aria-hidden="true"></i>
-                        </a>
-                    </li>
-                    <li class="list-inline-item">
-                        <a class="link-secondary" href="#" aria-label="YouTube (nouvelle fenêtre)" target="_blank" rel="noopener">
-                            <i class="bi bi-youtube" aria-hidden="true"></i>
-                        </a>
-                    </li>
-                </ul>
-            </div>
-
-            {# Colonne navigation #}
-            <nav class="col-6 col-md-4" aria-labelledby="footer-nav-title">
-                <h2 id="footer-nav-title" class="h6 mb-3">Navigation</h2>
-                <ul class="list-unstyled mb-0">
-                    <li><a class="text-decoration-none" href="{{ path('app_home') }}">Accueil</a></li>
-                    <li><a class="text-decoration-none" href="{{ path('recette_index') }}">Recettes</a></li>
-                    <li><a class="text-decoration-none" href="{{ path('tisane_index') }}">Tisanes</a></li>
-                    <li><a class="text-decoration-none" href="{{ path('plante_index') }}">Plantes</a></li>
-                    <li><a class="text-decoration-none" href="{{ path('article_liste') }}">Articles</a></li>
-                    {% if app.user %}
-                        <li><a class="text-decoration-none" href="{{ path('utilisateurs_dashboard') }}">Mon espace</a></li>
-                        <li><a class="text-decoration-none" href="{{ path('app_logout') }}">Déconnexion</a></li>
-                    {% else %}
-                        <li><a class="text-decoration-none" href="{{ path('app_login') }}">Connexion</a></li>
-                        <li><a class="text-decoration-none" href="{{ path('app_inscription') }}">Inscription</a></li>
-                    {% endif %}
-                </ul>
+<footer class="site-footer">
+    <div class="container-site">
+        <div class="footer-content">
+            <div>© {{ "now"|date("Y") }} Santé & Nature</div>
+            <nav class="footer-nav" aria-label="Navigation secondaire">
+                <a href="{#  {{ path('mentions_legales') }}#}">Mentions légales</a>
+                <a href="{#  {{ path('contact') }}#}">Contact</a>
+                <a href="{#  {{ path('confidentialite') }}#}">Confidentialité</a>
+                <a href="https://instagram.com" target="_blank" rel="noopener">Instagram</a>
+                <a href="https://facebook.com" target="_blank" rel="noopener">Facebook</a>
             </nav>
-
-            {# Colonne newsletter #}
-            <div class="col-6 col-md-4">
-                <h2 class="h6 mb-3" id="news-title">Newsletter</h2>
-                <p class="text-muted small">
-                    1 email / mois. Pas de spam, que du naturel 🌿
-                </p>
-                {# TODO: branche la route quand tu auras un contrôleur (ex: newsletter_subscribe) #}
-                <form method="post" action="#" aria-labelledby="news-title">
-                    <label for="news-email" class="visually-hidden">Votre e-mail</label>
-                    <div class="input-group">
-                        <input id="news-email" name="email" type="email" class="form-control"
-                               placeholder="Votre e-mail" autocomplete="email" required>
-                        <button class="btn btn-primary" type="submit">S’inscrire</button>
-                    </div>
-                    <small class="text-muted d-block mt-2">
-                        En vous inscrivant, vous acceptez de recevoir nos emails.
-                    </small>
-                </form>
-            </div>
-
-        </div>
-
-        <hr class="my-4">
-
-        <div class="d-flex flex-column flex-md-row justify-content-between align-items-start gap-2 small text-muted">
-            <div>
-                &copy; {{ "now"|date("Y") }} Santé &amp; Nature — Tous droits réservés.
-            </div>
-            <div class="d-flex flex-wrap gap-3">
-                {# Remplace # par tes vraies pages légales quand elles existent #}
-                <a href="#" class="link-secondary text-decoration-none">Mentions légales</a>
-                <a href="#" class="link-secondary text-decoration-none">Politique de confidentialité</a>
-                <a href="#main" class="link-secondary text-decoration-none">Haut de page ↑</a>
-            </div>
         </div>
     </div>
 </footer>

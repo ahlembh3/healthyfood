@@ -3,9 +3,8 @@
 namespace App\Controller;
 
 use App\Entity\Tisane;
-use App\Entity\Plante;
-use App\Entity\Bienfait;
 use Doctrine\ORM\EntityManagerInterface;
+use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -14,59 +13,66 @@ use Symfony\Component\Routing\Annotation\Route;
 #[Route('/tisanes')]
 class TisaneController extends AbstractController
 {
-    #[Route('', name: 'tisane_index')]
-    public function index(Request $request, EntityManagerInterface $em): Response
-    {
-        $query = $request->query->get('q');
+    #[Route('', name: 'tisane_index', methods: ['GET'])]
+    public function index(
+        Request $request,
+        EntityManagerInterface $em,
+        PaginatorInterface $paginator
+    ): Response {
+        $q    = trim((string) $request->query->get('q', ''));
+        $page = max(1, (int) $request->query->get('page', 1));
 
-        $tisanes = $em->getRepository(Tisane::class)
+        // IMPORTANT :
+        // - pas de groupBy sur t.id
+        // - DISTINCT t pour éviter les doublons dus aux joins
+        // - on ne addSelect pas deux collections to-many à la fois
+        $qb = $em->getRepository(Tisane::class)
             ->createQueryBuilder('t')
-            ->leftJoin('t.bienfaits', 'b')
-            ->leftJoin('t.plantes', 'p')
-            ->addSelect('b', 'p')
-            ->where('t.nom LIKE :query OR b.nom LIKE :query OR p.nomCommun LIKE :query')
-            ->setParameter('query', '%' . $query . '%')
-            ->orderBy('t.nom', 'ASC')
-            ->getQuery()
-            ->getResult();
+            ->select('DISTINCT t')
+            ->leftJoin('t.bienfaits', 'b') // utile pour filtrer sur b
+            ->leftJoin('t.plantes',  'p') // utile pour filtrer sur p
+            ->orderBy('t.nom', 'ASC');
+
+        if ($q !== '') {
+            $qb->andWhere(
+                't.nom LIKE :q
+                 OR t.modePreparation LIKE :q
+                 OR b.nom LIKE :q
+                 OR p.nomCommun LIKE :q'
+            )->setParameter('q', '%'.$q.'%');
+        }
+
+        $tisanes = $paginator->paginate(
+            $qb,
+            $page,
+            9,
+            ['wrap-queries' => true]
+        );
 
         return $this->render('tisane/index.html.twig', [
             'tisanes' => $tisanes,
-            'query' => $query,
+            'query'   => $q,
         ]);
     }
-#[Route('/{id}', name: 'tisane_show', requirements: ['id' => '\d+'])]
-public function show(int $id, EntityManagerInterface $em): Response
+
+    #[Route('/{id}', name: 'tisane_show', requirements: ['id' => '\d+'], methods: ['GET'])]
+    public function show(int $id, EntityManagerInterface $em): Response
     {
-    $tisane = $em->getRepository(Tisane::class)->find($id);
+        // Ici on peut précharger les deux relations (on ne récupère qu'UNE tisane)
+        $tisane = $em->getRepository(Tisane::class)->createQueryBuilder('t')
+            ->select('t, p, b')
+            ->leftJoin('t.plantes', 'p')
+            ->leftJoin('t.bienfaits', 'b')
+            ->andWhere('t.id = :id')->setParameter('id', $id)
+            ->getQuery()
+            ->getOneOrNullResult();
 
-    if (!$tisane) {
-        throw $this->createNotFoundException("Tisane non trouvée.");
+        if (!$tisane) {
+            throw $this->createNotFoundException("Tisane non trouvée.");
+        }
+
+        return $this->render('tisane/show.html.twig', [
+            'tisane' => $tisane,
+        ]);
     }
-
-    return $this->render('tisane/show.html.twig', [
-        'tisane' => $tisane,
-    ]);
-    }
-    #[Route('/test-tisane', name: 'app_test_tisane')]
-public function test(EntityManagerInterface $em): Response
-{
-    $tisane = new Tisane();
-    $tisane->setNom('Tisane test');
-    $tisane->setModePreparation('Infuser 10 minutes');
-
-    // Suppose qu’on a déjà des Plantes et Bienfaits en BDD
-    $plante = $em->getRepository(Plante::class)->find(1);
-    $bienfait = $em->getRepository(Bienfait::class)->find(1);
-
-    if ($plante) $tisane->addPlante($plante);
-    if ($bienfait) $tisane->addBienfait($bienfait);
-
-    $em->persist($tisane);
-    $em->flush();
-
-    return new Response('Tisane test enregistrée avec une plantes et un bienfait.');
-}
-
-
 }

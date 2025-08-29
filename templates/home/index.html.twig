@@ -1,71 +1,275 @@
-{# templates/home/index.html.twig (exemple) #}
+{# templates/home/index.html.twig #}
 {% extends 'base.html.twig' %}
 {% block title %}Accueil{% endblock %}
-{% block page_title %}Bienvenue sur Santé & Nature{% endblock %}
+
+{# === Variables réutilisées === #}
+{% set homePlantes  = latestPlantes|default(plantes|default([])) %}
+{% set phPlantePath = asset('images/placeholders/placeholder-plante.jpg') %}
 
 {% block content %}
-    {# --- HERO --- #}
-    <section class="hero-plant position-relative overflow-hidden mb-4" aria-label="Découvrir une vie plus saine">
-        <div class="hero-bg" aria-hidden="true" style="background-image:url('{{ asset('images/img_2.png') }}')"></div>
-        <div class="container position-relative">
-            <div class="row align-items-center" style="min-height: clamp(260px, 40vw, 420px);">
-                <div class="col-lg-7 py-5">
-                    <h2 class="display-5 fw-bold lh-1 hero-title mb-3">
-                        Découvrez <br> une vie <span class="d-inline-block">plus saine</span><br>
-                        <span class="text-vert">une tisane</span> à la fois
-                    </h2>
-                    <div class="d-flex flex-wrap gap-2">
-                        <a class="btn btn-primary btn-lg" href="{{ path('recette_index') }}">Voir les recettes</a>
-                        <a class="btn btn-outline-primary btn-lg" href="{{ path('tisane_index') }}">Explorer les tisanes</a>
-                    </div>
+    {# --- Bannière --- #}
+    <section class="hero-banner" style="background-image:url('{{ asset('images/banniere.png') }}')">
+        <div class="hero-content">
+            <h1 class="hero-title">
+                Découvrez une vie <br>plus saine<br>
+                <span class="text-vert-dark">une tisane</span> à la fois
+            </h1>
+        </div>
+    </section>
+
+    {# === CARROUSEL — 6 items, 3 visibles, barre de progression === #}
+    <section class="container-content" aria-labelledby="last-items-title">
+        <h2 id="last-items-title" class="visually-hidden">Dernières recettes &amp; tisanes</h2>
+
+        {# 1) Construire la liste si non fournie par le contrôleur #}
+        {% set items = sliderItems|default([]) %}
+        {% if items is empty %}
+            {% set R = latestRecettes|default([])|slice(0,3) %}
+            {% set T = latestTisanes|default([])|slice(0,3) %}
+            {% set items = [] %}
+            {% set i = 0 %}{% set j = 0 %}
+            {% for k in 0..5 %}
+                {% if i < R|length or j < T|length %}
+                    {% if (k is even and i < R|length) or j >= T|length %}
+                        {% set r = R[i] %}
+                        {% set items = items|merge([{
+                            'kind':'recette',
+                            'title': r.titre,
+                            'img':   r.image|default(''),
+                            'url':   path('recette_show', { id: r.id, from: 'home' })
+                        }]) %}
+                        {% set i = i + 1 %}
+                    {% else %}
+                        {% set t = T[j] %}
+                        {% set items = items|merge([{
+                            'kind':'tisane',
+                            'title': t.nom,
+                            'img':   t.image|default(''),
+                            'url':   path('tisane_show', { id: t.id })
+                        }]) %}
+                        {% set j = j + 1 %}
+                    {% endif %}
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+
+        {# 2) Carrousel #}
+        <div class="hf-slider mt-3">
+            <button class="hf-nav hf-prev" id="hf-prev" type="button" aria-label="Précédent">‹</button>
+
+            <div class="hf-viewport" id="hf-viewport" tabindex="0">
+                <div class="hf-track">
+                    {% for it in items %}
+                        {% set isRecette = it.kind == 'recette' %}
+                        {% set base = isRecette ? 'uploads/recettes/' : 'uploads/tisanes/' %}
+                        {% set ph   = isRecette
+                            ? asset('images/placeholders/placeholder-recette.jpg')
+                            : asset('images/placeholders/placeholder-tisane.jpg') %}
+                        {% set src  = it.img
+                            ? (it.img starts with 'http'
+                            ? it.img
+                            : asset((it.img starts with 'uploads/' ? it.img : base ~ it.img)))
+                            : ph %}
+
+                        <a class="hf-card {{ isRecette ? 'is-recette' : 'is-tisane' }}" href="{{ it.url }}">
+                            <div class="hf-tag">{{ isRecette ? 'Recette' : 'Tisane' }}</div>
+                            <div class="hf-media ratio ratio-4x3">
+                                <img
+                                        src="{{ src }}"
+                                        alt="{{ it.title|default('Élément') }}"
+                                        class="media-fill rounded-top"
+                                        loading="lazy"
+                                        onerror="this.onerror=null;this.src='{{ ph }}'">
+                            </div>
+                            <div class="hf-body">
+                                <h3 class="hf-title">{{ it.title|default('Sans titre') }}</h3>
+                            </div>
+                        </a>
+                    {% endfor %}
                 </div>
+            </div>
+
+            <button class="hf-nav hf-next" id="hf-next" type="button" aria-label="Suivant">›</button>
+
+            <div class="hf-progress" id="hf-progress" aria-hidden="true">
+                <div class="hf-progress-bar" id="hf-progress-bar"></div>
             </div>
         </div>
     </section>
 
-    {# --- CARDS D'ACCÈS RAPIDE --- #}
-    <section class="container text-center mt-5" aria-labelledby="explore-title">
-        <h2 id="explore-title" class="mb-4 h3">Explorez le monde des plantes et de la nutrition</h2>
-        <div class="row g-4 justify-content-center">
-            <div class="col-12 col-sm-6 col-lg-3">
-                <div class="card h-100 shadow-sm border-0">
-                    <div class="card-body">
-                        <h3 class="h5">🌿 Plantes médicinales</h3>
-                        <p class="text-muted">Découvrez les bienfaits naturels</p>
-                        <a href="{{ path('plante_index') }}" class="btn btn-outline-primary">Voir</a>
-                    </div>
-                </div>
+    {# === SPOTLIGHT — Articles + commentaire / Plantes + recherche === #}
+    <section class="container-content home-spotlight" aria-labelledby="home-spotlight-title">
+        <h2 id="home-spotlight-title" class="visually-hidden">Derniers articles, commentaires et plantes</h2>
+
+        <div class="home-spotlight__left">
+            {% set lastArticles = latestArticles|default(articles|default([]))|slice(0,2) %}
+            <h3 class="home-spotlight__h3">Derniers articles</h3>
+            <ul class="home-articles">
+                {% for a in lastArticles %}
+                    <li>
+                        <a href="{{ path('article_show', { id: a.id, from:'home' }) }}" class="home-article-link">
+                            {{ a.titre }}
+                        </a>
+                    </li>
+                {% else %}
+                    <li class="text-muted">Aucun article pour le moment.</li>
+                {% endfor %}
+            </ul>
+
+            {% set c = lastComment|default(null) %}
+            <h3 class="home-spotlight__h3 mt-3">Derniers commentaires</h3>
+            {% if c %}
+                {% set cUrl =
+                    (c.recette is defined and c.recette) ? path('recette_show', { id: c.recette.id }) ~ '#comments'
+                    : ((c.article is defined and c.article) ? path('article_show', { id: c.article.id }) ~ '#comments' : '#') %}
+                <a href="{{ cUrl }}" class="home-comment">
+                    <span aria-hidden="true">❝</span> {{ c.contenu|striptags|u.truncate(120, '…') }}
+                </a>
+            {% else %}
+                <p class="text-muted mb-0">Pas encore de commentaire.</p>
+            {% endif %}
+        </div>
+
+        <div class="home-spotlight__right">
+            {% set plantesShow = homePlantes|slice(0,2) %}
+            <div class="home-plants-grid">
+                {% for p in plantesShow %}
+                    {% set img = p.image|default('')|trim %}
+                    {% if img %}
+                        {% set src =
+                            (img starts with 'http') ? img
+                            : (img starts with 'uploads/') ? asset(img)
+                            : (img starts with 'plantes/') ? asset('uploads/' ~ img)
+                            : asset('uploads/plantes/' ~ img)
+                        %}
+                    {% else %}
+                        {% set src = phPlantePath %}
+                    {% endif %}
+
+                    <a id="plant-slot-{{ loop.index }}" class="home-plant" href="{{ path('plante_show', { id: p.id }) }}">
+                        <div class="ratio ratio-1x1">
+                            <img src="{{ src }}" alt="{{ p.nomCommun }}" class="media-fill rounded-2" loading="lazy"
+                                 onerror="this.onerror=null;this.src='{{ phPlantePath }}'">
+                        </div>
+                        <div class="home-plant__name">{{ p.nomCommun }}</div>
+                    </a>
+                {% else %}
+                    <a id="plant-slot-1" class="home-plant" href="{{ path('plante_index') }}">
+                        <div class="ratio ratio-1x1"><img src="{{ phPlantePath }}" alt="Plante" class="media-fill rounded-2"></div>
+                        <div class="home-plant__name">Plante</div>
+                    </a>
+                    <a id="plant-slot-2" class="home-plant" href="{{ path('plante_index') }}">
+                        <div class="ratio ratio-1x1"><img src="{{ phPlantePath }}" alt="Plante" class="media-fill rounded-2"></div>
+                        <div class="home-plant__name">Plante</div>
+                    </a>
+                {% endfor %}
             </div>
 
-            <div class="col-12 col-sm-6 col-lg-3">
-                <div class="card h-100 shadow-sm border-0">
-                    <div class="card-body">
-                        <h3 class="h5">🍵 Tisanes</h3>
-                        <p class="text-muted">Choisissez selon vos besoins : sommeil, digestion…</p>
-                        <a href="{{ path('tisane_index') }}" class="btn btn-outline-primary">Voir</a>
-                    </div>
-                </div>
-            </div>
+            <form method="get"
+                  action="{{ url('plante_index') }}"
+                  class="home-plant-search"
+                  role="search"
+                  aria-label="Rechercher une plante médicinale"
+                  data-turbo="false"> {# désactive Turbo au besoin #}
 
-            <div class="col-12 col-sm-6 col-lg-3">
-                <div class="card h-100 shadow-sm border-0">
-                    <div class="card-body">
-                        <h3 class="h5">🥗 Recettes</h3>
-                        <p class="text-muted">Des idées saines et savoureuses à cuisiner</p>
-                        <a href="{{ path('recette_index') }}" class="btn btn-outline-primary">Voir</a>
-                    </div>
-                </div>
-            </div>
+                <div class="home-plant-search__title">Rechercher une&nbsp;plante&nbsp;médicinale</div>
 
-            <div class="col-12 col-sm-6 col-lg-3">
-                <div class="card h-100 shadow-sm border-0">
-                    <div class="card-body">
-                        <h3 class="h5">📝 Blog</h3>
-                        <p class="text-muted">Conseils bien-être et astuces nutrition</p>
-                        <a href="{{ path('article_liste') }}" class="btn btn-outline-primary">Voir</a>
-                    </div>
+                <div class="home-plant-search__group">
+                    <input id="homePlantQ"
+                           type="search"
+                           name="q"
+                           class="home-plant-search__input"
+                           placeholder="Rechercher une plante médicinale"
+                           autocomplete="off">
+                    <button class="home-plant-search__btn" type="submit" aria-label="Rechercher">
+                        <i class="bi bi-search"></i>
+                    </button>
                 </div>
-            </div>
+            </form>
+
         </div>
     </section>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        // --- Carrousel (nav + barre de progression)
+        document.addEventListener('DOMContentLoaded', () => {
+            const vp   = document.getElementById('hf-viewport');
+            if (!vp) return;
+            const bar  = document.getElementById('hf-progress-bar');
+            const prev = document.getElementById('hf-prev');
+            const next = document.getElementById('hf-next');
+            const prog = document.getElementById('hf-progress');
+
+            const update = () => {
+                const max = vp.scrollWidth - vp.clientWidth;
+                if (vp.scrollLeft > max) vp.scrollLeft = Math.max(0, max);
+                const ratio = max > 0 ? (vp.scrollLeft / max) : 0;
+                if (bar)  bar.style.width = (ratio * 100) + '%';
+                const needNav = max > 1;
+                if (prev) prev.style.display = needNav ? '' : 'none';
+                if (next) next.style.display = needNav ? '' : 'none';
+                if (prog) prog.style.display = needNav ? '' : 'none';
+            };
+
+            const step = () => {
+                const first = vp.querySelector('.hf-card');
+                if (!first) return vp.clientWidth;
+                const styles = getComputedStyle(vp.querySelector('.hf-track'));
+                const gap = parseFloat(styles.columnGap || styles.gap || 16);
+                return first.getBoundingClientRect().width + gap;
+            };
+
+            vp.addEventListener('scroll', update, { passive:true });
+            window.addEventListener('resize', update);
+            if (prev) prev.addEventListener('click', () => vp.scrollBy({ left: -step(), behavior: 'smooth' }));
+            if (next) next.addEventListener('click', () => vp.scrollBy({ left:  step(), behavior: 'smooth' }));
+            update();
+        });
+
+        // --- Rotation douce de 2 vignettes plantes si > 2 disponibles
+        (function(){
+            {% set plantesData = [] %}
+            {% for p in homePlantes %}
+            {% set img = p.image|default('')|trim %}
+            {% if img %}
+            {% set src =
+                (img starts with 'http') ? img
+                : (img starts with 'uploads/') ? asset(img)
+                : (img starts with 'plantes/') ? asset('uploads/' ~ img)
+                : asset('uploads/plantes/' ~ img)
+            %}
+            {% else %}
+            {% set src = phPlantePath %}
+            {% endif %}
+            {% set plantesData = plantesData|merge([{
+                'id': p.id,
+                'name': p.nomCommun,
+                'src': src,
+                'url': path('plante_show', { id: p.id })
+            }]) %}
+            {% endfor %}
+            const all = {{ plantesData|json_encode|raw }};
+            if (all.length > 2) {
+                let start = 0;
+                const render = (slot, i) => {
+                    const a = document.getElementById('plant-slot-' + slot);
+                    if (!a) return;
+                    const img  = a.querySelector('img');
+                    const name = a.querySelector('.home-plant__name');
+                    a.href = all[i].url;
+                    if (img)  img.src = all[i].src;
+                    if (name) name.textContent = all[i].name;
+                };
+                render(1, 0); render(2, 1);
+                setInterval(() => {
+                    start = (start + 1) % all.length;
+                    render(1, start % all.length);
+                    render(2, (start + 1) % all.length);
+                }, 6000);
+            }
+        })();
+    </script>
 {% endblock %}

@@ -1,0 +1,244 @@
+[
+  {
+    "titre": "Salade fraîcheur citronnée",
+    "description": "Concombre, tomate et citron pour une entrée légère.",
+    "instructions": "Couper le concombre et la tomate en dés. Arroser de jus de citron et d'un filet d'huile d'olive. Saler, poivrer.",
+    "tempsPreparation": 10,
+    "tempsCuisson": 0,
+    "difficulte": "Facile",
+    "portions": 2,
+    "image": null,
+    "ingredients": [
+      { "nom": "Concombre", "quantite": 150 },
+      { "nom": "Tomate", "quantite": 150 },
+      { "nom": "Citron", "quantite": 20 },
+      { "nom": "Huile d'olive", "quantite": 10 }
+    ]
+  },
+  {
+    "titre": "Buddha bowl quinoa-saumon",
+    "description": "Un bol complet aux bons lipides et protéines.",
+    "instructions": "Cuire le quinoa. Cuire le saumon à la poêle. Dresser avec avocat, épinards et un filet de citron.",
+    "tempsPreparation": 20,
+    "tempsCuisson": 10,
+    "difficulte": "Moyen",
+    "portions": 2,
+    "image": null,
+    "ingredients": [
+      { "nom": "Quinoa", "quantite": 120 },
+      { "nom": "Saumon", "quantite": 200 },
+      { "nom": "Avocat", "quantite": 100 },
+      { "nom": "Épinards", "quantite": 60 },
+      { "nom": "Citron", "quantite": 15 }
+    ]
+  },
+  {
+    "titre": "Wrap poulet-avocat",
+    "description": "Snack protéiné et rapide.",
+    "instructions": "Cuire le poulet, l'émincer. Garnir une base salade avec avocat et tomate. Rouler.",
+    "tempsPreparation": 15,
+    "tempsCuisson": 8,
+    "difficulte": "Facile",
+    "portions": 2,
+    "image": null,
+    "ingredients": [
+      { "nom": "Poulet", "quantite": 200 },
+      { "nom": "Avocat", "quantite": 100 },
+      { "nom": "Laitue", "quantite": 80 },
+      { "nom": "Tomate", "quantite": 120 }
+    ]
+  },
+  {
+    "titre": "Porridge avoine-fruits rouges",
+    "description": "Petit-déj' rassasiant et antioxydant.",
+    "instructions": "Chauffer le lait, ajouter les flocons d'avoine, cuire doucement. Servir avec fraises et myrtilles.",
+    "tempsPreparation": 5,
+    "tempsCuisson": 8,
+    "difficulte": "Facile",
+    "portions": 2,
+    "image": null,
+    "ingredients": [
+      { "nom": "Lait", "quantite": 300 },
+      { "nom": "Avoine (flocons)", "quantite": 80 },
+      { "nom": "Fraise", "quantite": 80 },
+      { "nom": "Myrtille", "quantite": 80 }
+    ]
+  },
+  {
+    "titre": "Soupe carotte-poireau",
+    "description": "Velouté léger pour le soir.",
+    "instructions": "Faire revenir poireau et carotte, couvrir d'eau, mijoter puis mixer.",
+    "tempsPreparation": 10,
+    "tempsCuisson": 20,
+    "difficulte": "Facile",
+    "portions": 3,
+    "image": null,
+    "ingredients": [
+      { "nom": "Carotte", "quantite": 300 },
+      { "nom": "Poireau", "quantite": 200 },
+      { "nom": "Huile d'olive", "quantite": 10 }
+    ]
+  },
+  {
+    "titre": "Curry de pois chiches au brocoli",
+    "description": "Végétarien, riche en fibres.",
+    "instructions": "Saisir ail et gingembre, ajouter pois chiches et brocoli, mijoter avec épices et un peu d'eau.",
+    "tempsPreparation": 15,
+    "tempsCuisson": 15,
+    "difficulte": "Moyen",
+    "portions": 2,
+    "image": null,
+    "ingredients": [
+      { "nom": "Pois chiches", "quantite": 200 },
+      { "nom": "Brocoli", "quantite": 250 },
+      { "nom": "Ail", "quantite": 10 },
+      { "nom": "Gingembre", "quantite": 10 }
+    ]
+  },
+  {
+    "titre": "Salade lentilles-épinards",
+    "description": "Source de fer végétal.",
+    "instructions": "Cuire les lentilles. Mélanger avec épinards, oignon rouge, citron et huile d'olive.",
+    "tempsPreparation": 15,
+    "tempsCuisson": 20,
+    "difficulte": "Facile",
+    "portions": 2,
+    "image": null,
+    "ingredients": [
+      { "nom": "Lentilles", "quantite": 160 },
+      { "nom": "Épinards", "quantite": 80 },
+      { "nom": "Oignon rouge", "quantite": 50 },
+      { "nom": "Citron", "quantite": 15 },
+      { "nom": "Huile d'olive", "quantite": 10 }
+    ]
+  },
+  {
+    "titre": "Riz sauté poulet-légumes",
+    "description": "Plat complet familial.",
+    "instructions": "Cuire le riz. Saisir poulet, ajouter poivron et carotte, puis le riz. Assaisonner.",
+    "tempsPreparation": 15,
+    "tempsCuisson": 15,
+    "difficulte": "Moyen",
+    "portions": 3,
+    "image": null,
+    "ingredients": [
+      { "nom": "Poulet", "quantite": 250 },
+      { "nom": "Riz complet", "quantite": 200 },
+      { "nom": "Poivron", "quantite": 150 },
+      { "nom": "Carotte", "quantite": 150 },
+      { "nom": "Huile d'olive", "quantite": 15 }
+    ]
+  },
+  {
+    "titre": "Pâtes brocoli-citron",
+    "description": "Version légère et parfumée.",
+    "instructions": "Cuire les pâtes. Blanchir le brocoli. Mélanger avec jus de citron, ail et un filet d'huile.",
+    "tempsPreparation": 10,
+    "tempsCuisson": 12,
+    "difficulte": "Facile",
+    "portions": 2,
+    "image": null,
+    "ingredients": [
+      { "nom": "Pâtes (blé)", "quantite": 180 },
+      { "nom": "Brocoli", "quantite": 200 },
+      { "nom": "Ail", "quantite": 8 },
+      { "nom": "Citron", "quantite": 10 },
+      { "nom": "Huile d'olive", "quantite": 10 }
+    ]
+  },
+  {
+    "titre": "Quinoa bowl avocat-tomate",
+    "description": "Bowl rapide et veggie.",
+    "instructions": "Cuire le quinoa. Dresser avec tomate, avocat, citron, huile, sel, poivre.",
+    "tempsPreparation": 15,
+    "tempsCuisson": 12,
+    "difficulte": "Facile",
+    "portions": 2,
+    "image": null,
+    "ingredients": [
+      { "nom": "Quinoa", "quantite": 120 },
+      { "nom": "Tomate", "quantite": 150 },
+      { "nom": "Avocat", "quantite": 100 },
+      { "nom": "Citron", "quantite": 10 },
+      { "nom": "Huile d'olive", "quantite": 10 }
+    ]
+  },
+  {
+    "titre": "Omelette épinards-fromage blanc",
+    "description": "Protéinée et moelleuse.",
+    "instructions": "Battre les œufs, ajouter épinards et fromage blanc. Cuire doucement à la poêle.",
+    "tempsPreparation": 8,
+    "tempsCuisson": 6,
+    "difficulte": "Facile",
+    "portions": 2,
+    "image": null,
+    "ingredients": [
+      { "nom": "Oeuf", "quantite": 3 },
+      { "nom": "Épinards", "quantite": 80 },
+      { "nom": "Fromage blanc", "quantite": 80 }
+    ]
+  },
+  {
+    "titre": "Smoothie banane-mytille-yaourt",
+    "description": "Goûter express antioxydant.",
+    "instructions": "Mixer banane, myrtilles, yaourt et un trait de lait si besoin.",
+    "tempsPreparation": 5,
+    "tempsCuisson": 0,
+    "difficulte": "Facile",
+    "portions": 2,
+    "image": null,
+    "ingredients": [
+      { "nom": "Banane", "quantite": 120 },
+      { "nom": "Myrtille", "quantite": 120 },
+      { "nom": "Yaourt nature", "quantite": 200 }
+    ]
+  },
+  {
+    "titre": "Tofu sauté aux légumes",
+    "description": "Végé rapide et équilibré.",
+    "instructions": "Saisir tofu, ajouter poivron et brocoli, assaisonner, servir avec riz.",
+    "tempsPreparation": 12,
+    "tempsCuisson": 10,
+    "difficulte": "Moyen",
+    "portions": 2,
+    "image": null,
+    "ingredients": [
+      { "nom": "Tofu (soja)", "quantite": 200 },
+      { "nom": "Poivron", "quantite": 150 },
+      { "nom": "Brocoli", "quantite": 200 },
+      { "nom": "Riz complet", "quantite": 150 }
+    ]
+  },
+  {
+    "titre": "Salade pomme-noix-concombre",
+    "description": "Croquante et fraîche.",
+    "instructions": "Couper pomme et concombre. Ajouter noix et un filet d'huile d'olive.",
+    "tempsPreparation": 10,
+    "tempsCuisson": 0,
+    "difficulte": "Facile",
+    "portions": 2,
+    "image": null,
+    "ingredients": [
+      { "nom": "Pomme", "quantite": 150 },
+      { "nom": "Concombre", "quantite": 150 },
+      { "nom": "Noix", "quantite": 25 },
+      { "nom": "Huile d'olive", "quantite": 8 }
+    ]
+  },
+  {
+    "titre": "Bol protéiné poulet-quinoa",
+    "description": "Post-entraînement.",
+    "instructions": "Cuire quinoa et poulet. Dresser avec avocat et épinards.",
+    "tempsPreparation": 20,
+    "tempsCuisson": 15,
+    "difficulte": "Moyen",
+    "portions": 2,
+    "image": null,
+    "ingredients": [
+      { "nom": "Quinoa", "quantite": 120 },
+      { "nom": "Poulet", "quantite": 220 },
+      { "nom": "Avocat", "quantite": 80 },
+      { "nom": "Épinards", "quantite": 60 }
+    ]
+  }
+]

@@ -9,31 +9,43 @@
     {% else %}
         <div class="row g-4">
             {% for recette in recettes %}
+                {% set title = recette.titre|default('') %}
+                {% set ascii = title|lower|replace({
+                    'é':'e','è':'e','ê':'e','ë':'e','à':'a','â':'a','ä':'a','ù':'u','û':'u','ü':'u','î':'i','ï':'i','ô':'o','ö':'o','ç':'c',
+                    '’':'','\'':'','"':'','(':'',')':'','/':'_','\\':'_','&':'et',',':'',':':'',';':'','?':'','!':'','.':'','-':'_'
+                }) %}
+                {% set slug  = ascii|replace({'  ':' '})|trim|replace({' ':'_'}) %}
+                {% set guessJpg = 'uploads/recettes/' ~ slug ~ '.jpg' %}
+                {% set guessPng = 'uploads/recettes/' ~ slug ~ '.png' %}
+
+                {% set img  = recette.image|default('')|trim %}
+                {% set src0 = img
+                    ? (img starts with 'http' ? img : asset((img starts with 'uploads/' ? img : 'uploads/recettes/' ~ img)))
+                    : asset(guessJpg)
+                %}
+                {% set src1 = asset(guessPng) %}
+                {% set ph   = asset('images/placeholders/placeholder-recette.jpg') %}
+
                 <div class="col-md-6 col-lg-4">
                     <article class="card h-100 shadow-sm">
                         <div class="ratio ratio-16x9 bg-light">
-                            {# Image (fallback placeholder) #}
-                            {% set img = recette.image|default('')|trim %}
-                            {% set src = img ? asset('uploads/recettes/' ~ img) : asset('images/placeholder-recipe.jpg') %}
                             <img
-                                    src="{{ src }}"
-                                    alt="{{ img ? 'Photo de ' ~ recette.titre : 'Image générique de recette' }}"
+                                    src="{{ src0 }}"
+                                    alt="{{ title ?: 'Recette' }}"
                                     class="rounded-top w-100 h-100"
                                     style="object-fit: cover;"
                                     loading="lazy"
+                                    onerror="if(!this.dataset.tryPng){this.dataset.tryPng=1;this.src='{{ src1 }}';}else{this.onerror=null;this.src='{{ ph }}';}"
                             >
                         </div>
 
                         <div class="card-body">
                             <h2 class="h5 card-title mb-2">{{ recette.titre }}</h2>
-
                             <p class="card-text text-muted">{{ recette.description|u.truncate(100, '…') }}</p>
 
                             <ul class="list-inline text-muted small mb-2">
                                 {% if recette.difficulte %}
-                                    <li class="list-inline-item">
-                                        <span class="badge text-bg-secondary">{{ recette.difficulte }}</span>
-                                    </li>
+                                    <li class="list-inline-item"><span class="badge text-bg-secondary">{{ recette.difficulte }}</span></li>
                                 {% endif %}
                                 {% if recette.tempsPreparation %}
                                     <li class="list-inline-item">⏱ Préparation : {{ recette.tempsPreparation }} min</li>
@@ -49,21 +61,11 @@
                                     class="btn btn-outline-primary flex-grow-1"
                                     href="{{ path('recette_show', { id: recette.id, from: 'mes' }) }}"
                                     aria-label="Voir la recette {{ recette.titre }}"
-                            >
-                                Voir la recette
-                            </a>
+                            >Voir la recette</a>
 
-                            {# Actions modif/supp seulement si non validée (selon ta règle actuelle) #}
                             {% if not recette.validation %}
                                 <div class="btn-group">
-                                    <a
-                                            href="{{ path('recette_edit', { id: recette.id }) }}"
-                                            class="btn btn-sm btn-secondary"
-                                            aria-label="Modifier la recette {{ recette.titre }}"
-                                    >
-                                        Modifier
-                                    </a>
-
+                                    <a href="{{ path('recette_edit', { id: recette.id }) }}" class="btn btn-sm btn-secondary" aria-label="Modifier la recette {{ recette.titre }}">Modifier</a>
                                     <form
                                             method="post"
                                             action="{{ path('recette_delete', { id: recette.id }) }}"

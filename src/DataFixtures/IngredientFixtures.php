@@ -3,75 +3,59 @@
 namespace App\DataFixtures;
 
 use App\Entity\Ingredient;
+use App\Entity\Gene;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
-use Doctrine\Bundle\FixturesBundle\FixtureGroupInterface;
+use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 
-class IngredientFixtures extends Fixture implements FixtureGroupInterface
+final class IngredientFixtures extends Fixture implements DependentFixtureInterface
 {
-    public static function getGroups(): array
+    public function getDependencies(): array
     {
-        return ['ingredients']; // permettra de charger uniquement ce groupe
+        return [GeneFixtures::class];
     }
 
     public function load(ObjectManager $manager): void
     {
         $path = __DIR__ . '/data/ingredients.json';
         if (!is_file($path)) {
-            throw new \RuntimeException("Fichier JSON introuvable : $path");
+            throw new \RuntimeException("Fichier JSON introuvable : {$path}");
         }
 
-        $rows = json_decode(file_get_contents($path), true, 512, JSON_THROW_ON_ERROR);
-        $repo = $manager->getRepository(Ingredient::class);
+        $rows = json_decode((string) file_get_contents($path), true, 512, JSON_THROW_ON_ERROR);
+        $geneRepo = $manager->getRepository(Gene::class);
 
         foreach ($rows as $i => $row) {
-            // valeurs par défaut + protections
-            $row = array_merge([
-                'nom'          => null,
-                'description'  => null,
-                'unite'        => 'gramme',
-                'calories'     => null,
-                'proteines'    => null,
-                'glucides'     => null,
-                'lipides'      => null,
-                'origine'      => null,
-                'bio'          => 0,
-                'image'        => null,
-                'type'         => null,
-                'allergenes'   => '',
-                'saisonnalite' => null,
-            ], $row);
-
-            if (!$row['nom']) {
-                throw new \RuntimeException("Ligne #$i : champ 'nom' manquant");
+            $nom = trim((string) ($row['nom'] ?? ''));
+            if ($nom === '') {
+                throw new \RuntimeException("ingredients.json: entrée #{$i} sans 'nom'");
             }
 
+            $ing = (new Ingredient())
+                ->setNom($nom)
+                ->setType($row['type'] ?? null)
+                ->setAllergenes($row['allergenes'] ?? null)
+                ->setSaisonnalite($row['saisonnalite'] ?? null)
+                ->setDescription($row['description'] ?? null)
+                ->setUnite($row['unite'] ?? 'g')
+                ->setCalories($row['calories'] ?? null)
+                ->setProteines(isset($row['proteines']) ? (float) $row['proteines'] : null)
+                ->setGlucides(isset($row['glucides']) ? (float) $row['glucides'] : null)
+                ->setLipides(isset($row['lipides']) ? (float) $row['lipides'] : null)
+                ->setOrigine($row['origine'] ?? null)
+                ->setBio(!empty($row['bio']))
+                ->setImage($row['image'] ?? null);
 
-            $ingredient = $repo->findOneBy(['nom' => $row['nom']]) ?? new Ingredient();
+            foreach ((array) ($row['genes'] ?? []) as $gName) {
+                $g = $geneRepo->findOneBy(['nom' => $gName]);
+                if ($g) {
+                    $ing->addGene($g);
+                }
+            }
 
-            $ingredient->setNom($row['nom']);
-            $ingredient->setDescription($row['description']);
-            $ingredient->setUnite($row['unite']);
-            $ingredient->setCalories(self::toNullableFloat($row['calories']));
-            $ingredient->setProteines(self::toNullableFloat($row['proteines']));
-            $ingredient->setGlucides(self::toNullableFloat($row['glucides']));
-            $ingredient->setLipides(self::toNullableFloat($row['lipides']));
-            $ingredient->setOrigine($row['origine']);
-            $ingredient->setBio((int) $row['bio'] === 1 ? 1 : 0);
-            $ingredient->setImage($row['image']);
-            $ingredient->setType($row['type']);
-            $ingredient->setAllergenes($row['allergenes']);
-            $ingredient->setSaisonnalite($row['saisonnalite']);
-
-            $manager->persist($ingredient);
+            $manager->persist($ing);
         }
 
         $manager->flush();
-    }
-
-    private static function toNullableFloat(mixed $v): ?float
-    {
-        if ($v === null || $v === '' || $v === 'NULL') return null;
-        return is_numeric($v) ? (float)$v : null;
     }
 }

@@ -1,154 +1,31 @@
-{# templates/partials/_header.html.twig #}
-{% set current = app.request.attributes.get('_route') %}
-
-<nav class="navbar navbar-expand-lg navbar-light site-navbar sticky-top border-bottom" role="navigation" aria-label="Navigation principale">
-    <div class="container">
-        {# Brand : logo + nom #}
-        <a class="navbar-brand d-flex align-items-center gap-2" href="{{ path('app_home') }}" aria-label="Aller à l’accueil">
-            {% set logo = asset('images/logo.png') %}
-            <img src="{{ logo }}"
-                 alt="Santé & Nature"
-                 width="40" height="40"
-                 class="rounded-circle border border-1"
-                 onerror="this.style.display='none'">
-            <span class="fw-semibold">Santé &amp; Nature</span>
+<header class="site-header">
+    <div class="container-site">
+        <a class="navbar-brand" href="{{ path('app_home') }}">
+            <img src="{{ asset('images/logo.png') }}" alt="Santé & Nature" class="brand-logo">
+            <span class="brand-text">Santé & Nature</span>
         </a>
 
-        {# Hamburger #}
-        <button class="navbar-toggler" type="button"
-                data-bs-toggle="collapse" data-bs-target="#mainNav"
-                aria-controls="mainNav" aria-expanded="false"
-                aria-label="Basculer la navigation">
-            <span class="navbar-toggler-icon"></span>
+        <button class="nav-toggle" aria-label="Menu navigation" aria-expanded="false" aria-controls="mainNav">
+            <span></span><span></span><span></span>
         </button>
 
-        <div id="mainNav" class="collapse navbar-collapse">
-            {# Liens principaux (gauche) #}
-            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                <li class="nav-item">
-                    <a class="nav-link {{ current == 'app_home' ? 'active' : '' }}"
-                       href="{{ path('app_home') }}"
-                            {{ current == 'app_home' ? 'aria-current="page"' : '' }}>
-                        Accueil
-                    </a>
-                </li>
+        <nav id="mainNav" class="nav-main" role="navigation" aria-label="Navigation principale">
+            <a class="nav-link" href="{{ path('app_home') }}">Accueil</a>
+            <a class="nav-link" href="{{ path('recette_index') }}">Recettes</a>
+            <a class="nav-link" href="{{ path('plante_index') }}">Plantes médicinales</a>
+            <a class="nav-link" href="{{ path('tisane_index') }}">Tisanes</a>
+            <a class="nav-link" href="{{ path('article_liste') }}">Blog</a>
 
-                <li class="nav-item">
-                    <a class="nav-link {{ current starts with 'recette_' ? 'active' : '' }}"
-                       href="{{ path('recette_index') }}"
-                            {{ current starts with 'recette_' ? 'aria-current="page"' : '' }}>
-                        Recettes
-                    </a>
-                </li>
-
-                <li class="nav-item">
-                    <a class="nav-link {{ current starts with 'tisane_' ? 'active' : '' }}"
-                       href="{{ path('tisane_index') }}"
-                            {{ current starts with 'tisane_' ? 'aria-current="page"' : '' }}>
-                        Tisanes
-                    </a>
-                </li>
-
-                <li class="nav-item">
-                    <a class="nav-link {{ current starts with 'plante_' ? 'active' : '' }}"
-                       href="{{ path('plante_index') }}"
-                            {{ current starts with 'plante_' ? 'aria-current="page"' : '' }}>
-                        Plantes
-                    </a>
-                </li>
-
-                <li class="nav-item">
-                    <a class="nav-link {{ current starts with 'article_' ? 'active' : '' }}"
-                       href="{{ path('article_liste') }}"
-                            {{ current starts with 'article_' ? 'aria-current="page"' : '' }}>
-                        Articles
-                    </a>
-                </li>
-            </ul>
-
-            {# Recherche (desktop) #}
-            <form class="d-none d-lg-flex header-search me-lg-3" role="search"
-                  action="{{ path('recette_index') }}" method="get" aria-label="Rechercher une recette">
-                <div class="input-group input-group-sm">
-                    <label for="header-search-q" class="visually-hidden">Rechercher une recette</label>
-                    <input id="header-search-q" class="form-control rounded-pill ps-3"
-                           type="search" name="q"
-                           placeholder="Rechercher une recette…" autocomplete="off">
-                    <button class="btn btn-primary rounded-pill ms-2" type="submit" aria-label="Rechercher">
-                        <i class="bi bi-search" aria-hidden="true"></i>
-                    </button>
-                </div>
-            </form>
-
-            {# Zone droite (connexion / espace) #}
-            <ul class="navbar-nav align-items-lg-center">
-                {% if app.user %}
-                    <li class="nav-item d-none d-lg-block me-2 text-muted small">
-                        <span aria-label="Connecté">👋 {{ app.user.prenom|default(app.user.email) }}</span>
-                    </li>
-
-                    {% if is_granted('ROLE_ADMIN') %}
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle {{ current starts with 'admin_' or current in ['utilisateurs_liste','commentaire_index','recette_liste_admin','article_liste_admin'] ? 'active' : '' }}"
-                               href="#" id="adminMenu" role="button"
-                               data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">
-                                Admin
-                            </a>
-                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="adminMenu">
-                                <li><a class="dropdown-item" href="{{ path('article_liste_admin') }}">Articles (admin)</a></li>
-                                <li><a class="dropdown-item" href="{{ path('recette_liste_admin') }}">Recettes (admin)</a></li>
-                                <li><a class="dropdown-item" href="{{ path('commentaire_index') }}">Commentaires</a></li>
-                                <li><a class="dropdown-item" href="{{ path('utilisateurs_liste') }}">Utilisateurs</a></li>
-                                <li><a class="dropdown-item" href="{{ path('admin_dashboard') }}">Dashboard</a></li>
-                            </ul>
-                        </li>
-                    {% else %}
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle {{ current in ['utilisateurs_mon_profil','utilisateurs_dashboard','article_mes_articles','recette_mes_recettes'] ? 'active' : '' }}"
-                               href="#" id="userMenu" role="button"
-                               data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">
-                                Mon espace
-                            </a>
-                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenu">
-                                <li><a class="dropdown-item" href="{{ path('article_mes_articles') }}">Mes articles</a></li>
-                                <li><a class="dropdown-item" href="{{ path('recette_mes_recettes') }}">Mes recettes</a></li>
-                                <li><a class="dropdown-item" href="{{ path('utilisateurs_mon_profil') }}">Mon profil</a></li>
-                                <li><a class="dropdown-item" href="{{ path('utilisateurs_dashboard') }}">Mon espace perso</a></li>
-                            </ul>
-                        </li>
-                    {% endif %}
-
-                    <li class="nav-item">
-                        <a class="nav-link text-warning" href="{{ path('app_logout') }}">Déconnexion</a>
-                    </li>
-                {% else %}
-                    <li class="nav-item">
-                        <a class="nav-link {{ current == 'app_login' ? 'active' : '' }}"
-                           href="{{ path('app_login') }}"
-                                {{ current == 'app_login' ? 'aria-current="page"' : '' }}>
-                            Connexion
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {{ current == 'app_inscription' ? 'active' : '' }}"
-                           href="{{ path('app_inscription') }}"
-                                {{ current == 'app_inscription' ? 'aria-current="page"' : '' }}>
-                            Inscription
-                        </a>
-                    </li>
-                {% endif %}
-            </ul>
-
-            {# Recherche (mobile) #}
-            <form class="d-lg-none mt-3" role="search" action="{{ path('recette_index') }}" method="get" aria-label="Rechercher une recette">
-                <div class="input-group">
-                    <label for="header-search-q-m" class="visually-hidden">Rechercher une recette</label>
-                    <input id="header-search-q-m" class="form-control" type="search" name="q" placeholder="Rechercher une recette…">
-                    <button class="btn btn-primary" type="submit" aria-label="Rechercher">
-                        <i class="bi bi-search" aria-hidden="true"></i>
-                    </button>
-                </div>
-            </form>
-        </div>
+            {% if is_granted('ROLE_ADMIN') %}
+                <a class="nav-link" href="{{ path('admin_dashboard') }}">Tableau de bord admin</a>
+                <a class="nav-link" href="{{ path('app_logout') }}">Déconnexion</a>
+            {% elseif app.user %}
+                <a class="nav-link" href="{{ path('utilisateurs_dashboard') }}">Mon tableau de bord</a>
+                <a class="nav-link" href="{{ path('app_logout') }}">Déconnexion</a>
+            {% else %}
+                <a class="nav-link" href="{{ path('app_login') }}">Connexion</a>
+                <a class="nav-link" href="{{ path('app_inscription') }}">Inscription</a>
+            {% endif %}
+        </nav>
     </div>
-</nav>
+</header>

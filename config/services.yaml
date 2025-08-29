@@ -13,6 +13,9 @@ parameters:
 
 
 services:
+    html_sanitizer.article.content:
+        alias: 'html_sanitizer.sanitizer.article.content'
+        public: false
     App\Security\LoginSuccessHandler:
         arguments:
             $router: '@router'
