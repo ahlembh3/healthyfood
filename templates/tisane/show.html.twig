@@ -8,29 +8,47 @@
     <div class="card shadow-lg border-0 rounded-4">
         <div class="row g-0">
 
-            {# Image (avec fallback) #}
+            {# Colonne image - CORRIGÉE #}
             <div class="col-lg-5">
-                {% set img = tisane.image|default('')|trim %}
-                {% set src = img ? asset('uploads/tisanes/' ~ img) : asset('images/placeholder-tea.jpg') %}
-                <div class="ratio ratio-4x3">
-                    <img
-                            src="{{ src }}"
-                            alt="{{ img ? 'Photo de la tisane ' ~ tisane.nom : 'Image générique de tisane' }}"
-                            class="rounded-start w-100 h-100"
-                            style="object-fit: cover;"
-                            loading="lazy"
-                            onerror="this.onerror=null;this.src='{{ asset('images/placeholder-tea.jpg') }}';"
-                    >
-                </div>
+                {# Si l'image est définie dans l'entité, on l'utilise #}
+                {% if tisane.image %}
+                    {% set imagePath = 'uploads/tisanes/' ~ tisane.image %}
+                    <div class="ratio ratio-4x3">
+                        <img
+                                src="{{ asset(imagePath) }}"
+                                alt="Photo de {{ tisane.nom }}"
+                                class="img-fluid rounded shadow mb-3 tea-img"
+                                onerror="this.onerror=null; this.src='{{ asset('images/placeholder-tea.jpg') }}';"
+                        >
+                    </div>
+                {% else %}
+                    {# Sinon, on utilise directement le placeholder #}
+                    <div class="ratio ratio-4x3">
+                        <img
+                                src="{{ asset('images/placeholders/placeholder-tisane.jpg') }}"
+                                alt="Photo de {{ tisane.nom }}"
+                                class="img-fluid rounded shadow mb-3 tea-img"
+                        >
+                    </div>
+                {% endif %}
             </div>
 
+            {# Colonne contenu #}
             <div class="col-lg-7">
                 <div class="card-body p-4">
-                    {# Mode de préparation #}
-                    {% if tisane.modePreparation %}
-                        <section class="mb-4" aria-labelledby="prep">
-                            <h2 id="prep" class="h5 mb-2">Mode de préparation</h2>
-                            <p class="mb-0">{{ tisane.modePreparation|e|nl2br }}</p>
+
+                    {# Préparation #}
+                    <section class="mb-4" aria-labelledby="prep">
+                        <h2 id="prep" class="h5 mb-2">Mode de préparation</h2>
+                        <p class="mb-0">{{ tisane.modePreparation|e|nl2br }}</p>
+                    </section>
+
+                    {# Dosage (si présent) #}
+                    {% set dosage = attribute(tisane, 'dosage') ?? null %}
+                    {% if dosage %}
+                        <section class="mb-4" aria-labelledby="dose">
+                            <h2 id="dose" class="h5 mb-2">Dosage / Posologie</h2>
+                            <p class="mb-0">{{ dosage|e|nl2br }}</p>
                         </section>
                     {% endif %}
 
@@ -50,29 +68,78 @@
                         {% endif %}
                     </section>
 
-                    {# Plantes associées #}
-                    <section class="mb-4" aria-labelledby="plantes">
-                        <h2 id="plantes" class="h5 mb-2">Plantes utilisées</h2>
-                        {% if tisane.plantes|length > 0 %}
-                            <ul class="mb-0">
-                                {% for p in tisane.plantes %}
-                                    <li>
-                                        <a href="{{ path('plante_show', { id: p.id }) }}" class="text-decoration-none">
-                                            {{ p.nomCommun }}
-                                        </a>
-                                    </li>
-                                {% endfor %}
-                            </ul>
-                        {% else %}
-                            <p class="text-muted mb-0">Aucune plante associée.</p>
-                        {% endif %}
+                    {# Plantes utilisées #}
+                    <section class="card shadow-sm my-4" aria-labelledby="plantes-utilisees">
+                        <div class="card-body">
+                            <h2 id="plantes-utilisees" class="h5 card-title mb-3">🌿 Plantes utilisées</h2>
+
+                            {% set plantes = tisane.plantes|default([]) %}
+                            {% if plantes is iterable and plantes|length > 0 %}
+                                <ul class="mb-0">
+                                    {% for p in plantes %}
+                                        <li>
+                                            <strong>{{ p.nomCommun }}</strong>
+                                            {% if p.nomScientifique %}<em class="text-muted"> ({{ p.nomScientifique }})</em>{% endif %}
+                                            {% if p.partieUtilisee %} — {{ p.partieUtilisee }}{% endif %}
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            {% else %}
+                                <p class="text-muted mb-0">Aucune plante associée.</p>
+                            {% endif %}
+                        </div>
                     </section>
 
+                    {# PRÉCAUTIONS — fallback depuis les plantes si vide #}
+                    {% set precaut = attribute(tisane, 'precautions') ?? null %}
+                    {% if not precaut %}
+                        {% set _prec = [] %}
+                        {% for p in tisane.plantes %}
+                            {% if p.precautions %}
+                                {% set _prec = _prec|merge([p.precautions]) %}
+                            {% endif %}
+                        {% endfor %}
+                        {% set precaut = _prec|join('\n') %}
+                    {% endif %}
+
+                    {% if precaut %}
+                        <section class="mb-4" aria-labelledby="precautions">
+                            <h2 id="precautions" class="h5 mb-2">Précautions</h2>
+                            {% set _lines = [] %}
+                            {% for l in precaut|split('\n') %}
+                                {% set l = l|trim %}
+                                {% if l != '' %}
+                                    {% set _lines = _lines|merge([l]) %}
+                                {% endif %}
+                            {% endfor %}
+                            <div class="alert alert-warning mb-0">
+                                {% if _lines|length > 1 %}
+                                    <ul class="mb-0">
+                                        {% for l in _lines %}<li class="mb-1">{{ l }}</li>{% endfor %}
+                                    </ul>
+                                {% else %}
+                                    <p class="mb-0">{{ precaut }}</p>
+                                {% endif %}
+                            </div>
+                        </section>
+                    {% endif %}
+
+                    <p class="text-muted small mt-3">
+                        ⚠️ Informations indicatives — demandez l'avis d'un professionnel de santé en cas de doute.
+                    </p>
+
                     <div class="d-flex justify-content-between flex-wrap gap-2 mt-3">
-                        <a href="{{ path('tisane_index') }}" class="btn btn-outline-primary">
+                        {% set back = {} %}
+                        {% set back = back|merge({ page: app.request.query.get('page', 1) }) %}
+                        {% if app.request.query.get('q') is not empty %}
+                            {% set back = back|merge({ q: app.request.query.get('q') }) %}
+                        {% endif %}
+
+                        <a href="{{ path('tisane_index', back) }}" class="btn btn-outline-success">
                             Retour à la liste
                         </a>
                     </div>
+
                 </div>
             </div>
 

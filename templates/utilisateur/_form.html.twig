@@ -1,15 +1,23 @@
 {# templates/utilisateur/_form.html.twig #}
-{% set is_edit = form.vars.data is defined and form.vars.data.id %}
+{% set data    = form.vars.data ?? null %}
+{% set is_edit = (data is not null) and (attribute(data, 'id') is not empty) %}
 
-<div class="d-flex justify-content-center mt-5">
-    <div class="card shadow p-4" style="max-width: 500px; width: 100%;">
+<div class="d-flex justify-content-center my-5">
+    <div class="card shadow p-4" style="max-width: 560px; width: 100%;">
         <h1 class="text-center mb-4" id="form-title">{{ form_title|default('Créer un compte') }}</h1>
 
-        {{ form_start(form, {'attr': {'aria-labelledby': 'form-title', 'novalidate': 'novalidate'}}) }}
+        {{ form_start(form, { attr: { 'aria-labelledby': 'form-title', novalidate: 'novalidate' } }) }}
+
+        {# Erreurs globales #}
+        {% if form_errors(form) %}
+        <div class="alert alert-danger" role="alert">
+            {{ form_errors(form) }}
+        </div>
+        {% endif %}
 
         {# Prénom #}
         <div class="mb-3">
-            {{ form_label(form.prenom, null, {'label_attr': {'class': 'form-label', 'for': form.prenom.vars.id}}) }}
+            {{ form_label(form.prenom, null, { label_attr: { class: 'form-label' } }) }}
             <div class="input-group">
                 <span class="input-group-text" id="prenom-icon" aria-hidden="true"><i class="bi bi-person"></i></span>
                 {{ form_widget(form.prenom, {
@@ -18,18 +26,20 @@
                         autocomplete: 'given-name',
                         'aria-required': 'true',
                         'aria-describedby': 'prenom-icon ' ~ form.prenom.vars.id ~ '_error',
-                        'aria-invalid': not form.prenom.vars.valid ? 'true' : 'false'
+                        'aria-invalid': form.prenom.vars.valid ? 'false' : 'true'
                     }
                 }) }}
             </div>
-            <div id="{{ form.prenom.vars.id }}_error" class="text-danger" role="alert">
-                {{ form_errors(form.prenom) }}
-            </div>
+            {% if form_errors(form.prenom) %}
+                <div id="{{ form.prenom.vars.id }}_error" class="text-danger" role="alert">
+                    {{ form_errors(form.prenom) }}
+                </div>
+            {% endif %}
         </div>
 
         {# Nom #}
         <div class="mb-3">
-            {{ form_label(form.nom, null, {'label_attr': {'class': 'form-label', 'for': form.nom.vars.id}}) }}
+            {{ form_label(form.nom, null, { label_attr: { class: 'form-label' } }) }}
             <div class="input-group">
                 <span class="input-group-text" id="nom-icon" aria-hidden="true"><i class="bi bi-person-fill"></i></span>
                 {{ form_widget(form.nom, {
@@ -38,18 +48,20 @@
                         autocomplete: 'family-name',
                         'aria-required': 'true',
                         'aria-describedby': 'nom-icon ' ~ form.nom.vars.id ~ '_error',
-                        'aria-invalid': not form.nom.vars.valid ? 'true' : 'false'
+                        'aria-invalid': form.nom.vars.valid ? 'false' : 'true'
                     }
                 }) }}
             </div>
-            <div id="{{ form.nom.vars.id }}_error" class="text-danger" role="alert">
-                {{ form_errors(form.nom) }}
-            </div>
+            {% if form_errors(form.nom) %}
+                <div id="{{ form.nom.vars.id }}_error" class="text-danger" role="alert">
+                    {{ form_errors(form.nom) }}
+                </div>
+            {% endif %}
         </div>
 
         {# Email #}
         <div class="mb-3">
-            {{ form_label(form.email, null, {'label_attr': {'class': 'form-label', 'for': form.email.vars.id}}) }}
+            {{ form_label(form.email, null, { label_attr: { class: 'form-label' } }) }}
             <div class="input-group">
                 <span class="input-group-text" id="email-icon" aria-hidden="true"><i class="bi bi-envelope"></i></span>
                 {{ form_widget(form.email, {
@@ -58,19 +70,22 @@
                         autocomplete: 'email',
                         'aria-required': 'true',
                         'aria-describedby': 'email-icon ' ~ form.email.vars.id ~ '_error',
-                        'aria-invalid': not form.email.vars.valid ? 'true' : 'false'
+                        'aria-invalid': form.email.vars.valid ? 'false' : 'true'
                     }
                 }) }}
             </div>
-            <div id="{{ form.email.vars.id }}_error" class="text-danger" role="alert">
-                {{ form_errors(form.email) }}
-            </div>
+            {% if form_errors(form.email) %}
+                <div id="{{ form.email.vars.id }}_error" class="text-danger" role="alert">
+                    {{ form_errors(form.email) }}
+                </div>
+            {% endif %}
         </div>
 
-        {# MDP + confirmation uniquement en création #}
+        {# MDP (création uniquement) — 2 variantes possibles #}
         {% if not is_edit %}
+        {% if form.password is defined %}
         <div class="mb-3">
-            {{ form_label(form.password, null, {'label_attr': {'class': 'form-label', 'for': form.password.vars.id}}) }}
+            {{ form_label(form.password, null, { label_attr: { class: 'form-label' } }) }}
             <div class="input-group">
                 <span class="input-group-text" id="password-icon" aria-hidden="true"><i class="bi bi-lock"></i></span>
                 {{ form_widget(form.password, {
@@ -79,18 +94,20 @@
                         autocomplete: 'new-password',
                         'aria-required': 'true',
                         'aria-describedby': 'password-icon ' ~ form.password.vars.id ~ '_error',
-                        'aria-invalid': not form.password.vars.valid ? 'true' : 'false'
+                        'aria-invalid': form.password.vars.valid ? 'false' : 'true'
                     }
                 }) }}
             </div>
-            <div id="{{ form.password.vars.id }}_error" class="text-danger" role="alert">
-                {{ form_errors(form.password) }}
-            </div>
+            {% if form_errors(form.password) %}
+                <div id="{{ form.password.vars.id }}_error" class="text-danger" role="alert">
+                    {{ form_errors(form.password) }}
+                </div>
+            {% endif %}
         </div>
 
         {% if form.confirmPassword is defined %}
         <div class="mb-3">
-            {{ form_label(form.confirmPassword, null, {'label_attr': {'class': 'form-label', 'for': form.confirmPassword.vars.id}}) }}
+            {{ form_label(form.confirmPassword, null, { label_attr: { class: 'form-label' } }) }}
             <div class="input-group">
                 <span class="input-group-text" id="confirm-icon" aria-hidden="true"><i class="bi bi-lock-fill"></i></span>
                 {{ form_widget(form.confirmPassword, {
@@ -99,36 +116,97 @@
                         autocomplete: 'new-password',
                         'aria-required': 'true',
                         'aria-describedby': 'confirm-icon ' ~ form.confirmPassword.vars.id ~ '_error',
-                        'aria-invalid': not form.confirmPassword.vars.valid ? 'true' : 'false'
+                        'aria-invalid': form.confirmPassword.vars.valid ? 'false' : 'true'
                     }
                 }) }}
             </div>
-            <div id="{{ form.confirmPassword.vars.id }}_error" class="text-danger" role="alert">
-                {{ form_errors(form.confirmPassword) }}
+            {% if form_errors(form.confirmPassword) %}
+                <div id="{{ form.confirmPassword.vars.id }}_error" class="text-danger" role="alert">
+                    {{ form_errors(form.confirmPassword) }}
+                </div>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        {% elseif form.plainPassword is defined %}
+        {# RepeatedType #}
+        {% if form.plainPassword.first is defined %}
+        <div class="mb-3">
+            {{ form_label(form.plainPassword.first, null, { label_attr: { class: 'form-label' } }) }}
+            <div class="input-group">
+                <span class="input-group-text" id="pp1-icon" aria-hidden="true"><i class="bi bi-lock"></i></span>
+                {{ form_widget(form.plainPassword.first, {
+                    attr: {
+                        class: 'form-control',
+                        autocomplete: 'new-password',
+                        'aria-required': 'true',
+                        'aria-describedby': 'pp1-icon ' ~ form.plainPassword.first.vars.id ~ '_error',
+                        'aria-invalid': form.plainPassword.first.vars.valid ? 'false' : 'true'
+                    }
+                }) }}
             </div>
+            {% if form_errors(form.plainPassword.first) %}
+                <div id="{{ form.plainPassword.first.vars.id }}_error" class="text-danger" role="alert">
+                    {{ form_errors(form.plainPassword.first) }}
+                </div>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        {% if form.plainPassword.second is defined %}
+        <div class="mb-3">
+            {{ form_label(form.plainPassword.second, null, { label_attr: { class: 'form-label' } }) }}
+            <div class="input-group">
+                <span class="input-group-text" id="pp2-icon" aria-hidden="true"><i class="bi bi-lock-fill"></i></span>
+                {{ form_widget(form.plainPassword.second, {
+                    attr: {
+                        class: 'form-control',
+                        autocomplete: 'new-password',
+                        'aria-required': 'true',
+                        'aria-describedby': 'pp2-icon ' ~ form.plainPassword.second.vars.id ~ '_error',
+                        'aria-invalid': form.plainPassword.second.vars.valid ? 'false' : 'true'
+                    }
+                }) }}
+            </div>
+            {% if form_errors(form.plainPassword.second) %}
+                <div id="{{ form.plainPassword.second.vars.id }}_error" class="text-danger" role="alert">
+                    {{ form_errors(form.plainPassword.second) }}
+                </div>
+            {% endif %}
         </div>
         {% endif %}
         {% endif %}
+        {% endif %}
 
-        {# Préférences (facultatif) #}
+        {# Préférences (si présent dans le formulaire) #}
+        {% if form.preferences is defined %}
         <div class="mb-3">
-            {{ form_label(form.preferences, null, {'label_attr': {'class': 'form-label', 'for': form.preferences.vars.id}}) }}
+            {{ form_label(form.preferences, null, { label_attr: { class: 'form-label' } }) }}
             {{ form_widget(form.preferences, {
                 attr: {
                     class: 'form-control',
                     rows: '3',
-                    placeholder: 'Décrivez vos préférences...',
+                    placeholder: 'Décrivez vos préférences…',
                     'aria-describedby': form.preferences.vars.id ~ '_error',
-                    'aria-invalid': not form.preferences.vars.valid ? 'true' : 'false'
+                    'aria-invalid': form.preferences.vars.valid ? 'false' : 'true'
                 }
             }) }}
-            <div id="{{ form.preferences.vars.id }}_error" class="text-danger" role="alert">
-                {{ form_errors(form.preferences) }}
-            </div>
+            {% if form_errors(form.preferences) %}
+                <div id="{{ form.preferences.vars.id }}_error" class="text-danger" role="alert">
+                    {{ form_errors(form.preferences) }}
+                </div>
+            {% endif %}
         </div>
+        {% endif %}
 
-        <button type="submit" class="btn btn-primary w-100" aria-label="{{ button_label|default(\"S'inscrire\") }}">
-        {{ button_label|default(\"S'inscrire\") }}
+        {% set _label = button_label|default("S'inscrire") %}
+
+        <button
+                type="submit"
+                class="btn btn-primary w-100"
+                aria-label="{{ _label|e('html_attr') }}"
+        >
+            {{ _label }}
         </button>
 
         {{ form_end(form) }}

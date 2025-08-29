@@ -18,6 +18,7 @@ use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\String\Slugger\SluggerInterface;
 use App\Entity\Commentaire;
 use App\Service\TisaneSuggestionService;
+use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 #[Route('/recettes')]
@@ -32,18 +33,19 @@ final class RecetteController extends AbstractController
     #[Route('/', name: 'recette_index', methods: ['GET'])]
     public function index(): Response
     {
-        $user = $this->getUser();
+        //$user = $this->getUser();
 
-        if (!$user) {
+        //if (!$user) {
             return $this->redirectToRoute('recette_liste');
-        }
+        //}
 
-        if (!in_array('ROLE_ADMIN', $user->getRoles(), true)) {
-            return $this->redirectToRoute('recette_mes_recettes');
-        }
+        //if (!in_array('ROLE_ADMIN', $user->getRoles(), true)) {
+            //return $this->redirectToRoute('recette_mes_recettes');
+        //}
 
-        return $this->redirectToRoute('recette_liste_admin');
+        //return $this->redirectToRoute('recette_liste_admin');
     }
+
 
     #[Route('/liste', name: 'recette_liste', methods: ['GET'])]
     public function listePublique(
@@ -51,16 +53,19 @@ final class RecetteController extends AbstractController
         RecetteRepository $recetteRepository,
         CommentaireRepository $commentaireRepository,
         IngredientRepository $ingredientRepo,
-        EntityManagerInterface $em
+        EntityManagerInterface $em,
+        PaginatorInterface $paginator
     ): Response {
         $q        = trim((string)$request->query->get('q', ''));
         $ingName  = trim((string)$request->query->get('ingredient', ''));
-        $type     = trim((string)$request->query->get('type', ''));   // ✅ manquant
+        $type     = trim((string)$request->query->get('type', ''));
         $saison   = trim((string)$request->query->get('saison', ''));
         $bienfait = trim((string)$request->query->get('bienfait', ''));
         $calMax   = $request->query->get('calMax');
 
-        //  types distincts pour le <select>
+        $page    = max(1, (int)$request->query->get('page', 1));
+        $perPage = 9; // ajuste si tu veux 6/12/etc.
+
         $types = $ingredientRepo->findDistinctTypes();
 
         $qb = $em->createQueryBuilder()
@@ -68,7 +73,6 @@ final class RecetteController extends AbstractController
             ->from(\App\Entity\Recette::class, 'r')
             ->leftJoin('r.recetteIngredients', 'ri')
             ->leftJoin('ri.ingredient', 'ing')
-            // Astuce: si tu veux optimiser, ne jointe g/bf que si $bienfait != ''
             ->leftJoin('ing.genes', 'g')
             ->leftJoin('g.bienfaits', 'bf')
             ->where('r.validation = :valide')
@@ -95,8 +99,11 @@ final class RecetteController extends AbstractController
                 ->setParameter('bf', '%'.mb_strtolower($bienfait).'%');
         }
 
-        $recettes = ($calMax !== null && $calMax !== '')
-            ? array_filter($qb->getQuery()->getResult(), function(\App\Entity\Recette $r) use ($calMax) {
+        // Paginer
+        if ($calMax !== null && $calMax !== '') {
+            // on filtre en PHP puis on pagine le résultat (KNP sait paginer un array)
+            $results = $qb->getQuery()->getResult();
+            $results = array_values(array_filter($results, function(\App\Entity\Recette $r) use ($calMax) {
                 $total = 0.0;
                 foreach ($r->getRecetteIngredients() as $ri) {
                     $ing = $ri->getIngredient();
@@ -108,15 +115,21 @@ final class RecetteController extends AbstractController
                     }
                 }
                 return $total <= (float)$calMax;
-            })
-            : $qb->getQuery()->getResult();
+            }));
+            $recettes = $paginator->paginate($results, $page, $perPage);
+        } else {
+            // pagination SQL efficace
+            $recettes = $paginator->paginate($qb->getQuery(), $page, $perPage);
+        }
 
+        // moyennes
         $moyennes = $commentaireRepository->getMoyenneNoteParRecette();
         $moyennesParRecette = [];
         foreach ($moyennes as $item) {
             $moyennesParRecette[(int)$item['recette_id']] = round((float)$item['moyenne'], 2);
         }
 
+        // IMPORTANT : rends bien le template que tu édites (index.html.twig)
         return $this->render('recette/recettes_liste.html.twig', [
             'recettes' => $recettes,
             'moyennes' => $moyennesParRecette,

@@ -21,6 +21,6 @@ class RecetteIngredientRepository extends ServiceEntityRepository
         parent::__construct($registry, RecetteIngredient::class);
     }
 
-    // Ajoute ici tes méthodes personnalisées si besoin
-    
+
+
 }

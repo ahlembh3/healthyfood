@@ -1,26 +1,184 @@
 [
   {
-    "nom": "Tisane Relaxation",
-    "modePreparation": "Infuser 2 cuillères à café de plantes dans 250 ml d’eau chaude pendant 10 minutes.",
-    "plantes": [1, 2],
-    "bienfaits": [1]
+    "nom": "Tisane de Camomille",
+    "modePreparation": "Infuser 2–3 g de camomille sèche dans 250 ml d’eau à 90–95°C pendant 7–10 min. Filtrer.",
+    "dosage": "1–3 tasses/jour. Cure 2–3 semaines puis pause.",
+    "precautions": "Allergie possible (Astéracées).",
+    "image": "",
+    "plantes": ["Camomille"],
+    "bienfaits": ["Relaxation", "Sommeil", "Digestion"]
   },
   {
-    "nom": "Tisane Digestion",
-    "modePreparation": "Faire bouillir les plantes pendant 5 minutes, puis laisser infuser 10 minutes.",
-    "plantes": [3, 4],
-    "bienfaits": [2,3]
+    "nom": "Tisane de Verveine",
+    "modePreparation": "Infuser 2 g de verveine dans 250 ml d’eau à ~90°C pendant 7–10 min.",
+    "dosage": "1–3 tasses/jour, de préférence le soir.",
+    "precautions": null,
+    "image": "",
+    "plantes": ["Verveine"],
+    "bienfaits": ["Relaxation", "Sommeil"]
   },
   {
-    "nom": "Tisane Sommeil",
-    "modePreparation": "Verser de l’eau frémissante sur les plantes et infuser 15 minutes avant le coucher.",
-    "plantes": [5],
-    "bienfaits": [1, 4]
+    "nom": "Tisane de Tilleul",
+    "modePreparation": "Infuser 2–3 g de bractées de tilleul 8–10 min à 90–95°C.",
+    "dosage": "1–3 tasses/jour, le soir pour favoriser l’endormissement.",
+    "precautions": null,
+    "image": "",
+    "plantes": ["Tilleul"],
+    "bienfaits": ["Relaxation", "Sommeil"]
   },
   {
-    "nom": "Tisane Détox",
-    "modePreparation": "Infuser à froid pendant 2 heures pour préserver les principes actifs.",
-    "plantes": [6, 7],
-    "bienfaits": [3]
+    "nom": "Tisane de Menthe poivrée",
+    "modePreparation": "Infuser 1–2 g de feuilles 7–9 min à ~90°C.",
+    "dosage": "Après les repas ou selon besoin.",
+    "precautions": "Peut majorer le reflux gastro-œsophagien.",
+    "image": "",
+    "plantes": ["Menthe poivrée"],
+    "bienfaits": ["Digestion"]
+  },
+  {
+    "nom": "Tisane de Fenouil",
+    "modePreparation": "Infuser 1–2 g de graines 7–10 min à ~95°C. Écraser légèrement les graines.",
+    "dosage": "Après repas, 1–2 tasses/jour.",
+    "precautions": null,
+    "image": "",
+    "plantes": ["Fenouil"],
+    "bienfaits": ["Digestion"]
+  },
+  {
+    "nom": "Tisane d’Hibiscus",
+    "modePreparation": "Infuser 2–3 g de calices 8–10 min à ~95°C (chaud ou froid).",
+    "dosage": "1–3 tasses/jour.",
+    "precautions": "Éviter pendant la grossesse. Prudence si tension basse/traitements antihypertenseurs.",
+    "image": "",
+    "plantes": ["Hibiscus"],
+    "bienfaits": ["Détox", "Circulation sanguine"]
+  },
+  {
+    "nom": "Tisane de Gingembre",
+    "modePreparation": "Infuser 2–3 fines tranches de rhizome 7–10 min à ~95°C.",
+    "dosage": "1–2 tasses/jour.",
+    "precautions": "Prudence avec les anticoagulants ou troubles hémorragiques.",
+    "image": "",
+    "plantes": ["Gingembre"],
+    "bienfaits": ["Digestion"]
+  },
+  {
+    "nom": "Tisane de Citronnelle",
+    "modePreparation": "Infuser 2–3 g de feuilles 8–10 min à ~95°C.",
+    "dosage": "1–3 tasses/jour.",
+    "precautions": null,
+    "image": "",
+    "plantes": ["Citronnelle"],
+    "bienfaits": ["Relaxation", "Digestion"]
+  },
+
+
+  {
+    "nom": "Sommeil doux (Tilleul + Verveine + Camomille)",
+    "modePreparation": "1 c. à c. de chaque plante (≈ 3 c. à c. au total) pour 250 ml, 8–10 min à ~90°C.",
+    "dosage": "Le soir, 1 tasse 30–45 min avant le coucher.",
+    "precautions": "Allergie Astéracées (camomille).",
+    "image": "",
+    "plantes": ["Tilleul", "Verveine", "Camomille"],
+    "bienfaits": ["Relaxation", "Sommeil"]
+  },
+  {
+    "nom": "Digestion légère (Fenouil + Verveine + Menthe poivrée)",
+    "modePreparation": "≈ 2 c. à c. au total pour 250 ml, 7–10 min. Réduire la menthe si RGO.",
+    "dosage": "Après repas.",
+    "precautions": "Menthe poivrée : peut majorer le RGO.",
+    "image": "",
+    "plantes": ["Fenouil", "Verveine", "Menthe poivrée"],
+    "bienfaits": ["Digestion", "Relaxation"]
+  },
+  {
+    "nom": "Confort hivernal (Tilleul + Citronnelle + Gingembre)",
+    "modePreparation": "2 c. à c. d’herbes + 2–3 tranches de gingembre pour 250 ml, 8–10 min.",
+    "dosage": "1–2 tasses/jour selon besoin.",
+    "precautions": "Gingembre : prudence si anticoagulants.",
+    "image": "",
+    "plantes": ["Tilleul", "Citronnelle", "Gingembre"],
+    "bienfaits": ["Relaxation", "Digestion"]
+  },
+  {
+    "nom": "Hydratation fruitée (Hibiscus + Citronnelle)",
+    "modePreparation": "≈ 2 c. à c. pour 250 ml, 8–10 min. Délicieux servi frais.",
+    "dosage": "1–3 tasses/jour.",
+    "precautions": "Hibiscus : éviter grossesse ; prudence si hypotension/traitement antihypertenseur.",
+    "image": "",
+    "plantes": ["Hibiscus", "Citronnelle"],
+    "bienfaits": ["Détox", "Circulation sanguine"]
+  },
+  {
+    "nom": "Après-repas apaisant (Fenouil + Camomille)",
+    "modePreparation": "≈ 2 c. à c. au total pour 250 ml, 7–10 min.",
+    "dosage": "Après un repas copieux.",
+    "precautions": "Camomille : allergie Astéracées possible.",
+    "image": "",
+    "plantes": ["Fenouil", "Camomille"],
+    "bienfaits": ["Digestion", "Relaxation"]
+  },
+  {
+    "nom": "Respiration douce (Thym + Sauge)",
+    "modePreparation": "≈ 2 c. à c. au total pour 250 ml, 7–9 min.",
+    "dosage": "1–2 tasses/jour en période sensible.",
+    "precautions": "Sauge : prudence en cas de pathologies hormonodépendantes (consommation modérée).",
+    "image": "",
+    "plantes": ["Thym", "Sauge"],
+    "bienfaits": ["Digestion", "Circulation sanguine"]
+  },
+  {
+    "nom": "Énergie douce (Romarin + Gingembre)",
+    "modePreparation": "≈ 2 c. à c. au total pour 250 ml, 7–9 min.",
+    "dosage": "Le matin ou début d’après-midi.",
+    "precautions": "Gingembre : prudence si anticoagulants.",
+    "image": "",
+    "plantes": ["Romarin", "Gingembre"],
+    "bienfaits": ["Digestion", "Détox"]
+  },
+  {
+    "nom": "Détox foie (Romarin + Hibiscus)",
+    "modePreparation": "≈ 2 c. à c. au total pour 250 ml, 8–10 min.",
+    "dosage": "1–2 tasses/jour en cure courte.",
+    "precautions": "Hibiscus : prudence si hypotension.",
+    "image": "",
+    "plantes": ["Romarin", "Hibiscus"],
+    "bienfaits": ["Détox", "Circulation sanguine"]
+  },
+  {
+    "nom": "Sérénité (Lavande + Verveine)",
+    "modePreparation": "≈ 2 c. à c. au total pour 250 ml, 7–10 min.",
+    "dosage": "En fin de journée.",
+    "precautions": null,
+    "image": "",
+    "plantes": ["Lavande", "Verveine"],
+    "bienfaits": ["Relaxation", "Sommeil"]
+  },
+  {
+    "nom": "Sommeil profond (Tilleul + Lavande + Camomille)",
+    "modePreparation": "1 c. à c. de chaque plante pour 250 ml, 8–10 min.",
+    "dosage": "Le soir 30–45 min avant le coucher.",
+    "precautions": "Camomille : allergie Astéracées possible.",
+    "image": "",
+    "plantes": ["Tilleul", "Lavande", "Camomille"],
+    "bienfaits": ["Sommeil", "Relaxation"]
+  },
+  {
+    "nom": "Fraîcheur digestive (Menthe poivrée + Citronnelle)",
+    "modePreparation": "≈ 2 c. à c. au total pour 250 ml, 7–9 min.",
+    "dosage": "Après repas ou selon besoin.",
+    "precautions": "Menthe : prudence si RGO.",
+    "image": "",
+    "plantes": ["Menthe poivrée", "Citronnelle"],
+    "bienfaits": ["Digestion"]
+  },
+  {
+    "nom": "Cocon du soir (Camomille + Verveine)",
+    "modePreparation": "≈ 2 c. à c. au total pour 250 ml, 7–10 min.",
+    "dosage": "1 tasse en soirée.",
+    "precautions": "Camomille : allergie Astéracées possible.",
+    "image": "",
+    "plantes": ["Camomille", "Verveine"],
+    "bienfaits": ["Sommeil", "Relaxation"]
   }
 ]

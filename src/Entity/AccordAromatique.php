@@ -7,6 +7,10 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Table(name: 'accord_aromatique')]
 #[ORM\UniqueConstraint(name: 'u_pair_ing', columns: ['plante_id','ingredient_id'])]
 #[ORM\UniqueConstraint(name: 'u_pair_type', columns: ['plante_id','ingredient_type'])]
+#[Assert\Expression(
+    " (this.getIngredient() and (this.getIngredientType() === null or this.getIngredientType() === '')) 
+   or (!this.getIngredient() and (this.getIngredientType() !== null and this.getIngredientType() !== '')) ",
+    message: "Renseigne soit un ingrédient précis, soit un type d’ingrédient, mais pas les deux.")]
 class AccordAromatique
 {
 #[ORM\Id, ORM\GeneratedValue, ORM\Column] private ?int $id = null;

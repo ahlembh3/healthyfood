@@ -54,6 +54,7 @@ security:
 
         # --- Zone admin uniquement ---
         - { path: ^/admin, roles: ROLE_ADMIN }
+        - { path: ^/admin/, roles: ROLE_ADMIN }
         - { path: ^/utilisateurs/ajouter$, roles: ROLE_ADMIN }
         - { path: ^/utilisateurs/\d+/modifier$, roles: ROLE_ADMIN }
         - { path: ^/utilisateurs/\d+$, roles: ROLE_ADMIN }

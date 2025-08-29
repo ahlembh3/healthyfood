@@ -6,22 +6,46 @@
 
 {% block content %}
 
-    {# --- Image principale --- #}
-    {% set img = recette.image|default('')|trim %}
-    {% set src = img
+    {# --- Image principale (centrée, ratio, sans upscaling) --- #}
+    {% set title = recette.titre|default('') %}
+    {% set ascii = title|lower|replace({
+        'é':'e','è':'e','ê':'e','ë':'e','à':'a','â':'a','ä':'a','ù':'u','û':'u','ü':'u','î':'i','ï':'i','ô':'o','ö':'o','ç':'c',
+        '’':'','\'':'','"':'','(':'',')':'','/':'_','\\':'_','&':'et',',':'',':':'',';':'','?':'','!':'','.':'','-':'_'
+    }) %}
+    {% set slug  = ascii|replace({'  ':' '})|trim|replace({' ':'_'}) %}
+    {% set guessJpg = 'uploads/recettes/' ~ slug ~ '.jpg' %}
+    {% set guessPng = 'uploads/recettes/' ~ slug ~ '.png' %}
+
+    {% set img  = recette.image|default('')|trim %}
+    {% set src0 = img
         ? (img starts with 'http' ? img : asset((img starts with 'uploads/' ? img : 'uploads/recettes/' ~ img)))
-        : asset('images/placeholder-recipe.jpg')
+        : asset(guessJpg)
     %}
-    <div class="mb-4">
-        <img
-                src="{{ src }}"
-                alt="{{ img ? 'Photo de ' ~ recette.titre : 'Image générique de recette' }}"
-                class="img-fluid rounded shadow w-100"
-                style="max-height:480px;object-fit:cover;"
-                loading="lazy"
-                onerror="this.onerror=null;this.src='{{ asset('images/placeholder-recipe.jpg') }}';"
-        />
-    </div>
+    {% set src1 = asset(guessPng) %}
+    {% set ph   = asset('images/placeholders/placeholder-recette.jpg') %}
+
+    {# --- Image principale (centre, couvre, remplit le ratio) --- #}
+    <figure class="mx-auto mb-4" style="max-width: 720px;">
+        <div class="ratio ratio-16x9 rounded shadow overflow-hidden">
+            <img
+                    src="{{ src0 }}"
+                    alt="{{ title ?: 'Recette' }}"
+                    class="media-fill"
+                    loading="eager"
+                    decoding="async"
+                    fetchpriority="high"
+                    onerror="if(!this.dataset.tryPng){this.dataset.tryPng=1;this.src='{{ src1 }}';}else{this.onerror=null;this.src='{{ ph }}';}"
+            >
+        </div>
+
+        {% if recette.description %}
+            <figcaption class="text-muted small mt-2">
+                {{ recette.description|u.truncate(140, '…') }}
+            </figcaption>
+        {% endif %}
+    </figure>
+
+
 
     <div class="row g-4">
         {# --- Infos pratiques --- #}
@@ -80,17 +104,25 @@
                     {% set proteines = 0 %}
                     {% set glucides  = 0 %}
                     {% set lipides   = 0 %}
+
                     {% for ri in recette.recetteIngredients %}
                         {% set ing = ri.ingredient %}
-                        {% if ing and (ing.unite in ['gramme','millilitre']) %}
-                            {% set q = ri.quantite|default(0) %}
-                            {% set factor = q / 100 %}
-                            {% set calories = calories + (ing.calories|default(0)) * factor %}
-                            {% set proteines = proteines + (ing.proteines|default(0)) * factor %}
-                            {% set glucides  = glucides  + (ing.glucides|default(0))  * factor %}
-                            {% set lipides   = lipides   + (ing.lipides|default(0))   * factor %}
+                        {% if ing %}
+                            {% set unit = (ing.unite|default('')|lower)|trim %}
+                            {% set isMass = unit in ['g','gramme','grammes'] %}
+                            {% set isVol  = unit in ['ml','millilitre','millilitres'] %}
+
+                            {% if isMass or isVol %}
+                                {% set q = ri.quantite|default(0) %}
+                                {% set factor = q / 100 %}
+                                {% set calories = calories + (ing.calories|default(0)) * factor %}
+                                {% set proteines = proteines + (ing.proteines|default(0)) * factor %}
+                                {% set glucides  = glucides  + (ing.glucides|default(0))  * factor %}
+                                {% set lipides   = lipides   + (ing.lipides|default(0))   * factor %}
+                            {% endif %}
                         {% endif %}
                     {% endfor %}
+
 
                     <div class="table-responsive">
                         <table class="table table-sm mb-2">
@@ -112,7 +144,7 @@
         </section>
     </div>
 
-    {# --- Étapes (jamais de |raw) --- #}
+    {# --- Étapes --- #}
     <section class="card shadow-sm my-4" aria-labelledby="etapes">
         <div class="card-body">
             <h2 id="etapes" class="h5 card-title mb-3">👨‍🍳 Étapes</h2>

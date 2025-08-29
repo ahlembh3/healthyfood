@@ -1,0 +1,151 @@
+{# templates/admin_dashboard/tisane/_form.html.twig #}
+{# Partial de formulaire Tisane — inclus par new/edit #}
+<div class="card shadow p-4">
+    <h2 class="h5 mb-4">{{ form_title|default('Tisane') }}</h2>
+
+    {{ form_start(form, {
+        attr: {
+            novalidate: 'novalidate',
+            class: 'needs-validation',
+            id: 'tisane-form',
+            'aria-describedby': 'tisane-form-help'
+        }
+    }) }}
+
+    <div id="tisane-form-help" class="visually-hidden">
+        Renseignez le nom, les plantes & bienfaits, la préparation, le dosage, les précautions et l’illustration.
+    </div>
+
+    {# Erreurs globales #}
+    {% if form_errors(form) %}
+        <div class="alert alert-danger" role="alert">{{ form_errors(form) }}</div>
+    {% endif %}
+
+    {# --- Nom --- #}
+    <div class="mb-3">
+        {{ form_label(form.nom) }}
+        {{ form_widget(form.nom, {'attr': {
+            class: 'form-control',
+            required: 'required',
+            minlength: '2',
+            maxlength: '255',
+            autocomplete: 'off'
+        }}) }}
+        {{ form_errors(form.nom) }}
+    </div>
+
+    {# --- Associations (plantes / bienfaits) --- #}
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            {{ form_label(form.plantes) }}
+            {{ form_widget(form.plantes, {'attr': {
+                class: 'form-select',
+                size: 8,
+                'aria-describedby': 'help-plantes'
+            }}) }}
+            {{ form_errors(form.plantes) }}
+            <div id="help-plantes" class="form-text">Sélection multiple : Ctrl (Windows) ou ⌘ (Mac).</div>
+        </div>
+
+        <div class="col-md-6 mb-3">
+            {{ form_label(form.bienfaits) }}
+            {{ form_widget(form.bienfaits, {'attr': {
+                class: 'form-select',
+                size: 8,
+                'aria-describedby': 'help-bienfaits'
+            }}) }}
+            {{ form_errors(form.bienfaits) }}
+            <div id="help-bienfaits" class="form-text">Sélection multiple possible.</div>
+        </div>
+    </div>
+
+    {# --- Contenu (préparation, dosage, précautions) --- #}
+    <div class="mb-3">
+        {{ form_label(form.modePreparation) }}
+        {{ form_widget(form.modePreparation, {'attr': {
+            class: 'form-control',
+            rows: 5,
+            placeholder: 'Étapes, temps d’infusion, température…'
+        }}) }}
+        {{ form_errors(form.modePreparation) }}
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            {{ form_label(form.dosage) }}
+            {{ form_widget(form.dosage, {'attr': {
+                class: 'form-control',
+                rows: 4,
+                placeholder: 'Ex. 2 c. à café pour 250 ml'
+            }}) }}
+            {{ form_errors(form.dosage) }}
+        </div>
+        <div class="col-md-6 mb-3">
+            {{ form_label(form.precautions) }}
+            {{ form_widget(form.precautions, {'attr': {
+                class: 'form-control',
+                rows: 4,
+                placeholder: 'Contre-indications, limites d’usage…'
+            }}) }}
+            {{ form_errors(form.precautions) }}
+        </div>
+    </div>
+
+    {# --- Image + aperçu (même logique que Recette) --- #}
+    {% set current = form.vars.data ?? null %}
+    {% set img = current and attribute(current, 'image') ? attribute(current, 'image') : '' %}
+    {% set src = img ? asset('uploads/tisanes/' ~ img) : '' %}
+
+    <div class="mb-3">
+        {{ form_label(form.imageFile) }}
+        {{ form_widget(form.imageFile, {
+            attr: {
+                class: 'form-control',
+                onchange: 'previewTisaneImage(event)',
+                accept: 'image/jpeg,image/png,image/webp'
+            }
+        }) }}
+        {{ form_errors(form.imageFile) }}
+
+        <div class="mt-3">
+            <p class="text-muted mb-2">Aperçu de l’image :</p>
+            <img id="tisaneImagePreview"
+                 src="{{ src ? src : '#' }}"
+                 alt="{{ img ? 'Aperçu de ' ~ (current.nom|default('la tisane')) : 'Aperçu de l’image' }}"
+                 class="img-thumbnail {{ src ? '' : 'd-none' }}"
+                 data-original-src="{{ src }}">
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-end mt-4">
+        <button type="submit" class="btn btn-primary" id="submit-btn">
+            {{ button_label|default('Enregistrer') }}
+        </button>
+    </div>
+
+    {{ form_end(form) }}
+</div>
+
+{# Aperçu image : fallback si la fonction n’existe pas déjà (même pattern que Recette) #}
+<script>
+    if (typeof previewTisaneImage !== 'function') {
+        function previewTisaneImage(e) {
+            const input = e.target;
+            const preview = document.getElementById('tisaneImagePreview');
+            if (!preview) return;
+
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    preview.src = ev.target.result;
+                    preview.classList.remove('d-none');
+                };
+                reader.readAsDataURL(input.files[0]);
+            } else {
+                const original = preview.dataset.originalSrc || '#';
+                preview.src = original;
+                if (original === '#') preview.classList.add('d-none');
+            }
+        }
+    }
+</script>

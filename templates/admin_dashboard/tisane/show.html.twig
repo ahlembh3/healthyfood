@@ -1,0 +1,90 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Détails de {{ tisane.nom }} - Admin{% endblock %}
+{% block page_title %}Détails de la tisane{% endblock %}
+
+{% block content %}
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-info text-white d-flex align-items-center gap-2">
+            <i class="bi bi-cup-hot" aria-hidden="true"></i>
+            <h2 class="h5 mb-0">{{ tisane.nom }}</h2>
+        </div>
+
+        <div class="card-body">
+            <div class="row g-4">
+                {# Image / visuel #}
+                <div class="col-12 col-lg-4">
+                    {% set img = tisane.image ? asset('uploads/tisanes/' ~ tisane.image) : asset('images/placeholders/placeholder-tisane.jpg') %}
+                    <figure class="m-0">
+                        <img
+                                src="{{ img }}"
+                                alt="Photo de la tisane {{ tisane.nom }}"
+                                class="img-fluid rounded border tea-img--sm img-center"
+                                loading="lazy"
+                                decoding="async"
+                        >
+                        <figcaption class="text-muted small mt-2">
+                            {% if tisane.image %}Image fournie{% else %}Aucune image disponible{% endif %}
+                        </figcaption>
+                    </figure>
+                </div>
+
+                {# Texte descriptif #}
+                <div class="col-12 col-lg-8">
+                    <h3 class="h6">Mode de préparation</h3>
+                    <p class="text-muted mb-3 text-break">{{ tisane.modePreparation|nl2br }}</p>
+
+                    {% if tisane.dosage %}
+                        <h3 class="h6">Dosage</h3>
+                        <p class="text-muted mb-3 text-break">{{ tisane.dosage|nl2br }}</p>
+                    {% endif %}
+
+                    {% if tisane.precautions %}
+                        <h3 class="h6">Précautions</h3>
+                        <p class="text-muted mb-0 text-break">{{ tisane.precautions|nl2br }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="row g-4 mt-1">
+                <section class="col-12 col-md-6" aria-labelledby="plantes-title">
+                    <h3 id="plantes-title" class="h6">Plantes utilisées</h3>
+                    <ul class="list-group list-group-flush" role="list" aria-label="Liste des plantes utilisées">
+                        {% for plante in tisane.plantes %}
+                            <li class="list-group-item">
+                                <div class="fw-semibold text-break">{{ plante.nomCommun }}</div>
+                                {% if plante.nomScientifique %}
+                                    <div class="text-muted small text-break">{{ plante.nomScientifique }}</div>
+                                {% endif %}
+                            </li>
+                        {% else %}
+                            <li class="list-group-item text-muted">Aucune plante associée</li>
+                        {% endfor %}
+                    </ul>
+                </section>
+
+                <section class="col-12 col-md-6" aria-labelledby="bienfaits-title">
+                    <h3 id="bienfaits-title" class="h6">Bienfaits</h3>
+                    <div class="d-flex flex-wrap gap-2" aria-label="Bienfaits de la tisane">
+                        {% for bienfait in tisane.bienfaits %}
+                            <span class="badge rounded-pill text-bg-success">{{ bienfait.nom }}</span>
+                        {% else %}
+                            <span class="text-muted">Aucun bienfait associé</span>
+                        {% endfor %}
+                    </div>
+                </section>
+            </div>
+
+            <div class="d-flex justify-content-end gap-3 flex-nowrap mt-4 text-nowrap">
+                {% if is_granted('ROLE_ADMIN') %}
+                    <a href="{{ path('admin_tisane_edit', {id: tisane.id}) }}" class="btn btn-outline-primary px-3">
+                        <i class="bi bi-pencil me-1" aria-hidden="true"></i>Modifier
+                    </a>
+                {% endif %}
+                <a href="{{ path('admin_tisane_index') }}" class="btn btn-secondary px-3">
+                    <i class="bi bi-arrow-left me-1" aria-hidden="true"></i>Retour à la liste
+                </a>
+            </div>
+        </div>
+    </div>
+{% endblock %}

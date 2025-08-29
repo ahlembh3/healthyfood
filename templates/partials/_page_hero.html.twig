@@ -1,0 +1,24 @@
+{# templates/partials/_page_hero.html.twig #}
+{# Props attendues :
+   - title (string, requis, html autorisé)
+   - subtitle (string|null)
+   - bg (url absolue via asset(), défaut = images/banniere.png)
+   - size ('sm'|'md'|'lg'), défaut 'md'
+#}
+{% set _bg   = bg|default(asset('images/banniere.png')) %}
+{% set _size = size|default('md') %}
+
+<section class="page-hero page-hero--{{ _size }}" style="--hero-bg:url('{{ _bg }}')">
+    <div class="page-hero__bg" aria-hidden="true"></div>
+    <div class="page-hero__shade" aria-hidden="true"></div>
+
+    <div class="page-hero__inner container-content">
+        <h1 class="page-hero__title">{{ title|raw }}</h1>
+        {% if subtitle %}
+            <p class="page-hero__subtitle text-muted mb-3">{{ subtitle }}</p>
+        {% endif %}
+
+        {# Slot pour filtre/recherche/texte au dessus de la bannière #}
+        {% block hero_extra %}{% endblock %}
+    </div>
+</section>

@@ -1,78 +1,97 @@
+{# templates/utilisateur/index.html.twig #}
 {% extends 'base.html.twig' %}
+{% import 'admin_dashboard/_actions.html.twig' as A %}
 
 {% block title %}Liste des utilisateurs{% endblock %}
 {% block page_title %}Liste des utilisateurs{% endblock %}
 
 {% block content %}
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <p class="mb-0 text-muted-2">Gestion des comptes (administration)</p>
-        <a href="{{ path('utilisateurs_ajouter') }}" class="btn btn-primary">
-            <i class="bi bi-person-plus"></i> Ajouter un utilisateur
-        </a>
-    </div>
+    <section class="mb-3">
+        <div class="d-flex flex-column flex-sm-row align-items-sm-center gap-2">
+            <p class="mb-0 text-muted">Gestion des comptes (administration)</p>
+            <div class="ms-sm-auto">
+                <a href="{{ path('utilisateurs_ajouter') }}" class="btn btn-primary">
+                    <i class="bi bi-person-plus me-1" aria-hidden="true"></i>
+                    Ajouter un utilisateur
+                </a>
+            </div>
+        </div>
+    </section>
 
-    <div class="table-responsive">
-        <table class="table table-striped table-hover align-middle">
-            <caption class="visually-hidden">Tableau listant les utilisateurs avec actions Voir, Modifier et Supprimer</caption>
-            <thead>
-            <tr>
-                <th scope="col">ID</th>
-                <th scope="col">Email</th>
-                <th scope="col">Nom</th>
-                <th scope="col">Prénom</th>
-                <th scope="col">Rôles</th>
-                <th scope="col" class="text-end">Actions</th>
-            </tr>
-            </thead>
-            <tbody>
-            {% for utilisateur in utilisateurs %}
-                <tr>
-                    <th scope="row">{{ utilisateur.id }}</th>
-                    <td>{{ utilisateur.email }}</td>
-                    <td>{{ utilisateur.nom }}</td>
-                    <td>{{ utilisateur.prenom }}</td>
-                    <td>{{ utilisateur.roles | join(', ') }}</td>
-                    <td class="text-end">
-                        <a
-                                href="{{ path('utilisateurs_afficher', { id: utilisateur.id }) }}"
-                                class="btn btn-outline-primary btn-sm me-1"
-                                aria-label="Voir le profil de {{ utilisateur.prenom }} {{ utilisateur.nom }}"
-                        >
-                            Voir
-                        </a>
+    <div class="card border-0 shadow-sm">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <caption class="visually-hidden">
+                        Tableau listant les utilisateurs avec actions Voir, Modifier et Supprimer.
+                    </caption>
 
-                        <a
-                                href="{{ path('utilisateurs_modifier', { id: utilisateur.id }) }}"
-                                class="btn btn-secondary btn-sm me-1"
-                                aria-label="Modifier l'utilisateur {{ utilisateur.prenom }} {{ utilisateur.nom }}"
-                        >
-                            Modifier
-                        </a>
+                    <thead class="table-light">
+                    <tr>
+                        <th scope="col" style="width:80px;">ID</th>
+                        <th scope="col">Email</th>
 
-                        <form
-                                method="post"
-                                action="{{ path('utilisateurs_supprimer', { id: utilisateur.id }) }}"
-                                class="d-inline"
-                                onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?');"
-                        >
-                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ utilisateur.id) }}">
-                            <button
-                                    class="btn btn-danger btn-sm"
-                                    aria-label="Supprimer l'utilisateur {{ utilisateur.prenom }} {{ utilisateur.nom }}"
-                            >
-                                Supprimer
-                            </button>
-                        </form>
-                    </td>
-                </tr>
-            {% else %}
-                <tr>
-                    <td colspan="6" class="text-center text-muted py-4">
-                        Aucun utilisateur trouvé.
-                    </td>
-                </tr>
-            {% endfor %}
-            </tbody>
-        </table>
+                        {# Nom : affiché ≥ md #}
+                        <th scope="col" class="d-none d-md-table-cell">Nom</th>
+                        {# Prénom : affiché ≥ lg #}
+                        <th scope="col" class="d-none d-lg-table-cell">Prénom</th>
+                        {# Rôles : affiché ≥ lg #}
+                        <th scope="col" class="d-none d-lg-table-cell">Rôles</th>
+
+                        {# Colonne Actions compacte, évite l'effet “demi-bouton” #}
+                        <th scope="col" class="text-end" style="width:1%; white-space:nowrap;">Actions</th>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+                    {% for utilisateur in utilisateurs %}
+                        <tr>
+                            <th scope="row">{{ utilisateur.id }}</th>
+
+                            <td class="text-break">{{ utilisateur.email }}</td>
+
+                            <td class="text-break d-none d-md-table-cell">{{ utilisateur.nom ?: '—' }}</td>
+                            <td class="text-break d-none d-lg-table-cell">{{ utilisateur.prenom ?: '—' }}</td>
+
+                            <td class="d-none d-lg-table-cell">
+                                {% if utilisateur.roles is not empty %}
+                                    <div class="d-flex flex-wrap gap-1">
+                                        {% for role in utilisateur.roles %}
+                                            {% set label = role == 'ROLE_ADMIN' ? 'Admin' : (role == 'ROLE_USER' ? 'Utilisateur' : role) %}
+                                            <span class="badge rounded-pill {{ role == 'ROLE_ADMIN' ? 'text-bg-success' : 'text-bg-secondary' }}">
+                        {{ label }}
+                      </span>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    <span class="text-muted">—</span>
+                                {% endif %}
+                            </td>
+
+                            <td class="text-end">
+                                {{ A.row(
+                                    { href: path('utilisateurs_afficher', { id: utilisateur.id }), label: 'Voir' },
+                                    { href: path('utilisateurs_modifier', { id: utilisateur.id }), label: 'Modifier' },
+                                    {
+                                        href: path('utilisateurs_supprimer', { id: utilisateur.id }),
+                                        label: 'Supprimer',
+                                        token: csrf_token('delete' ~ utilisateur.id),
+                                        confirm: 'Supprimer « ' ~ (utilisateur.email ?: 'cet utilisateur') ~ ' » ?',
+                                        disabled: app.user and app.user.id == utilisateur.id
+                                    }
+                                ) }}
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="6" class="text-center text-muted py-4">
+                                Aucun utilisateur trouvé.
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 {% endblock %}

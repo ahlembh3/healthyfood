@@ -1,0 +1,17 @@
+{# Props attendues :
+   - hero_bg (URL image)
+   - size: 'small' | 'large' | 'compact'
+   - title: HTML autorisé (ex: ... <span class="text-vert"> ... )
+   - subtitle: texte optionnel
+#}
+<section class="section-fw bg-beige">
+    <div class="container-site">
+        <header class="hero-plant hero--{{ size|default('small') }} position-relative p-4 p-md-5">
+            <div class="hero-bg" style="background-image:url('{{ hero_bg }}')"></div>
+            <div class="hero-inner position-relative">
+                <h1 class="display-5 fw-bold hero-title mb-3">{{ title|raw }}</h1>
+                {% if subtitle %}<p class="lead mb-0">{{ subtitle }}</p>{% endif %}
+            </div>
+        </header>
+    </div>
+</section>

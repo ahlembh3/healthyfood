@@ -27,14 +27,14 @@
                         {% if article.image %}
                             {% set imgSrc = asset('uploads/' ~ article.image) %}
                         {% else %}
-                            {% set imgSrc = asset('images/placeholder-article.jpg') %}
+                            {% set imgSrc = asset('images/placeholders/placeholder-article.jpg') %}
                         {% endif %}
                         <img
                                 src="{{ imgSrc }}"
                                 alt="Illustration : {{ article.titre }}"
                                 class="card-img-top"
                                 loading="lazy"
-                                onerror="this.onerror=null;this.src='{{ asset('images/placeholder-article.jpg') }}'">
+                                onerror="this.onerror=null;this.src='{{ asset('images/placeholders/placeholder-article.jpg') }}'">
 
                         <div class="card-body d-flex flex-column">
                             <h2 class="h5 card-title">{{ article.titre }}</h2>

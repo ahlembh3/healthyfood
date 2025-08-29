@@ -1,0 +1,17 @@
+[
+  { "nom": "CYP1A2", "description": "Métabolisme de la caféine.", "bienfaits": ["Cardio", "Antioxydant"] },
+  { "nom": "LCT", "description": "Persistance de la lactase (digestion du lactose).", "bienfaits": ["Digestion"] },
+  { "nom": "HLA-DQ2", "description": "Prédisposition coeliaque (sensibilité au gluten).", "bienfaits": ["Digestion"] },
+  { "nom": "HLA-DQ8", "description": "Prédisposition coeliaque (sensibilité au gluten).", "bienfaits": ["Digestion"] },
+  { "nom": "ALDH2", "description": "Métabolisme de l’alcool.", "bienfaits": ["Cardio", "Détox"] },
+  { "nom": "MTHFR", "description": "Cycle du folate / homocystéine.", "bienfaits": ["Cardio", "Antioxydant"] },
+  { "nom": "FADS1", "description": "Métabolisme des oméga-3/6.", "bienfaits": ["Cardio"] },
+  { "nom": "TCF7L2", "description": "Métabolisme glucidique / risque diabète.", "bienfaits": ["Digestion"] },
+  { "nom": "AMY1", "description": "Digestion de l’amidon (amylase salivaire).", "bienfaits": ["Digestion"] },
+  { "nom": "SLC23A1", "description": "Transport de la vitamine C.", "bienfaits": ["Antioxydant", "Immunité"] },
+  { "nom": "HFE", "description": "Métabolisme du fer.", "bienfaits": ["Energie", "Antioxydant"] },
+  { "nom": "DAO", "description": "Dégradation de l’histamine (intolérance).", "bienfaits": ["Digestion"] },
+  { "nom": "TAS2R38", "description": "Perception de l’amertume (ex. brassicacées).", "bienfaits": ["Antioxydant"] },
+  { "nom": "GSTM1", "description": "Détoxication hépatique (glutathion S-transférase).", "bienfaits": ["Détox", "Antioxydant"] },
+  { "nom": "SOD2", "description": "Défense antioxydante mitochondriale.", "bienfaits": ["Antioxydant"] }
+]

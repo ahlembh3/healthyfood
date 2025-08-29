@@ -2,66 +2,109 @@
 {% extends 'base.html.twig' %}
 
 {% block title %}Liste des Tisanes{% endblock %}
-{% block page_title %}🍵 Liste des tisanes{% endblock %}
 
-{% block content %}
-    {# --- Barre de recherche --- #}
-    <section aria-labelledby="recherche-tisanes" class="mb-4">
-        <h2 id="recherche-tisanes" class="visually-hidden">Recherche de tisanes</h2>
+{# --- Bannière compacte : titre aligné à gauche + recherche dessus --- #}
+{% block hero %}
+    <section class="page-hero page-hero--sm"
+             style="--hero-bg:url('{{ asset('images/banniere.png') }}')">
+        <div class="page-hero__bg" aria-hidden="true"></div>
+        <div class="page-hero__shade" aria-hidden="true"></div>
 
-        <form method="get" action="{{ path('tisane_index') }}" role="search" aria-label="Rechercher une tisane">
-            <div class="input-group">
-                <label for="q" class="visually-hidden">Rechercher une tisane</label>
-                <input
-                        type="text"
-                        id="q"
-                        name="q"
-                        class="form-control"
-                        placeholder="Rechercher une tisane…"
-                        value="{{ query|default(app.request.query.get('q')) }}"
-                        autocomplete="off"
-                >
-                <button class="btn btn-primary" type="submit">Rechercher</button>
-            </div>
-            {% if query is not empty %}
-                <small class="text-muted d-inline-block mt-2">
-                    Résultats pour « {{ query }} »
-                </small>
-            {% endif %}
-        </form>
+        {# padding réduit pour coller au header #}
+        <div class="page-hero__inner container-content" style="padding-top:16px; padding-bottom:24px;">
+            <h1 class="page-hero__title">🍵 <span class="text-vert">Tisanes</span></h1>
+            <p class="text-muted mb-2">Recherchez une tisane par nom ou par bienfait.</p>
+
+            <form method="get"
+                  action="{{ path('tisane_index') }}"
+                  class="hero-surface mt-2"
+                  role="search"
+                  aria-label="Rechercher une tisane">
+                <div class="row g-2 align-items-end">
+                    <div class="col-12 col-md-8">
+                        <label for="q" class="form-label">Rechercher une tisane</label>
+                        <input type="text"
+                               id="q"
+                               name="q"
+                               class="form-control"
+                               placeholder="ex. Camomille, digestion…"
+                               value="{{ query|default(app.request.query.get('q')) }}"
+                               autocomplete="off">
+                        {% if query is not empty %}
+                            <small class="text-muted d-inline-block mt-1">
+                                Résultats pour « {{ query }} »
+                            </small>
+                        {% endif %}
+                    </div>
+                    <div class="col-12 col-md-4 d-grid">
+                        <button class="btn btn-primary" type="submit">Rechercher</button>
+                    </div>
+                </div>
+            </form>
+        </div>
     </section>
+{% endblock %}
 
-    {# --- Liste --- #}
+{# --- Liste + pagination --- #}
+{% block content %}
     {% if tisanes is empty %}
-        <div class="alert alert-info">Aucune tisane trouvée.</div>
+        <section class="container-content py-4">
+            <div class="alert alert-info mb-0">Aucune tisane trouvée.</div>
+        </section>
     {% else %}
-        <section aria-labelledby="liste-tisanes">
-            <h2 id="liste-tisanes" class="visually-hidden">Tisanes</h2>
+        <section class="container-content py-4" aria-labelledby="liste-tisanes">
+            <h2 id="liste-tisanes" class="visually-hidden">Liste des tisanes</h2>
 
             <div class="row g-4">
                 {% for tisane in tisanes %}
                     <div class="col-sm-6 col-md-4">
                         <article class="card h-100 shadow-sm border-0">
                             <div class="ratio ratio-4x3 bg-light">
-                                {% set img = tisane.image|default('')|trim %}
-                                {% set src = img ? asset('uploads/tisanes/' ~ img) : asset('images/placeholder-tea.jpg') %}
+                                {# --- Image : priorité BDD, sinon construction auto --- #}
+                                {% set base  = tisane.nom|split('(')|first|trim %}
+                                {% set ascii = base|lower|replace({
+                                    'é':'e','è':'e','ê':'e','ë':'e','à':'a','â':'a','ä':'a',
+                                    'î':'i','ï':'i','ì':'i',
+                                    'ô':'o','ö':'o','ò':'o',
+                                    'ù':'u','û':'u','ü':'u',
+                                    'ç':'c','œ':'oe','æ':'ae',
+                                    '’':'','\'':'','"':'','«':'','»':''
+                                }) %}
+                                {% set slugLower = ascii|replace({
+                                    '(':'',')':'','/':'_','\\':'_','&':'et',
+                                    ',':'',':':'',';':'','?':'','!':'','.':'','-':'_','  ':' '
+                                })|trim|replace({' ':'_'}) %}
+                                {% set fileLower = 'uploads/tisanes/' ~ slugLower ~ '.png' %}
+                                {% if slugLower starts with 'tisane_' %}
+                                    {% set fileCap = 'uploads/tisanes/Tisane_' ~ slugLower|slice(7) ~ '.png' %}
+                                {% else %}
+                                    {% set fileCap = null %}
+                                {% endif %}
+
+                                {% set src = tisane.image
+                                    ? asset('uploads/tisanes/' ~ tisane.image)
+                                    :  asset('images/placeholders/placeholder-tisane.jpg')
+                                %}
+
                                 <img
                                         src="{{ src }}"
-                                        alt="{{ img ? 'Photo de la tisane ' ~ tisane.nom : 'Image générique de tisane' }}"
-                                        class="rounded-top w-100 h-100"
-                                        style="object-fit: cover;"
+                                        alt="Tisane : {{ tisane.nom }}"
+                                        class="w-100 h-100"
+                                        style="object-fit:cover; object-position:center;"
                                         loading="lazy"
-                                >
+                                        onerror="
+                                                this.onerror=null;
+                                        {% if fileCap %}
+                                                if(!this.dataset.alt){this.dataset.alt=1;this.src='{{ asset(fileCap) }}';}
+                                                else{this.src='{{ asset('images/placeholder-tea.jpg') }}';}
+                                        {% else %}
+                                                this.src='{{ asset('images/placeholder-tea.jpg') }}';
+                                        {% endif %}
+                                                ">
                             </div>
 
-                            <div class="card-body">
+                            <div class="card-body d-flex flex-column">
                                 <h3 class="h5 card-title mb-2">{{ tisane.nom }}</h3>
-
-                                {% if tisane.modePreparation %}
-                                    <p class="card-text text-muted mb-3">
-                                        {{ tisane.modePreparation|striptags|u.truncate(140, '…') }}
-                                    </p>
-                                {% endif %}
 
                                 {# Bienfaits (aperçu) #}
                                 {% set bList = tisane.bienfaits|default([]) %}
@@ -76,29 +119,17 @@
                                     </div>
                                 {% endif %}
 
-                                {# Plantes (aperçu) #}
-                                {% set pList = tisane.plantes|default([]) %}
-                                {% if pList|length > 0 %}
-                                    <p class="small text-muted mb-3">
-                                        Plantes :
-                                        {% for p in pList|slice(0,3) %}
-                                            {{ loop.first ? '' : ', ' }}{{ p.nomCommun }}
-                                        {% endfor %}
-                                        {% if pList|length > 3 %} et {{ pList|length - 3 }} autre(s){% endif %}
-                                    </p>
-                                {% endif %}
-
-                                <a
-                                        href="{{ path('tisane_show', { id: tisane.id }) }}"
-                                        class="btn btn-outline-primary"
-                                        aria-label="Voir la fiche de {{ tisane.nom }}"
-                                >
-                                    Voir la fiche
-                                </a>
+                                {% set back = app.request.query.all|merge({ page: tisanes.currentPageNumber }) %}
+                                <a href="{{ path('tisane_show', {'id': tisane.id}|merge(back)) }}"
+                                   class="btn btn-outline-success mt-auto">Voir la fiche</a>
                             </div>
                         </article>
                     </div>
                 {% endfor %}
+            </div>
+
+            <div class="pagination justify-content-center mt-4">
+                {{ knp_pagination_render(tisanes, null, { query: app.request.query.all }) }}
             </div>
         </section>
     {% endif %}

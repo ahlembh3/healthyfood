@@ -95,7 +95,7 @@ final class UtilisateurController extends AbstractController
         ]);
     }
 
-    #[Route('/{id<\d+>}', name: 'utilisateurs_supprimer', methods: ['POST'])]
+    #[Route('/{id<\d+>}', name: 'supprimer', methods: ['POST'])]
     #[IsGranted('ROLE_ADMIN')]
     public function supprimer(Request $request, Utilisateur $utilisateur): Response
     {

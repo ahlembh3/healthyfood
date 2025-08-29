@@ -1,132 +1,190 @@
+{# templates/recette/index.html.twig #}
 {% extends 'base.html.twig' %}
 {% set F = filters|default({}) %}
 
 {% block title %}Recettes — HealthyFood{% endblock %}
-{% block page_title %}🌿 Recettes{% endblock %}
 
-{% block content %}
-    <header class="mb-4 d-flex align-items-center justify-content-between">
-        <p class="mb-0 text-muted-2">Explorez nos recettes et filtrez par ingrédient, saison, bienfait…</p>
-    </header>
+{# --- Bannière compacte : titre à gauche + filtres au-dessus --- #}
+{% block hero %}
+    <section class="page-hero page-hero--sm"
+             style="--hero-bg:url('{{ asset('images/banniere.png') }}')">
+        <div class="page-hero__bg" aria-hidden="true"></div>
+        <div class="page-hero__shade" aria-hidden="true"></div>
 
-    {# Barre de filtres #}
-    <form method="get" class="card p-3 shadow-sm mb-4" role="search" aria-label="Filtrer les recettes">
-        <div class="row g-3">
-            <div class="col-md-3">
-                <label class="form-label" for="q">Recherche</label>
-                <input id="q" name="q" class="form-control" value="{{ F.q|default('') }}" placeholder="Titre, description…" autocomplete="off">
-            </div>
-            <div class="col-md-3">
-                <label class="form-label" for="ingredient">Ingrédient</label>
-                <input id="ingredient" name="ingredient" class="form-control" value="{{ F.ingredient|default('') }}" placeholder="ex. Citron" autocomplete="off">
-            </div>
-            <div class="col-md-2">
-                <label class="form-label" for="type">Type</label>
-                <select id="type" name="type" class="form-select">
-                    <option value="">— Tous les types —</option>
-                    {% for t in types %}
-                        <option value="{{ t }}" {{ (F.type|default('')|lower == t|lower) ? 'selected' : '' }}>
-                            {{ t }}
-                        </option>
-                    {% endfor %}
-                </select>
-            </div>
+        {# padding réduit pour coller au header #}
+        <div class="page-hero__inner container-content" style="padding-top:16px; padding-bottom:24px;">
+            <h1 class="page-hero__title">🌿 <span class="text-vert">Recettes</span></h1>
+            <p class="text-muted mb-2">Explorez nos recettes et filtrez par ingrédient, saison, bienfait…</p>
 
-            <div class="col-md-2">
-                <label class="form-label" for="saison">Saison</label>
-                <input id="saison" name="saison" class="form-control" value="{{ F.saison|default('') }}" placeholder="ex. Juin" autocomplete="off">
-            </div>
-            <div class="col-md-2">
-                <label class="form-label" for="bienfait">Bienfait</label>
-                <input id="bienfait" name="bienfait" class="form-control" value="{{ F.bienfait|default('') }}" placeholder="ex. Digestion" autocomplete="off">
-            </div>
-            <div class="col-md-2">
-                <label class="form-label" for="calMax">Calories max*</label>
-                <input id="calMax" name="calMax" type="number" min="0" class="form-control" value="{{ F.calMax|default('') }}" placeholder="ex. 500" inputmode="numeric">
-            </div>
-            <div class="col-md-2 d-flex align-items-end">
-                <button class="btn btn-primary w-100" type="submit">Filtrer</button>
-            </div>
-            <div class="col-md-2 d-flex align-items-end">
-                <a class="btn btn-outline-secondary w-100" href="{{ path(app.request.attributes.get('_route')) }}">Réinitialiser</a>
-            </div>
-        </div>
-        <small class="text-muted mt-2 d-block">
-            * Approximation basée sur les ingrédients en grammes/ml (100 g/ml).
-        </small>
-    </form>
+            <form method="get" class="hero-surface mt-2" role="search" aria-label="Filtrer les recettes">
+                <div class="row g-2">
+                    <div class="col-12 col-md-3">
+                        <label class="form-label" for="q">Recherche</label>
+                        <input id="q" name="q" class="form-control"
+                               value="{{ F.q|default('') }}"
+                               placeholder="Titre, description…" autocomplete="off">
+                    </div>
 
-    {# Grille de cartes #}
-    {% if recettes is not empty %}
-        <div class="row g-4">
-            {% for recette in recettes %}
-                <div class="col-md-6 col-lg-4">
-                    <article class="card h-100 shadow-sm border-0">
-                        <div class="ratio ratio-16x9 bg-light">
-                            {% set img = recette.image|default('')|trim %}
-                            {% set src = img ? asset('uploads/recettes/' ~ img) : asset('images/placeholder-recipe.jpg') %}
-                            <img src="{{ src }}" alt="{{ recette.titre }}" class="rounded-top w-100 h-100" style="object-fit: cover;">
-                        </div>
+                    <div class="col-12 col-md-3">
+                        <label class="form-label" for="ingredient">Ingrédient</label>
+                        <input id="ingredient" name="ingredient" class="form-control"
+                               value="{{ F.ingredient|default('') }}"
+                               placeholder="ex. Citron" autocomplete="off">
+                    </div>
 
-                        <div class="card-body">
-                            <h2 class="h5 card-title mb-2">{{ recette.titre }}</h2>
-
-                            <ul class="list-inline text-muted small mb-2">
-                                <li class="list-inline-item">⏱ {{ recette.tempsPreparation }} min</li>
-                                {% if recette.tempsCuisson is not null %}
-                                    <li class="list-inline-item">🔥 {{ recette.tempsCuisson }} min</li>
-                                {% endif %}
-                                <li class="list-inline-item">🎚 {{ recette.difficulte ?? '—' }}</li>
-                                <li class="list-inline-item">👥 {{ recette.portions ?? 1 }}</li>
-                            </ul>
-
-                            {# Ingrédients (aperçu) #}
-                            {% set apercu = [] %}
-                            {% for ri in recette.recetteIngredients|slice(0,3) %}
-                                {% if ri.ingredient %}
-                                    {% set apercu = apercu|merge([ri.ingredient.nom]) %}
-                                {% endif %}
+                    <div class="col-6 col-md-2">
+                        <label class="form-label" for="type">Type</label>
+                        <select id="type" name="type" class="form-select">
+                            <option value="">— Tous les types —</option>
+                            {% for t in types %}
+                                <option value="{{ t }}" {{ (F.type|default('')|lower == t|lower) ? 'selected' : '' }}>{{ t }}</option>
                             {% endfor %}
-                            {% if apercu is not empty %}
-                                <p class="mb-2">
-                                    <strong>Ingrédients :</strong> {{ apercu|join(', ') }}{% if recette.recetteIngredients|length > 3 %}…{% endif %}
-                                </p>
-                            {% endif %}
+                        </select>
+                    </div>
 
-                            {# Nutrition (approx) — plus robuste #}
-                            {% set cal = 0 %}
-                            {% for ri in recette.recetteIngredients %}
-                                {% set ing = ri.ingredient %}
-                                {% if ing and (ing.unite in ['gramme','millilitre']) %}
-                                    {% set q = ri.quantite|default(0) %}
-                                    {% set factor = (q / 100) %}
-                                    {% set cal = cal + (ing.calories|default(0)) * factor %}
-                                {% endif %}
-                            {% endfor %}
-                            <p class="small text-muted mb-2">🍽️ ≈ {{ cal|round(0, 'common') }} kcal / recette</p>
+                    <div class="col-6 col-md-2">
+                        <label class="form-label" for="saison">Saison</label>
+                        <input id="saison" name="saison" class="form-control"
+                               value="{{ F.saison|default('') }}"
+                               placeholder="ex. Juin" autocomplete="off">
+                    </div>
 
-                            {# Note moyenne #}
-                            {% set m = moyennes[recette.id]|default(null) %}
-                            {% if m is not null %}
-                                <div aria-label="Note moyenne {{ m }}/5">
-                                    {% for i in 1..5 %}{{ i <= m ? '⭐' : '☆' }}{% endfor %}
-                                    <span class="small">({{ m|number_format(1, '.', ' ') }}/5)</span>
-                                </div>
-                            {% endif %}
-                        </div>
+                    <div class="col-6 col-md-2">
+                        <label class="form-label" for="bienfait">Bienfait</label>
+                        <input id="bienfait" name="bienfait" class="form-control"
+                               value="{{ F.bienfait|default('') }}"
+                               placeholder="ex. Digestion" autocomplete="off">
+                    </div>
 
-                        <div class="card-footer bg-transparent border-0 d-flex gap-2">
-                            <a
-                                    class="btn btn-outline-primary flex-grow-1"
-                                    href="{{ path('recette_show', F|merge({'id': recette.id, 'from': 'liste'})) }}"
-                                    aria-label="Voir la fiche de {{ recette.titre }}"
-                            >Voir la fiche</a>
-                        </div>
-                    </article>
+                    <div class="col-6 col-md-2">
+                        <label class="form-label" for="calMax">Calories max*</label>
+                        <input id="calMax" name="calMax" type="number" min="0" class="form-control"
+                               value="{{ F.calMax|default('') }}"
+                               placeholder="ex. 500" inputmode="numeric">
+                    </div>
+
+                    <div class="col-6 col-md-2 d-grid align-content-end">
+                        <button class="btn btn-primary" type="submit">Filtrer</button>
+                    </div>
+                    <div class="col-6 col-md-2 d-grid align-content-end">
+                        <a class="btn btn-outline-secondary"
+                           href="{{ path(app.request.attributes.get('_route')) }}">Réinitialiser</a>
+                    </div>
                 </div>
-            {% endfor %}
+
+                <small class="text-muted mt-2 d-block">
+                    * Approximation basée sur les ingrédients en grammes/ml (100 g/ml).
+                </small>
+            </form>
         </div>
-    {% else %}
-        <div class="alert alert-info">Aucune recette ne correspond aux filtres.</div>
-    {% endif %}
+    </section>
+{% endblock %}
+
+{# --- CONTENU : grille des recettes --- #}
+{% block content %}
+    <section class="container-content py-4" aria-labelledby="list-title">
+        <h2 id="list-title" class="visually-hidden">Liste des recettes</h2>
+
+        {% if recettes is not empty %}
+            <div class="row g-4">
+
+                {% for recette in recettes %}
+                    {% set title = recette.titre|default('') %}
+
+                    {# Slug local pour deviner l'image #}
+                    {% set ascii = title|lower|replace({
+                        'é':'e','è':'e','ê':'e','ë':'e','à':'a','â':'a','ä':'a','ù':'u','û':'u','ü':'u','î':'i','ï':'i','ô':'o','ö':'o','ç':'c',
+                        '’':'','\'':'','"':'','(':'',')':'','/':'_','\\':'_','&':'et',',':'',':':'',';':'','?':'','!':'','.':'','-':'_'
+                    }) %}
+                    {% set slug  = ascii|replace({'  ':' '})|trim|replace({' ':'_'}) %}
+                    {% set guessJpg = 'uploads/recettes/' ~ slug ~ '.jpg' %}
+                    {% set guessPng = 'uploads/recettes/' ~ slug ~ '.png' %}
+
+                    {% set img  = recette.image|default('')|trim %}
+                    {% set src0 = img
+                        ? (img starts with 'http' ? img : asset((img starts with 'uploads/' ? img : 'uploads/recettes/' ~ img)))
+                        : asset(guessJpg)
+                    %}
+                    {% set src1 = asset(guessPng) %}
+                    {% set ph   = asset('images/placeholders/placeholder-recette.jpg') %}
+
+                    <div class="col-md-6 col-lg-4">
+                        <article class="card h-100 shadow-sm border-0">
+                            <div class="ratio ratio-16x9 bg-light">
+                                <img
+                                        src="{{ src0 }}"
+                                        alt="{{ title }}"
+                                        class="rounded-top w-100 h-100"
+                                        style="object-fit: cover; object-position:center;"
+                                        loading="lazy"
+                                        onerror="if(!this.dataset.tryPng){this.dataset.tryPng=1;this.src='{{ src1 }}';}else{this.onerror=null;this.src='{{ ph }}';}"
+                                >
+                            </div>
+
+                            <div class="card-body">
+                                <h3 class="h5 card-title mb-2">{{ recette.titre }}</h3>
+
+                                <ul class="list-inline text-muted small mb-2">
+                                    <li class="list-inline-item">⏱ {{ recette.tempsPreparation }} min</li>
+                                    {% if recette.tempsCuisson is not null %}
+                                        <li class="list-inline-item">🔥 {{ recette.tempsCuisson }} min</li>
+                                    {% endif %}
+                                    <li class="list-inline-item">🎚 {{ recette.difficulte ?? '—' }}</li>
+                                    <li class="list-inline-item">👥 {{ recette.portions ?? 1 }}</li>
+                                </ul>
+
+                                {# Ingrédients (aperçu) #}
+                                {% set apercu = [] %}
+                                {% for ri in recette.recetteIngredients|slice(0,3) %}
+                                    {% if ri.ingredient %}
+                                        {% set apercu = apercu|merge([ri.ingredient.nom]) %}
+                                    {% endif %}
+                                {% endfor %}
+                                {% if apercu is not empty %}
+                                    <p class="mb-2">
+                                        <strong>Ingrédients :</strong> {{ apercu|join(', ') }}{% if recette.recetteIngredients|length > 3 %}…{% endif %}
+                                    </p>
+                                {% endif %}
+
+                                {# Nutrition (approx) #}
+                                {% set cal = 0 %}
+                                {% for ri in recette.recetteIngredients %}
+                                    {% set ing = ri.ingredient %}
+                                    {% if ing %}
+                                        {% set unit = (ing.unite|default('')|lower)|trim %}
+                                        {% set isMass = unit in ['g','gramme','grammes'] %}
+                                        {% set isVol  = unit in ['ml','millilitre','millilitres'] %}
+                                        {% if isMass or isVol %}
+                                            {% set q = ri.quantite|default(0) %}
+                                            {% set cal = cal + (ing.calories|default(0)) * (q / 100) %}
+                                        {% endif %}
+                                    {% endif %}
+                                {% endfor %}
+                                <p class="small text-muted mb-2">🍽️ ≈ {{ cal|round(0, 'common') }} kcal / recette</p>
+
+                                {% set m = moyennes[recette.id]|default(null) %}
+                                {% if m is not null %}
+                                    <div aria-label="Note moyenne {{ m }}/5">
+                                        {% for i in 1..5 %}{{ i <= m ? '⭐' : '☆' }}{% endfor %}
+                                        <span class="small">({{ m|number_format(1, '.', ' ') }}/5)</span>
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="card-footer bg-transparent border-0 d-flex gap-2">
+                                <a class="btn btn-outline-primary flex-grow-1"
+                                   href="{{ path('recette_show', F|merge({'id': recette.id, 'from': 'liste'})) }}"
+                                   aria-label="Voir la fiche de {{ recette.titre }}">Voir la fiche</a>
+                            </div>
+                        </article>
+                    </div>
+                {% endfor %}
+                <div class="mt-4 d-flex justify-content-center">
+                    {{ knp_pagination_render(recettes, null, { query: app.request.query.all }) }}
+                </div>
+            </div>
+        {% else %}
+            <div class="alert alert-info">Aucune recette ne correspond aux filtres.</div>
+        {% endif %}
+    </section>
 {% endblock %}

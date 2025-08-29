@@ -1,56 +1,76 @@
-{# templates/admin/dashboard.html.twig #}
 {% extends 'base.html.twig' %}
 
 {% block title %}Dashboard Admin{% endblock %}
 {% block page_title %}Tableau de bord administrateur{% endblock %}
 
 {% block content %}
-    <div class="row g-4">
+    {# Grille responsive auto : 1 / 2 / 3 / 4 colonnes #}
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 row-cols-xl-4 g-4">
 
-        <section class="col-12 col-md-6 col-lg-3" role="region" aria-labelledby="card-recettes">
-            <div class="card shadow-sm h-100 border-0">
-                <div class="card-body">
+        <section class="col" role="region" aria-labelledby="card-recettes">
+            <div class="card h-100 border-0 shadow-sm d-flex flex-column">
+                <div class="card-body d-flex flex-column">
                     <h2 id="card-recettes" class="h5 card-title">👨‍🍳 Recettes</h2>
-                    <p class="card-text">Gérez les recettes créées par les utilisateurs.</p>
-                    <a href="{{ path('recette_liste_admin') }}" class="btn btn-primary">Gérer les recettes</a>
+                    <p class="card-text text-break">Gérez les recettes créées par les utilisateurs.</p>
+                    <div class="mt-auto">
+                        <a href="{{ path('recette_liste_admin') }}" class="btn btn-primary w-100 w-sm-auto">Gérer les recettes</a>
+                    </div>
                 </div>
             </div>
         </section>
 
-        <section class="col-12 col-md-6 col-lg-3" role="region" aria-labelledby="card-commentaires">
-            <div class="card shadow-sm h-100 border-0">
-                <div class="card-body">
+        <section class="col" role="region" aria-labelledby="card-commentaires">
+            <div class="card h-100 border-0 shadow-sm d-flex flex-column">
+                <div class="card-body d-flex flex-column">
                     <h2 id="card-commentaires" class="h5 card-title">💬 Commentaires</h2>
 
-                    <div class="d-flex flex-column gap-2 mb-2">
+                    {# Sur mobile: pile, sur ≥ sm: côte à côte #}
+                    <div class="d-grid gap-2 d-sm-flex align-items-start mb-2">
                         <a href="{{ path('commentaire_signales') }}" class="btn btn-outline-warning">
                             Signalés
                             <span class="badge text-bg-danger ms-1">{{ nbSignalements|default(0) }}</span>
                         </a>
-                        <a href="{{ path('commentaire_index') }}" class="btn btn-danger">Modérer les commentaires</a>
+                        <a href="{{ path('commentaire_index') }}" class="btn btn-danger">Modérer</a>
                     </div>
 
-                    <p class="card-text mb-0">Modérez les commentaires signalés ou inappropriés.</p>
+                    <p class="card-text text-break mb-0">Modérez les commentaires signalés ou inappropriés.</p>
+                    <div class="mt-auto"></div>
                 </div>
             </div>
         </section>
 
-        <section class="col-12 col-md-6 col-lg-3" role="region" aria-labelledby="card-articles">
-            <div class="card shadow-sm h-100 border-0">
-                <div class="card-body">
+        <section class="col" role="region" aria-labelledby="card-articles">
+            <div class="card h-100 border-0 shadow-sm d-flex flex-column">
+                <div class="card-body d-flex flex-column">
                     <h2 id="card-articles" class="h5 card-title">📰 Articles</h2>
-                    <p class="card-text">Publiez ou modifiez des articles informatifs.</p>
-                    <a href="{{ path('article_liste_admin') }}" class="btn btn-primary">Gérer les articles</a>
+                    <p class="card-text text-break">Publiez ou modifiez des articles informatifs.</p>
+                    <div class="mt-auto">
+                        <a href="{{ path('article_liste_admin') }}" class="btn btn-primary w-100 w-sm-auto">Gérer les articles</a>
+                    </div>
                 </div>
             </div>
         </section>
 
-        <section class="col-12 col-md-6 col-lg-3" role="region" aria-labelledby="card-users">
-            <div class="card shadow-sm h-100 border-0">
-                <div class="card-body">
+        <section class="col" role="region" aria-labelledby="card-tisanes">
+            <div class="card h-100 border-0 shadow-sm d-flex flex-column">
+                <div class="card-body d-flex flex-column">
+                    <h2 id="card-tisanes" class="h5 card-title">🍵 Tisanes</h2>
+                    <p class="card-text text-break">Gérez les tisanes et leurs propriétés.</p>
+                    <div class="mt-auto">
+                        <a href="{{ path('admin_tisane_index') }}" class="btn btn-primary w-100 w-sm-auto">Gérer les tisanes</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="col" role="region" aria-labelledby="card-users">
+            <div class="card h-100 border-0 shadow-sm d-flex flex-column">
+                <div class="card-body d-flex flex-column">
                     <h2 id="card-users" class="h5 card-title">👥 Utilisateurs</h2>
-                    <p class="card-text">Consultez la liste des utilisateurs inscrits.</p>
-                    <a href="{{ path('utilisateurs_liste') }}" class="btn btn-primary">Gérer les utilisateurs</a>
+                    <p class="card-text text-break">Consultez la liste des utilisateurs inscrits.</p>
+                    <div class="mt-auto">
+                        <a href="{{ path('utilisateurs_liste') }}" class="btn btn-primary w-100 w-sm-auto">Gérer les utilisateurs</a>
+                    </div>
                 </div>
             </div>
         </section>
@@ -58,6 +78,6 @@
     </div>
 
     <p class="text-muted mt-4">
-        Connecté en tant que : <strong>{{ app.user.email }}</strong>
+        Connecté en tant que : <strong class="text-break">{{ app.user.email }}</strong>
     </p>
 {% endblock %}
