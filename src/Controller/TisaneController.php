@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Tisane;
+use App\Repository\TisaneRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -16,38 +17,32 @@ class TisaneController extends AbstractController
     #[Route('', name: 'tisane_index', methods: ['GET'])]
     public function index(
         Request $request,
-        EntityManagerInterface $em,
+        TisaneRepository $tisaneRepository,
         PaginatorInterface $paginator
     ): Response {
         $q    = trim((string) $request->query->get('q', ''));
         $page = max(1, (int) $request->query->get('page', 1));
 
-        // IMPORTANT :
-        // - pas de groupBy sur t.id
-        // - DISTINCT t pour éviter les doublons dus aux joins
-        // - on ne addSelect pas deux collections to-many à la fois
-        $qb = $em->getRepository(Tisane::class)
-            ->createQueryBuilder('t')
-            ->select('DISTINCT t')
-            ->leftJoin('t.bienfaits', 'b') // utile pour filtrer sur b
-            ->leftJoin('t.plantes',  'p') // utile pour filtrer sur p
-            ->orderBy('t.nom', 'ASC');
-
         if ($q !== '') {
-            $qb->andWhere(
-                't.nom LIKE :q
-                 OR t.modePreparation LIKE :q
-                 OR b.nom LIKE :q
-                 OR p.nomCommun LIKE :q'
-            )->setParameter('q', '%'.$q.'%');
-        }
+            // Recherche fuzzy (tolérante aux fautes)
+            $results = $tisaneRepository->fuzzySearch(
+                $q,
+                limitCandidates: 400,
+                minScore: 18
+            );
 
-        $tisanes = $paginator->paginate(
-            $qb,
-            $page,
-            9,
-            ['wrap-queries' => true]
-        );
+            // Pagination sur tableau (KNP gère très bien)
+            $tisanes = $paginator->paginate($results, $page, 9);
+        } else {
+            // Recherche simple (LIKE) paginée en SQL
+            $qb = $tisaneRepository->queryIndex('');
+            $tisanes = $paginator->paginate(
+                $qb,
+                $page,
+                9,
+                ['wrap-queries' => true]
+            );
+        }
 
         return $this->render('tisane/index.html.twig', [
             'tisanes' => $tisanes,
@@ -58,7 +53,6 @@ class TisaneController extends AbstractController
     #[Route('/{id}', name: 'tisane_show', requirements: ['id' => '\d+'], methods: ['GET'])]
     public function show(int $id, EntityManagerInterface $em): Response
     {
-        // Ici on peut précharger les deux relations (on ne récupère qu'UNE tisane)
         $tisane = $em->getRepository(Tisane::class)->createQueryBuilder('t')
             ->select('t, p, b')
             ->leftJoin('t.plantes', 'p')

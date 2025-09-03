@@ -24,7 +24,6 @@
     {% set src1 = asset(guessPng) %}
     {% set ph   = asset('images/placeholders/placeholder-recette.jpg') %}
 
-    {# --- Image principale (centre, couvre, remplit le ratio) --- #}
     <figure class="mx-auto mb-4" style="max-width: 720px;">
         <div class="ratio ratio-16x9 rounded shadow overflow-hidden">
             <img
@@ -44,8 +43,6 @@
             </figcaption>
         {% endif %}
     </figure>
-
-
 
     <div class="row g-4">
         {# --- Infos pratiques --- #}
@@ -111,7 +108,6 @@
                             {% set unit = (ing.unite|default('')|lower)|trim %}
                             {% set isMass = unit in ['g','gramme','grammes'] %}
                             {% set isVol  = unit in ['ml','millilitre','millilitres'] %}
-
                             {% if isMass or isVol %}
                                 {% set q = ri.quantite|default(0) %}
                                 {% set factor = q / 100 %}
@@ -122,7 +118,6 @@
                             {% endif %}
                         {% endif %}
                     {% endfor %}
-
 
                     <div class="table-responsive">
                         <table class="table table-sm mb-2">
@@ -166,7 +161,161 @@
         </div>
     </section>
 
-    {# --- Tisanes suggérées --- #}
+    {# ======= 💬 Commentaires AVANT les tisanes suggérées ======= #}
+    <section aria-labelledby="commentaires">
+        <h2 id="commentaires" class="h5 mb-3">💬 Commentaires</h2>
+
+        {# On ne garde que les non signalés #}
+        {% set commentairesAffiches = (commentaires|default([]))|filter(c =>
+            not (attribute(c,'signaler') ?? attribute(c,'isSignaler') ?? attribute(c,'reported') ?? false)
+            ) %}
+
+
+        {% for commentaire in commentairesAffiches %}
+            <article class="mb-3 p-3 border rounded shadow-sm bg-light" aria-labelledby="cmt-{{ commentaire.id }}">
+                <div class="d-flex justify-content-between">
+                    <h3 id="cmt-{{ commentaire.id }}" class="h6 mb-1">
+                        {{ commentaire.utilisateur ? commentaire.utilisateur.prenom : 'Utilisateur supprimé' }}
+                    </h3>
+                    <small class="text-muted">{{ commentaire.date|date('d/m/Y H:i') }}</small>
+                </div>
+
+                <p class="mb-1">Note : {{ commentaire.note ?? "non noté" }}</p>
+                <p class="mb-0">{{ commentaire.contenu }}</p>
+
+                {% if app.user and commentaire.SignalePar is null and commentaire.utilisateur != app.user %}
+                    <form
+                            method="post"
+                            action="{{ path('commentaire_signaler', {'id': commentaire.id}) }}"
+                            class="mt-2 d-inline"
+                            onsubmit="if(confirm('Voulez-vous signaler ce commentaire ?')){ this.querySelector('button[type=submit]').disabled = true; return true; } return false;">
+                        <input type="hidden" name="_token" value="{{ csrf_token('signaler' ~ commentaire.id) }}">
+                        <button class="btn btn-sm btn-outline-warning">Signaler</button>
+                    </form>
+                {% endif %}
+            </article>
+        {% else %}
+            <p class="text-muted">Aucun commentaire pour cette recette.</p>
+        {% endfor %}
+
+        {% if app.user %}
+            <div class="card my-4 shadow-sm">
+                <div class="card-body">
+                    <h2 class="h5 card-title">✍️ Laisser un commentaire</h2>
+
+                    {# ——— Résumé d’erreurs global si soumis mais invalide ——— #}
+                    {% set wasSubmitted = form.vars.submitted ?? false %}
+                    {% set isValid = form.vars.valid ?? true %}
+                    {% if wasSubmitted and not isValid %}
+                        <div class="alert alert-danger" role="alert">
+                            <strong>Le commentaire n’a pas été envoyé.</strong>
+                            <div class="mt-2">Merci de corriger&nbsp;:</div>
+                            <ul class="mb-0 mt-2">
+                                {# erreurs globales du formulaire #}
+                                {% for err in form.vars.errors %}
+                                    <li>{{ err.message }}</li>
+                                {% endfor %}
+
+                                {# erreurs champ par champ (compatibilité Twig : pas de "if" inline) #}
+                                {% for field in form %}
+                                    {% if field.vars.errors|length > 0 %}
+                                        {% for err in field.vars.errors %}
+                                            <li>
+                                                <strong>{{ field.vars.label|default(field.vars.name|capitalize) }} :</strong>
+                                                {{ err.message }}
+                                            </li>
+                                        {% endfor %}
+                                    {% endif %}
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endif %}
+
+
+                    {{ form_start(form, { attr: { novalidate: 'novalidate', 'data-turbo': 'false' } }) }}
+
+                    {# Contenu #}
+                    <div class="mb-3">
+                        {{ form_label(form.contenu, 'Votre commentaire') }}
+                        {{ form_widget(form.contenu, {
+                            attr: {
+                                class: 'form-control' ~ (form.contenu.vars.errors|length ? ' is-invalid' : ''),
+                                rows: 3,
+                                placeholder: 'Écrivez votre avis…'
+                            }
+                        }) }}
+                        {% if form.contenu.vars.errors|length %}
+                            <div class="invalid-feedback d-block">
+                                {% for e in form.contenu.vars.errors %}{{ e.message }}{% if not loop.last %}<br>{% endif %}{% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    {# NOTE — étoiles interactives + input caché envoyé au serveur #}
+                    <div class="mb-3">
+                        <label class="form-label">Votre note</label>
+
+                        {# input caché qui sera envoyé (garde l’id & le name du champ “note”) #}
+                        <input type="hidden"
+                               id="{{ form.note.vars.id }}"
+                               name="{{ form.note.vars.full_name }}"
+                               value="{{ form.note.vars.value is not null ? form.note.vars.value : '' }}">
+
+                        <div class="rating-stars"
+                             role="radiogroup"
+                             aria-label="Note sur 5"
+                             data-input-id="{{ form.note.vars.id }}">
+                            {% set current = form.note.vars.value ?? 0 %}
+                            {% for i in 1..5 %}
+                                {% set active = i <= current %}
+                                <button type="button"
+                                        class="star-btn{{ active ? ' is-active' : '' }}"
+                                        role="radio"
+                                        aria-checked="{{ active ? 'true' : 'false' }}"
+                                        data-value="{{ i }}"
+                                        title="{{ i }}/5">★</button>
+                            {% endfor %}
+                            <button type="button" class="btn btn-sm btn-outline-secondary ms-2" data-rating-clear>Effacer</button>
+                        </div>
+
+                        {% if form.note.vars.errors|length %}
+                            <div class="invalid-feedback d-block mt-2">
+                                {% for e in form.note.vars.errors %}{{ e.message }}{% if not loop.last %}<br>{% endif %}{% endfor %}
+                            </div>
+                        {% endif %}
+                        <small class="text-muted d-block mt-1">Cliquez pour noter (facultatif).</small>
+                    </div>
+                    {% do form.note.setRendered %}
+
+
+                    <button class="btn btn-primary">Envoyer</button>
+                    {{ form_end(form) }}
+                </div>
+            </div>
+
+        {% else %}
+            <div class="alert alert-warning mt-4">
+                Vous devez <a href="{{ path('app_login') }}" class="alert-link">vous connecter</a> pour commenter.
+            </div>
+        {% endif %}
+    </section>
+
+    {# --- (Optionnel) Note moyenne après commentaires --- #}
+    {% if moyenne is defined %}
+        <section class="mb-3" aria-labelledby="note-moyenne">
+            <h2 id="note-moyenne" class="visually-hidden">Note moyenne</h2>
+            {% if moyenne is not null %}
+                <div aria-label="Note moyenne {{ moyenne }}/5">
+                    {% for i in 1..5 %}{{ i <= moyenne ? '⭐' : '☆' }}{% endfor %}
+                    ({{ moyenne|number_format(1, '.', ' ') }}/5)
+                </div>
+            {% else %}
+                <p class="text-muted">Pas encore de note.</p>
+            {% endif %}
+        </section>
+    {% endif %}
+
+    {# --- Tisanes suggérées APRÈS les commentaires --- #}
     {% if tisanesSuggerees is defined and tisanesSuggerees|length > 0 %}
         <section class="card shadow-sm mb-4" aria-labelledby="tisanes-sugg">
             <div class="card-body">
@@ -180,8 +329,7 @@
                                         alt="{{ tisane.nom }}"
                                         class="rounded me-3"
                                         style="width:80px;height:80px;object-fit:cover;"
-                                        loading="lazy"
-                                >
+                                        loading="lazy">
                                 <div>
                                     <a href="{{ path('tisane_show', {'id': tisane.id}) }}" class="fw-semibold d-block mb-1">
                                         {{ tisane.nom }}
@@ -203,85 +351,17 @@
         </section>
     {% endif %}
 
-    {# --- Note moyenne (option) --- #}
-    {% if moyenne is defined %}
-        <section class="mb-3" aria-labelledby="note-moyenne">
-            <h2 id="note-moyenne" class="visually-hidden">Note moyenne</h2>
-            {% if moyenne is not null %}
-                <div aria-label="Note moyenne {{ moyenne }}/5">
-                    {% for i in 1..5 %}{{ i <= moyenne ? '⭐' : '☆' }}{% endfor %}
-                    ({{ moyenne|number_format(1, '.', ' ') }}/5)
-                </div>
-            {% else %}
-                <p class="text-muted">Pas encore de note.</p>
-            {% endif %}
-        </section>
-    {% endif %}
-
-    {# --- Commentaires --- #}
-    <section aria-labelledby="commentaires">
-        <h2 id="commentaires" class="h5 mb-3">💬 Commentaires</h2>
-
-        {% for commentaire in commentaires %}
-            <article class="mb-3 p-3 border rounded shadow-sm bg-light" aria-labelledby="cmt-{{ commentaire.id }}">
-                <div class="d-flex justify-content-between">
-                    <h3 id="cmt-{{ commentaire.id }}" class="h6 mb-1">
-                        {{ commentaire.utilisateur ? commentaire.utilisateur.prenom ~ ' ' ~ commentaire.utilisateur.nom : 'Utilisateur supprimé' }}
-                    </h3>
-                    <small class="text-muted">{{ commentaire.date|date('d/m/Y H:i') }}</small>
-                </div>
-
-                <p class="mb-1">Note : {{ commentaire.note ?? "non noté" }}</p>
-                <p class="mb-0">{{ commentaire.contenu }}</p>
-
-                {% if app.user and commentaire.SignalePar is null and commentaire.utilisateur != app.user %}
-                    <form
-                            method="post"
-                            action="{{ path('commentaire_signaler', {'id': commentaire.id}) }}"
-                            class="mt-2 d-inline"
-                            onsubmit="if(confirm('Voulez-vous signaler ce commentaire ?')){ this.querySelector('button[type=submit]').disabled = true; return true; } return false;"
-                    >
-                        <input type="hidden" name="_token" value="{{ csrf_token('signaler' ~ commentaire.id) }}">
-                        <button class="btn btn-sm btn-outline-warning">Signaler</button>
-                    </form>
-                {% endif %}
-            </article>
-        {% else %}
-            <p class="text-muted">Aucun commentaire pour cette recette.</p>
-        {% endfor %}
-
-        {% if app.user %}
-            <div class="card my-4 shadow-sm">
-                <div class="card-body">
-                    <h2 class="h5 card-title">✍️ Laisser un commentaire</h2>
-                    {{ form_start(form, { attr: { novalidate: 'novalidate' } }) }}
-                    {{ form_errors(form) }}
-                    <div class="mb-3">
-                        {{ form_label(form.contenu, 'Votre commentaire') }}
-                        {{ form_widget(form.contenu, {'attr': {'class': 'form-control', 'rows': 3}}) }}
-                        {{ form_errors(form.contenu) }}
-                    </div>
-                    <div class="mb-3">
-                        {{ form_label(form.note, 'Votre note') }}
-                        {{ form_widget(form.note, {'attr': {'class': 'form-control', 'min': 0, 'max': 5}}) }}
-                        {{ form_errors(form.note) }}
-                    </div>
-                    <button class="btn btn-primary">Envoyer</button>
-                    {{ form_end(form) }}
-                </div>
-            </div>
-        {% else %}
-            <div class="alert alert-warning mt-4">
-                Vous devez <a href="{{ path('app_login') }}" class="alert-link">vous connecter</a> pour commenter.
-            </div>
-        {% endif %}
-    </section>
-
     {# --- Navigation & gestion --- #}
-    {% set routeRetour = backRoute|default('recette_index') %}
+    {% set routeRetour  = backRoute|default('recette_index') %}
     {% set paramsRetour = backParams|default({}) %}
+    {% set defaultBackUrl = path(routeRetour, paramsRetour) %}
+    {% set ref = app.request.headers.get('referer')|default('') %}
+    {% set host = app.request.schemeAndHttpHost %}
+    {# on utilise le referer s'il est interne, sinon fallback route #}
+    {% set backUrl = (ref and (ref starts with host or ref starts with '/')) ? ref : defaultBackUrl %}
+
     <div class="d-flex flex-wrap gap-2 mt-4">
-        <a href="{{ path(routeRetour, paramsRetour) }}" class="btn btn-outline-secondary">Retour à la liste</a>
+        <a href="{{ backUrl }}" class="btn btn-outline-secondary">Retour à la liste</a>
 
         {% set isOwner = app.user and recette.utilisateur and app.user.id == recette.utilisateur.id %}
         {% set canManage = is_granted('ROLE_ADMIN') or (isOwner and not recette.validation) %}
@@ -292,3 +372,66 @@
     </div>
 
 {% endblock %}
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        (function(){
+            function initRating(root){
+                if (!root || root.dataset.bound) return;
+                root.dataset.bound = '1';
+
+                const inputId = root.getAttribute('data-input-id');
+                const input = document.getElementById(inputId);
+                if (!input) return;
+
+                const stars = Array.from(root.querySelectorAll('.star-btn'));
+                const clearBtn = root.querySelector('[data-rating-clear]');
+
+                function setValue(v){
+                    const val = (v >= 1 && v <= 5) ? String(v) : '';
+                    input.value = val;
+                    stars.forEach((b, idx) => {
+                        const active = (idx + 1) <= (val ? parseInt(val,10) : 0);
+                        b.classList.toggle('is-active', active);
+                        b.setAttribute('aria-checked', active ? 'true' : 'false');
+                    });
+                }
+
+                // init à la valeur actuelle
+                setValue(input.value ? parseInt(input.value,10) : 0);
+
+                stars.forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const v = parseInt(btn.dataset.value, 10);
+                        // re-cliquer la même valeur = effacer (option sympa)
+                        const current = parseInt(input.value || '0', 10);
+                        setValue(current === v ? 0 : v);
+                    });
+                    btn.addEventListener('keydown', (e) => {
+                        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); btn.click(); }
+                        if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') {
+                            e.preventDefault(); setValue((parseInt(input.value||'0',10) || 1) - 1);
+                        }
+                        if (e.key === 'ArrowRight' || e.key === 'ArrowUp') {
+                            e.preventDefault(); setValue((parseInt(input.value||'0',10) || 0) + 1);
+                        }
+                    });
+                });
+
+                if (clearBtn){
+                    clearBtn.addEventListener('click', () => setValue(0));
+                }
+            }
+
+            function scan(){
+                document.querySelectorAll('.rating-stars').forEach(initRating);
+            }
+
+            // classique + navigation Turbo
+            document.addEventListener('DOMContentLoaded', scan);
+            document.addEventListener('turbo:load', scan);
+            document.addEventListener('turbo:render', scan);
+        })();
+    </script>
+{% endblock %}
+

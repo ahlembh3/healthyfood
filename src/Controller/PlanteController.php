@@ -20,28 +20,33 @@ class PlanteController extends AbstractController
         PaginatorInterface $paginator,
         Request $request
     ): Response {
-        $q = trim((string) $request->query->get('q', ''));
+        $q    = trim((string) $request->query->get('q', ''));
         $page = $request->query->getInt('page', 1);
 
-        $qb = $planteRepository->createQueryBuilder('p');
-
         if ($q !== '') {
-            // recherche simple insensible à la casse (nom commun / scientifique / description)
-            $qb->andWhere('LOWER(p.nomCommun) LIKE :q OR LOWER(p.nomScientifique) LIKE :q OR LOWER(p.description) LIKE :q')
-                ->setParameter('q', '%'.mb_strtolower($q).'%');
+            // Recherche floue (renvoie un array) -> paginator sait paginer un array
+            $results = $planteRepository->fuzzySearch(
+                $q,
+                limitCandidates: 400,
+                minScore: 18
+            );
+
+            $pagination = $paginator->paginate(
+                $results,
+                $page,
+                6
+            );
+        } else {
+            // Liste “classique” paginable via Query
+            $pagination = $paginator->paginate(
+                $planteRepository->queryAll(),
+                $page,
+                6
+            );
         }
-
-        $qb->orderBy('p.nomCommun', 'ASC');
-
-        $pagination = $paginator->paginate(
-            $qb,   // QueryBuilder accepté par KnpPaginator
-            $page,
-            6
-        );
 
         return $this->render('plante/index.html.twig', [
             'pagination' => $pagination,
-            // pas nécessaire mais utile si tu veux pré-remplir le champ recherche
             'q'          => $q,
         ]);
     }

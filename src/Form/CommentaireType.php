@@ -23,7 +23,8 @@ class CommentaireType extends AbstractType
             $builder->add('note', IntegerType::class, [
                 'label' => 'Note sur 5',
                 'required' => false,
-                'attr' => ['min' => 0, 'max' => 5]
+                'attr' => ['min' => 0, 'max' => 5],
+                'empty_data' => null,
             ]);
         }
     }
@@ -33,6 +34,7 @@ class CommentaireType extends AbstractType
         $resolver->setDefaults([
             'data_class' => Commentaire::class,
             'is_recette' => false, // valeur par défaut
+            'validation_groups' => ['Default'],
         ]);
     }
 }

@@ -47,6 +47,8 @@ class ArticleController extends AbstractController
     }
 
     // --- Liste publique (recherche + filtre + pagination) ---
+    // src/Controller/ArticleController.php
+
     #[Route('/liste', name: 'article_liste', methods: ['GET'])]
     public function index(
         Request $request,
@@ -57,40 +59,27 @@ class ArticleController extends AbstractController
         $categorie = trim((string) $request->query->get('categorie', ''));
         $page      = max(1, (int) $request->query->get('page', 1));
 
-        $qb = $articleRepository->createQueryBuilder('a')
-            ->where('a.validation = true');
-
         if ($search !== '') {
-            $qb->andWhere('LOWER(a.titre) LIKE :search OR LOWER(a.contenu) LIKE :search')
-                ->setParameter('search', '%'.mb_strtolower($search).'%');
+            // liste PHP déjà reclassée → on pagine un tableau
+            $articlesArr = $articleRepository->fuzzySearchValidated(
+                $search,
+                $categorie,
+                limitCandidates: 250,
+                minScore: 20
+            );
+            $articles = $paginator->paginate($articlesArr, $page, 6);
+        } else {
+            // pagination SQL efficace
+            $articles = $paginator->paginate(
+                $articleRepository->queryValidated($categorie),
+                $page,
+                6
+            );
         }
 
-        if ($categorie !== '') {
-            $qb->andWhere('a.categorie = :cat')
-                ->setParameter('cat', $categorie);
-        }
+        $categoriesDisponibles = $articleRepository->getAvailableCategories();
 
-        $qb->orderBy('a.date', 'DESC');
-
-        $articles = $paginator->paginate(
-            $qb->getQuery(),
-            $page,
-            6
-        );
-
-        // Catégories disponibles (dynamiques)
-        $categoriesDisponibles = array_column(
-            $articleRepository->createQueryBuilder('a2')
-                ->select('DISTINCT a2.categorie AS categorie')
-                ->where('a2.validation = true')
-                ->andWhere('a2.categorie IS NOT NULL AND a2.categorie <> \'\'')
-                ->orderBy('a2.categorie', 'ASC')
-                ->getQuery()
-                ->getScalarResult(),
-            'categorie'
-        );
-
-        // mémoriser l’URL de retour (avec filtres & page)
+        // mémorise l’URL de retour
         $returnUrl = $this->generateUrl('article_liste', [
             'q'         => $search,
             'categorie' => $categorie,
@@ -105,6 +94,7 @@ class ArticleController extends AbstractController
             'categoriesDisponibles' => $categoriesDisponibles,
         ]);
     }
+
 
     // --- Liste admin (gestion) ---
     #[Route('/admin/liste', name: 'article_liste_admin', methods: ['GET'])]

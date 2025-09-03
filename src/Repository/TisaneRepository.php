@@ -3,18 +3,9 @@
 namespace App\Repository;
 
 use App\Entity\Tisane;
-use App\Entity\AccordAromatique;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
-/**
- * @extends ServiceEntityRepository<Tisane>
- *
- * @method Tisane|null find($id, $lockMode = null, $lockVersion = null)
- * @method Tisane|null findOneBy(array $criteria, array $orderBy = null)
- * @method Tisane[]    findAll()
- * @method Tisane[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
- */
 class TisaneRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
@@ -23,84 +14,157 @@ class TisaneRepository extends ServiceEntityRepository
     }
 
     /**
-     * Classe les tisanes par score (= wB * nbBienfaits + wA * sommeScoresAromatiques)
-     *
-     * @param int[]   $bienfaitIds    Bienfaits qui SOULAGENT la gêne (via Gene->Bienfait)
-     * @param int[]   $ingredientIds  Ingrédients de la recette
-     * @param string[] $types         Types d’ingrédients de la recette (ex: "Poisson", "Volaille")
-     * @return array[]                Chaque ligne: ['tisane' => Tisane, 'scoreB' => int, 'scoreA' => float, 'scoreTotal' => float]
+     * Requête de base (liste publique) avec recherche simple (LIKE).
+     * On retourne un QueryBuilder pour permettre la pagination SQL via KNP.
      */
-    public function findSuggestions(
-        array $bienfaitIds,
-        array $ingredientIds,
-        array $types,
-        int $limit = 3,
-        float $wB = 2.0,   // poids des bienfaits
-        float $wA = 1.0    // poids des accords aromatiques
-    ): array {
-        // Dummies pour éviter IN () vide
-        $ingredientIds = !empty($ingredientIds) ? $ingredientIds : [0];
-        $types         = !empty($types) ? $types : ['__NONE__'];
-
+    public function queryIndex(string $q = '')
+    {
         $qb = $this->createQueryBuilder('t')
-            // on veut récupérer l’entité + des scalaires
-            ->select('t AS tisane');
+            ->select('DISTINCT t')
+            ->leftJoin('t.bienfaits', 'b')  // pour filtrer sur b.nom
+            ->leftJoin('t.plantes', 'p')    // pour filtrer sur p.nomCommun
+            ->orderBy('t.nom', 'ASC');
 
-        // === Bienfaits qui soulagent ===
-        // Si on a une liste de bienfaits "soulagants", on ne joint QUE ceux-là (sinon 0).
-        if (!empty($bienfaitIds)) {
-            $qb->leftJoin('t.bienfaits', 'b', 'WITH', 'b.id IN (:bids)')
-                ->setParameter('bids', $bienfaitIds);
+        $q = trim($q);
+        if ($q !== '') {
+            $qb->andWhere(
+                'LOWER(t.nom) LIKE :q
+                 OR LOWER(t.modePreparation) LIKE :q
+                 OR LOWER(b.nom) LIKE :q
+                 OR LOWER(p.nomCommun) LIKE :q'
+            )->setParameter('q', '%'.mb_strtolower($q).'%');
+        }
+
+        return $qb;
+    }
+
+    /**
+     * Recherche approximative tolérante aux fautes :
+     * 1) Préfiltre SQL (LIKE) sur nom / modePreparation / bienfaits / plantes
+     * 2) Reclassement PHP (similar_text + levenshtein), avec seuil minimum.
+     *
+     * @return Tisane[] Reclassées par pertinence.
+     */
+    public function fuzzySearch(string $search, int $limitCandidates = 400, int $minScore = 18): array
+    {
+        $normalized = $this->normalize($search);
+        $tokens     = preg_split('/\s+/', $normalized, -1, PREG_SPLIT_NO_EMPTY) ?: [];
+
+        // 1) Préfiltre SQL
+        $qb = $this->createQueryBuilder('t')
+            ->select('DISTINCT t')
+            ->leftJoin('t.bienfaits', 'b')
+            ->leftJoin('t.plantes',   'p');
+
+        if (!empty($tokens)) {
+            $or = $qb->expr()->orX();
+            $i  = 0;
+            foreach ($tokens as $tok) {
+                $param = ':t'.$i++;
+                $or->add($qb->expr()->like('LOWER(t.nom)', $param));
+                $or->add($qb->expr()->like('LOWER(t.modePreparation)', $param));
+                $or->add($qb->expr()->like('LOWER(b.nom)', $param));
+                $or->add($qb->expr()->like('LOWER(p.nomCommun)', $param));
+                $qb->setParameter(substr($param, 1), '%'.$tok.'%');
+            }
+            $qb->andWhere($or);
+        }
+
+        $qb->orderBy('t.nom', 'ASC')
+            ->setMaxResults($limitCandidates);
+
+        /** @var Tisane[] $candidats */
+        $candidats = $qb->getQuery()->getResult();
+
+        // 2) Reclassement PHP
+        $scored = [];
+        foreach ($candidats as $tisane) {
+            $nom   = $this->normalize((string)$tisane->getNom());
+            $prep  = $this->normalize(strip_tags((string)$tisane->getModePreparation()));
+
+            // Concat noms des plantes & bienfaits (lazy-load ok)
+            $plantesStr = '';
+            foreach ($tisane->getPlantes() as $pl) {
+                $plantesStr .= ' '.$this->normalize((string)$pl->getNomCommun());
+                if (method_exists($pl, 'getNomScientifique')) {
+                    $plantesStr .= ' '.$this->normalize((string)$pl->getNomScientifique());
+                }
+            }
+
+            $bienfaitsStr = '';
+            foreach ($tisane->getBienfaits() as $b) {
+                $bienfaitsStr .= ' '.$this->normalize((string)$b->getNom());
+            }
+
+            $scoreNom   = $this->similarity($normalized, $nom);
+            $scorePrep  = $this->similarity($normalized, $prep);
+            $scorePlant = $this->similarity($normalized, $plantesStr);
+            $scoreBf    = $this->similarity($normalized, $bienfaitsStr);
+            $score      = max($scoreNom, $scorePrep, $scorePlant, $scoreBf);
+
+            // Bonus par token trouvé (ou proche)
+            $haystack = $nom.' '.$prep.' '.$plantesStr.' '.$bienfaitsStr;
+            foreach ($tokens as $tok) {
+                if ($tok === '') continue;
+                if (str_contains($haystack, $tok)) {
+                    $score += 10;
+                } elseif (mb_strlen($tok) >= 4) {
+                    $closest = $this->closestWord($haystack, $tok);
+                    $dist    = levenshtein($tok, $closest);
+                    if ($dist <= 2) $score += 6;
+                }
+            }
+
+            $score = min(100, (float)$score);
+            if ($score >= $minScore) {
+                $scored[] = [$tisane, $score];
+            }
+        }
+
+        usort($scored, static function ($a, $b) {
+            $cmp = $b[1] <=> $a[1]; // score desc
+            if ($cmp !== 0) return $cmp;
+            return strcmp((string)$a[0]->getNom(), (string)$b[0]->getNom());
+        });
+
+        return array_map(static fn($row) => $row[0], $scored);
+    }
+
+    // ---------------- Helpers ----------------
+
+    private function normalize(string $s): string
+    {
+        $s = trim($s);
+        if ($s === '') return '';
+        if (class_exists(\Transliterator::class)) {
+            $tr = \Transliterator::create('Any-Latin; Latin-ASCII; Lower()');
+            $s  = $tr ? $tr->transliterate($s) : mb_strtolower($s, 'UTF-8');
         } else {
-            // Join "vide" (never true) pour que COUNT = 0
-            $qb->leftJoin('t.bienfaits', 'b', 'WITH', '1=0');
+            $s = mb_strtolower($s, 'UTF-8');
+            $conv = @iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $s);
+            if ($conv !== false) $s = $conv;
         }
+        $s = preg_replace('/[^a-z0-9\s]+/u', ' ', $s) ?? $s;
+        $s = preg_replace('/\s+/u', ' ', $s) ?? $s;
+        return trim($s);
+    }
 
-        // === Plantes de la tisane + accords aromatiques ===
-        $qb->leftJoin('t.plantes', 'p')
-            ->leftJoin(AccordAromatique::class, 'ap', 'WITH', 'ap.plante = p');
+    private function similarity(string $a, string $b): float
+    {
+        if ($a === '' || $b === '') return 0.0;
+        similar_text($a, $b, $percent);
+        return (float)$percent;
+    }
 
-        // Score bienfaits = nombre de bienfaits qui soulagent (COUNT DISTINCT car une tisane peut avoir plusieurs plantes/bienfaits)
-        $qb->addSelect('COUNT(DISTINCT b.id) AS scoreB');
-
-        // Score arômes = somme des scores d’accords où:
-        //  - ap.ingredient match l’un des ingrédients de la recette
-        //  - OU ap.ingredientType match l’un des types de la recette
-        $qb->addSelect('COALESCE(SUM(
-            CASE
-                WHEN ap.ingredient IS NOT NULL AND ap.ingredient IN (:ingIds) THEN ap.score
-                WHEN ap.ingredientType IS NOT NULL AND ap.ingredientType IN (:types) THEN ap.score
-                ELSE 0
-            END
-        ), 0) AS scoreA')
-            ->setParameter('ingIds', $ingredientIds)
-            ->setParameter('types', $types);
-
-        // Score total pondéré
-        $qb->addSelect('(:wB * COUNT(DISTINCT b.id) + :wA * COALESCE(SUM(
-            CASE
-                WHEN ap.ingredient IS NOT NULL AND ap.ingredient IN (:ingIds) THEN ap.score
-                WHEN ap.ingredientType IS NOT NULL AND ap.ingredientType IN (:types) THEN ap.score
-                ELSE 0
-            END
-        ), 0)) AS scoreTotal')
-            ->setParameter('wB', $wB)
-            ->setParameter('wA', $wA);
-
-        $qb->groupBy('t.id')
-            ->orderBy('scoreTotal', 'DESC')
-            ->setMaxResults($limit);
-
-        // Résultat: tableau de lignes avec l’entité + scalaires
-        // Chaque row ressemble à: ['tisane' => Tisane, 'scoreB' => '2', 'scoreA' => '1.5', 'scoreTotal' => '5.5']
-        $rows = $qb->getQuery()->getResult();
-
-        // Cast propre des scalaires en float/int
-        foreach ($rows as &$r) {
-            $r['scoreB'] = (int) $r['scoreB'];
-            $r['scoreA'] = (float) $r['scoreA'];
-            $r['scoreTotal'] = (float) $r['scoreTotal'];
+    private function closestWord(string $haystack, string $needle): string
+    {
+        $bestWord = '';
+        $best = PHP_INT_MAX;
+        foreach (preg_split('/\s+/', $haystack, -1, PREG_SPLIT_NO_EMPTY) as $w) {
+            $d = levenshtein($needle, $w);
+            if ($d < $best) { $best = $d; $bestWord = $w; }
+            if ($best === 0) break;
         }
-        return $rows;
+        return $bestWord;
     }
 }
