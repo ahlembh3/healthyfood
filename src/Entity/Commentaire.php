@@ -16,7 +16,7 @@ class Commentaire
     private ?int $id = null;
 
     #[ORM\Column(type: Types::TEXT)]
-    #[Assert\NotBlank(message: "Le contenu ne doit pas être vide.")]
+    #[Assert\NotBlank(message: "Le contenu ne doit pas être vide.", allowNull: true)]
     private ?string $contenu = null;
 
     #[ORM\Column]
@@ -46,7 +46,10 @@ class Commentaire
 
     #[ORM\ManyToOne(targetEntity: Utilisateur::class, inversedBy: 'commentaires')]
     #[ORM\JoinColumn(nullable: false)]
-    #[Assert\NotNull(message: "Un utilisateur doit être associé.")]
+    #[Assert\NotNull(
+        message: "Un utilisateur doit être associé.",
+        groups: ["persist"]
+    )]
     private ?Utilisateur $utilisateur = null;
 
     //  utilisateur ayant signalé

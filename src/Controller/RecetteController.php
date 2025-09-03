@@ -20,6 +20,8 @@ use App\Entity\Commentaire;
 use App\Service\TisaneSuggestionService;
 use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\Form\FormError;
+
 
 #[Route('/recettes')]
 final class RecetteController extends AbstractController
@@ -53,7 +55,6 @@ final class RecetteController extends AbstractController
         RecetteRepository $recetteRepository,
         CommentaireRepository $commentaireRepository,
         IngredientRepository $ingredientRepo,
-        EntityManagerInterface $em,
         PaginatorInterface $paginator
     ): Response {
         $q        = trim((string)$request->query->get('q', ''));
@@ -64,82 +65,93 @@ final class RecetteController extends AbstractController
         $calMax   = $request->query->get('calMax');
 
         $page    = max(1, (int)$request->query->get('page', 1));
-        $perPage = 9; // ajuste si tu veux 6/12/etc.
+        $perPage = 9;
 
         $types = $ingredientRepo->findDistinctTypes();
 
-        $qb = $em->createQueryBuilder()
-            ->select('DISTINCT r')
-            ->from(\App\Entity\Recette::class, 'r')
-            ->leftJoin('r.recetteIngredients', 'ri')
-            ->leftJoin('ri.ingredient', 'ing')
-            ->leftJoin('ing.genes', 'g')
-            ->leftJoin('g.bienfaits', 'bf')
-            ->where('r.validation = :valide')
-            ->setParameter('valide', true);
+        $filters = [
+            'q'          => $q,
+            'ingredient' => $ingName,
+            'type'       => $type,
+            'saison'     => $saison,
+            'bienfait'   => $bienfait,
+        ];
 
+        // --- 1) Voie “fuzzy” quand q est renseigné ---
         if ($q !== '') {
-            $qb->andWhere('(LOWER(r.titre) LIKE :q OR LOWER(r.description) LIKE :q)')
-                ->setParameter('q', '%'.mb_strtolower($q).'%');
-        }
-        if ($ingName !== '') {
-            $qb->andWhere('LOWER(ing.nom) LIKE :ingName')
-                ->setParameter('ingName', '%'.mb_strtolower($ingName).'%');
-        }
-        if ($type !== '') {
-            $qb->andWhere('LOWER(ing.type) = :type')
-                ->setParameter('type', mb_strtolower($type));
-        }
-        if ($saison !== '') {
-            $qb->andWhere('LOWER(ing.saisonnalite) LIKE :saison')
-                ->setParameter('saison', '%'.mb_strtolower($saison).'%');
-        }
-        if ($bienfait !== '') {
-            $qb->andWhere('LOWER(bf.nom) LIKE :bf')
-                ->setParameter('bf', '%'.mb_strtolower($bienfait).'%');
-        }
+            $results = $recetteRepository->fuzzySearchPublic(
+                $q,
+                $filters,
+                limitCandidates: 400,
+                minScore: 18
+            );
 
-        // Paginer
-        if ($calMax !== null && $calMax !== '') {
-            // on filtre en PHP puis on pagine le résultat (KNP sait paginer un array)
-            $results = $qb->getQuery()->getResult();
-            $results = array_values(array_filter($results, function(\App\Entity\Recette $r) use ($calMax) {
-                $total = 0.0;
-                foreach ($r->getRecetteIngredients() as $ri) {
-                    $ing = $ri->getIngredient();
-                    if (!$ing) continue;
-                    $u = $ing->getUnite();
-                    if (in_array($u, ['gramme','millilitre'], true)) {
-                        $factor = ($ri->getQuantite() ?? 0) / 100.0;
-                        $total += (float)($ing->getCalories() ?? 0) * $factor;
+            // Filtre calories si demandé
+            if ($calMax !== null && $calMax !== '') {
+                $calMaxF = (float)$calMax;
+                $results = array_values(array_filter($results, function(\App\Entity\Recette $r) use ($calMaxF) {
+                    $total = 0.0;
+                    foreach ($r->getRecetteIngredients() as $ri) {
+                        $ing = $ri->getIngredient();
+                        if (!$ing) continue;
+                        $u = $ing->getUnite();
+                        // ne compte que g/ml
+                        if (in_array($u, ['gramme','grammes','g','millilitre','millilitres','ml'], true)) {
+                            $factor = ($ri->getQuantite() ?? 0) / 100.0;
+                            $total += (float)($ing->getCalories() ?? 0) * $factor;
+                        }
                     }
-                }
-                return $total <= (float)$calMax;
-            }));
+                    return $total <= $calMaxF;
+                }));
+            }
+
             $recettes = $paginator->paginate($results, $page, $perPage);
-        } else {
-            // pagination SQL efficace
-            $recettes = $paginator->paginate($qb->getQuery(), $page, $perPage);
+        }
+        // --- 2) Voie “classique” (LIKE) quand q est vide ---
+        else {
+            $query = $recetteRepository->queryPublicWithFilters($filters);
+
+            if ($calMax !== null && $calMax !== '') {
+                // On charge puis on filtre en PHP (car le calcul est applicatif)
+                $results = $query->getResult();
+                $calMaxF = (float)$calMax;
+                $results = array_values(array_filter($results, function(\App\Entity\Recette $r) use ($calMaxF) {
+                    $total = 0.0;
+                    foreach ($r->getRecetteIngredients() as $ri) {
+                        $ing = $ri->getIngredient();
+                        if (!$ing) continue;
+                        $u = $ing->getUnite();
+                        if (in_array($u, ['gramme','grammes','g','millilitre','millilitres','ml'], true)) {
+                            $factor = ($ri->getQuantite() ?? 0) / 100.0;
+                            $total += (float)($ing->getCalories() ?? 0) * $factor;
+                        }
+                    }
+                    return $total <= $calMaxF;
+                }));
+                $recettes = $paginator->paginate($results, $page, $perPage);
+            } else {
+                // Pagination SQL efficace
+                $recettes = $paginator->paginate($query, $page, $perPage);
+            }
         }
 
-        // moyennes
+        // Moyennes des notes (inchangé)
         $moyennes = $commentaireRepository->getMoyenneNoteParRecette();
         $moyennesParRecette = [];
         foreach ($moyennes as $item) {
             $moyennesParRecette[(int)$item['recette_id']] = round((float)$item['moyenne'], 2);
         }
 
-        // IMPORTANT : rends bien le template que tu édites (index.html.twig)
         return $this->render('recette/recettes_liste.html.twig', [
             'recettes' => $recettes,
             'moyennes' => $moyennesParRecette,
             'filters'  => [
-                'q' => $q,
+                'q'          => $q,
                 'ingredient' => $ingName,
-                'type' => $type,
-                'saison' => $saison,
-                'bienfait' => $bienfait,
-                'calMax' => $calMax,
+                'type'       => $type,
+                'saison'     => $saison,
+                'bienfait'   => $bienfait,
+                'calMax'     => $calMax,
             ],
             'types'    => $types,
         ]);
@@ -245,10 +257,9 @@ final class RecetteController extends AbstractController
         CommentaireRepository $commentaireRepository,
         EntityManagerInterface $em
     ): Response {
-
+        // --- D’où on vient ? (pour le bouton "Retour") --------------------------
         $from = $request->query->get('from'); // 'liste' | 'mes' | 'admin' | null
 
-// Récupérer les filtres (s'ils ont été propagés depuis la liste publique)
         $filterKeys = ['q','ingredient','type','saison','bienfait','calMax'];
         $filters = [];
         foreach ($filterKeys as $k) {
@@ -258,72 +269,96 @@ final class RecetteController extends AbstractController
             }
         }
 
-// Règles de retour
         $backRoute  = 'recette_liste'; // défaut
         $backParams = $filters;
-
         $isAdmin = $this->isGranted('ROLE_ADMIN');
         $user    = $this->getUser();
 
         if ($isAdmin) {
             if ($from === 'liste') {
-                $backRoute = 'recette_liste';
+                $backRoute  = 'recette_liste';
                 $backParams = $filters;
             } else {
-                $backRoute = 'recette_liste_admin'; // page de gestion admin
+                $backRoute  = 'recette_liste_admin';
                 $backParams = [];
             }
         } elseif ($user) {
             if ($from === 'mes') {
-                $backRoute = 'recette_mes_recettes';
+                $backRoute  = 'recette_mes_recettes';
                 $backParams = [];
             } elseif ($from === 'liste') {
-                $backRoute = 'recette_liste';
+                $backRoute  = 'recette_liste';
                 $backParams = $filters;
             } else {
-                // connecté mais venu d'ailleurs → retour vers ses recettes
-                $backRoute = 'recette_mes_recettes';
+                $backRoute  = 'recette_mes_recettes';
                 $backParams = [];
             }
         } else {
-            // anonyme → retour liste publique (avec filtres conservés)
-            $backRoute = 'recette_liste';
+            $backRoute  = 'recette_liste';
             $backParams = $filters;
         }
 
-        // --- Formulaire commentaire ---
+        // --- Formulaire commentaire ---------------------------------------------
         $commentaire = new Commentaire();
         $form = $this->createForm(CommentaireType::class, $commentaire, [
             'is_recette' => true,
+            // Assure que la note vide est bien traitée comme NULL par le form
+            // (à condition d’avoir 'empty_data' => null dans CommentaireType)
         ]);
         $form->handleRequest($request);
 
-        if ($form->isSubmitted() && $form->isValid()) {
+        if ($form->isSubmitted()) {
             $user = $this->getUser();
             if (!$user) {
                 throw $this->createAccessDeniedException("Vous devez être connecté pour commenter.");
             }
 
-            // IMPORTANT : marquer le commentaire comme lié à une recette
-            $commentaire->setType(1);
-            $commentaire->setDate(new \DateTimeImmutable());
+
+            // Renseigner les champs requis AVANT la validation
             $commentaire->setUtilisateur($user);
+            $commentaire->setType(1); // 1 = recette
+            $commentaire->setDate(new \DateTimeImmutable());
             $commentaire->setRecette($recette);
 
-            // (optionnel) sécurité côté contrôleur si ton form n'a pas déjà la contrainte
-            if (null !== $commentaire->getNote()) {
-                $note = max(0, min(5, (int) $commentaire->getNote()));
-                $commentaire->setNote($note);
+            // Règle métier : autoriser "note seule" OU "commentaire seul"
+            $contenuTrim = trim((string) $commentaire->getContenu());
+            $note = $commentaire->getNote();
+
+            if ($contenuTrim === '' && $note === null) {
+                // Les deux vides -> on force une erreur lisible
+                $form->addError(new FormError('Veuillez saisir un commentaire ou une note.'));
+            } elseif ($contenuTrim === '' && $note !== null) {
+                // Note seule : l’entité a @NotBlank sur contenu -> on met un minuscule espace
+                // pour satisfaire la contrainte sans afficher de texte.
+                $commentaire->setContenu(' ');
             }
 
-            $em->persist($commentaire);
-            $em->flush();
+            // Clamp 0..5 si une note a été saisie
+            if ($note !== null && $note !== '') {
+                $commentaire->setNote(max(0, min(5, (int) $note)));
+            } else {
+                $commentaire->setNote(null);
+            }
 
-            $this->addFlash('success', 'Votre commentaire a été ajouté.');
-            return $this->redirectToRoute('recette_show', ['id' => $recette->getId()]);
+            if ($form->isValid()) {
+                $em->persist($commentaire);
+                $em->flush();
+
+                $this->addFlash('success', 'Votre commentaire a été ajouté.');
+                return $this->redirectToRoute('recette_show', ['id' => $recette->getId()]);
+            } else {
+                // Alerte avec les causes exactes
+                $details = [];
+                foreach ($form->getErrors(true, true) as $err) {
+                    $origin = $err->getOrigin();
+                    $name   = $origin ? $origin->getName() : 'form';
+                    $details[] = sprintf('%s : %s', $name, $err->getMessage());
+                }
+                $this->addFlash('danger', 'Le commentaire n’a pas été envoyé : ' . implode(' | ', $details));
+            }
         }
 
-        // --- Commentaires de cette recette (type = 1), triés du plus récent au plus ancien ---
+        // --- Commentaires de cette recette (les plus récents d’abord) ----------
         $commentaires = $commentaireRepository->createQueryBuilder('c')
             ->andWhere('c.recette = :recette')
             ->andWhere('c.type = 1')
@@ -332,7 +367,7 @@ final class RecetteController extends AbstractController
             ->getQuery()
             ->getResult();
 
-        // --- Moyenne des notes sur ces commentaires (type = 1 + note non nulle) ---
+        // --- Moyenne des notes (type=1 + note non nulle) -----------------------
         $moyenne = $commentaireRepository->createQueryBuilder('c')
             ->select('AVG(c.note) as moyenne')
             ->andWhere('c.recette = :recette')
@@ -343,7 +378,7 @@ final class RecetteController extends AbstractController
             ->getSingleScalarResult();
         $moyenne = $moyenne !== null ? round((float)$moyenne, 2) : null;
 
-        // --- Suggestions de tisanes (avec scores) ---
+        // --- Tisanes suggérées --------------------------------------------------
         $suggestions = $sugg->suggestForRecette($recette, limit: 3, wB: 2.0, wA: 1.0);
         $tisanesSuggerees = array_map(fn($r) => $r['tisane'], $suggestions);
         $tisanesReasons = [];
@@ -356,16 +391,17 @@ final class RecetteController extends AbstractController
         }
 
         return $this->render('recette/show.html.twig', [
-            'recette'           => $recette,
-            'form'              => $form->createView(),
-            'commentaires'      => $commentaires,
-            'moyenne'           => $moyenne,
-            'tisanesSuggerees'  => $tisanesSuggerees,
-            'tisanesReasons'    => $tisanesReasons, // optionnel : pour afficher "pourquoi cette tisane"
+            'recette'          => $recette,
+            'form'             => $form->createView(),
+            'commentaires'     => $commentaires,
+            'moyenne'          => $moyenne,
+            'tisanesSuggerees' => $tisanesSuggerees,
+            'tisanesReasons'   => $tisanesReasons,
             'backRoute'        => $backRoute,
             'backParams'       => $backParams,
         ]);
     }
+
 
 
     #[Route('/{id}/edit', name: 'recette_edit', methods: ['GET', 'POST'])]

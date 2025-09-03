@@ -17,7 +17,7 @@
         </div>
     </section>
 
-    {# === CARROUSEL — 6 items, 3 visibles, barre de progression === #}
+    {# === CARROUSEL — 6 items, 3 visibles selon la largeur === #}
     <section class="container-content" aria-labelledby="last-items-title">
         <h2 id="last-items-title" class="visually-hidden">Dernières recettes &amp; tisanes</h2>
 
@@ -57,7 +57,7 @@
         <div class="hf-slider mt-3">
             <button class="hf-nav hf-prev" id="hf-prev" type="button" aria-label="Précédent">‹</button>
 
-            <div class="hf-viewport" id="hf-viewport" tabindex="0">
+            <div class="hf-viewport" id="hf-viewport" tabindex="0" aria-label="Carrousel recettes et tisanes">
                 <div class="hf-track">
                     {% for it in items %}
                         {% set isRecette = it.kind == 'recette' %}
@@ -90,10 +90,6 @@
             </div>
 
             <button class="hf-nav hf-next" id="hf-next" type="button" aria-label="Suivant">›</button>
-
-            <div class="hf-progress" id="hf-progress" aria-hidden="true">
-                <div class="hf-progress-bar" id="hf-progress-bar"></div>
-            </div>
         </div>
     </section>
 
@@ -132,37 +128,49 @@
 
         <div class="home-spotlight__right">
             {% set plantesShow = homePlantes|slice(0,2) %}
-            <div class="home-plants-grid">
-                {% for p in plantesShow %}
-                    {% set img = p.image|default('')|trim %}
-                    {% if img %}
-                        {% set src =
-                            (img starts with 'http') ? img
-                            : (img starts with 'uploads/') ? asset(img)
-                            : (img starts with 'plantes/') ? asset('uploads/' ~ img)
-                            : asset('uploads/plantes/' ~ img)
-                        %}
-                    {% else %}
-                        {% set src = phPlantePath %}
-                    {% endif %}
 
-                    <a id="plant-slot-{{ loop.index }}" class="home-plant" href="{{ path('plante_show', { id: p.id }) }}">
-                        <div class="ratio ratio-1x1">
-                            <img src="{{ src }}" alt="{{ p.nomCommun }}" class="media-fill rounded-2" loading="lazy"
-                                 onerror="this.onerror=null;this.src='{{ phPlantePath }}'">
-                        </div>
-                        <div class="home-plant__name">{{ p.nomCommun }}</div>
-                    </a>
-                {% else %}
-                    <a id="plant-slot-1" class="home-plant" href="{{ path('plante_index') }}">
-                        <div class="ratio ratio-1x1"><img src="{{ phPlantePath }}" alt="Plante" class="media-fill rounded-2"></div>
-                        <div class="home-plant__name">Plante</div>
-                    </a>
-                    <a id="plant-slot-2" class="home-plant" href="{{ path('plante_index') }}">
-                        <div class="ratio ratio-1x1"><img src="{{ phPlantePath }}" alt="Plante" class="media-fill rounded-2"></div>
-                        <div class="home-plant__name">Plante</div>
-                    </a>
-                {% endfor %}
+            <div id="home-plants-zone" class="home-plants-zone" aria-label="Parcourir les plantes présentées" tabindex="0">
+                <div class="home-plants-grid">
+                    {% for p in plantesShow %}
+                        {% set img = p.image|default('')|trim %}
+                        {% if img %}
+                            {% set src =
+                                (img starts with 'http') ? img
+                                : (img starts with 'uploads/') ? asset(img)
+                                : (img starts with 'plantes/') ? asset('uploads/' ~ img)
+                                : asset('uploads/plantes/' ~ img)
+                            %}
+                        {% else %}
+                            {% set src = phPlantePath %}
+                        {% endif %}
+
+                        <a id="plant-slot-{{ loop.index }}"
+                           class="home-plant"
+                           href="{{ path('plante_show', { id: p.id }) }}">
+                            <div class="ratio ratio-1x1">
+                                <img src="{{ src }}"
+                                     alt="{{ p.nomCommun }}"
+                                     class="media-fill rounded-2"
+                                     loading="lazy"
+                                     onerror="this.onerror=null;this.src='{{ phPlantePath }}'">
+                            </div>
+                            <div class="home-plant__name">{{ p.nomCommun }}</div>
+                        </a>
+                    {% else %}
+                        <a id="plant-slot-1" class="home-plant" href="{{ path('plante_index') }}">
+                            <div class="ratio ratio-1x1">
+                                <img src="{{ phPlantePath }}" alt="Plante" class="media-fill rounded-2">
+                            </div>
+                            <div class="home-plant__name">Plante</div>
+                        </a>
+                        <a id="plant-slot-2" class="home-plant" href="{{ path('plante_index') }}">
+                            <div class="ratio ratio-1x1">
+                                <img src="{{ phPlantePath }}" alt="Plante" class="media-fill rounded-2">
+                            </div>
+                            <div class="home-plant__name">Plante</div>
+                        </a>
+                    {% endfor %}
+                </div>
             </div>
 
             <form method="get"
@@ -170,106 +178,258 @@
                   class="home-plant-search"
                   role="search"
                   aria-label="Rechercher une plante médicinale"
-                  data-turbo="false"> {# désactive Turbo au besoin #}
-
+                  data-turbo="false">
                 <div class="home-plant-search__title">Rechercher une&nbsp;plante&nbsp;médicinale</div>
-
                 <div class="home-plant-search__group">
-                    <input id="homePlantQ"
-                           type="search"
-                           name="q"
-                           class="home-plant-search__input"
-                           placeholder="Rechercher une plante médicinale"
-                           autocomplete="off">
+                    <input id="homePlantQ" type="search" name="q" class="home-plant-search__input" placeholder="Rechercher une plante médicinale" autocomplete="off">
                     <button class="home-plant-search__btn" type="submit" aria-label="Rechercher">
                         <i class="bi bi-search"></i>
                     </button>
                 </div>
             </form>
-
         </div>
+
     </section>
 {% endblock %}
 
 {% block javascripts %}
     {{ parent() }}
     <script>
-        // --- Carrousel (nav + barre de progression)
-        document.addEventListener('DOMContentLoaded', () => {
-            const vp   = document.getElementById('hf-viewport');
-            if (!vp) return;
-            const bar  = document.getElementById('hf-progress-bar');
-            const prev = document.getElementById('hf-prev');
-            const next = document.getElementById('hf-next');
-            const prog = document.getElementById('hf-progress');
-
-            const update = () => {
-                const max = vp.scrollWidth - vp.clientWidth;
-                if (vp.scrollLeft > max) vp.scrollLeft = Math.max(0, max);
-                const ratio = max > 0 ? (vp.scrollLeft / max) : 0;
-                if (bar)  bar.style.width = (ratio * 100) + '%';
-                const needNav = max > 1;
-                if (prev) prev.style.display = needNav ? '' : 'none';
-                if (next) next.style.display = needNav ? '' : 'none';
-                if (prog) prog.style.display = needNav ? '' : 'none';
-            };
-
-            const step = () => {
-                const first = vp.querySelector('.hf-card');
-                if (!first) return vp.clientWidth;
-                const styles = getComputedStyle(vp.querySelector('.hf-track'));
-                const gap = parseFloat(styles.columnGap || styles.gap || 16);
-                return first.getBoundingClientRect().width + gap;
-            };
-
-            vp.addEventListener('scroll', update, { passive:true });
-            window.addEventListener('resize', update);
-            if (prev) prev.addEventListener('click', () => vp.scrollBy({ left: -step(), behavior: 'smooth' }));
-            if (next) next.addEventListener('click', () => vp.scrollBy({ left:  step(), behavior: 'smooth' }));
-            update();
-        });
-
-        // --- Rotation douce de 2 vignettes plantes si > 2 disponibles
         (function(){
-            {% set plantesData = [] %}
-            {% for p in homePlantes %}
-            {% set img = p.image|default('')|trim %}
-            {% if img %}
-            {% set src =
-                (img starts with 'http') ? img
-                : (img starts with 'uploads/') ? asset(img)
-                : (img starts with 'plantes/') ? asset('uploads/' ~ img)
-                : asset('uploads/plantes/' ~ img)
-            %}
-            {% else %}
-            {% set src = phPlantePath %}
-            {% endif %}
-            {% set plantesData = plantesData|merge([{
-                'id': p.id,
-                'name': p.nomCommun,
-                'src': src,
-                'url': path('plante_show', { id: p.id })
-            }]) %}
-            {% endfor %}
-            const all = {{ plantesData|json_encode|raw }};
-            if (all.length > 2) {
-                let start = 0;
-                const render = (slot, i) => {
-                    const a = document.getElementById('plant-slot-' + slot);
-                    if (!a) return;
-                    const img  = a.querySelector('img');
-                    const name = a.querySelector('.home-plant__name');
-                    a.href = all[i].url;
-                    if (img)  img.src = all[i].src;
-                    if (name) name.textContent = all[i].name;
+            // ----- INIT SAFE HELPERS (Turbo / bfcache / DOMContentLoaded) -----
+            const onAllLoads = (fn) => {
+                document.addEventListener('DOMContentLoaded', fn);
+                document.addEventListener('turbo:load', fn);
+                document.addEventListener('turbo:render', fn);
+                window.addEventListener('pageshow', (e) => { fn(); }); // bfcache (e.persisted) ou normal
+            };
+
+            // =========================
+            // Carrousel — init idempotent
+            // =========================
+            const initHomeCarousel = () => {
+                const vp   = document.getElementById('hf-viewport');
+                const prev = document.getElementById('hf-prev');
+                const next = document.getElementById('hf-next');
+                if (!vp || !prev || !next) return;
+
+                // Garde anti double-binding (Turbo / re-render)
+                if (vp.dataset.hfBound === '1') return;
+                vp.dataset.hfBound = '1';
+
+                const track = () => vp.querySelector('.hf-track');
+                const firstCard = () => vp.querySelector('.hf-card');
+
+                const metrics = () => {
+                    const card = firstCard();
+                    const styles = getComputedStyle(track());
+                    const gap = parseFloat(styles.columnGap || styles.gap || 16);
+                    if (!card) {
+                        return { gap, cw: vp.clientWidth, visible: 1, page: vp.clientWidth };
+                    }
+                    const cw = card.getBoundingClientRect().width;
+                    const visible = Math.max(1, Math.round((vp.clientWidth + gap) / (cw + gap)));
+                    const page = visible * (cw + gap);
+                    return { gap, cw, visible, page };
                 };
-                render(1, 0); render(2, 1);
-                setInterval(() => {
-                    start = (start + 1) % all.length;
-                    render(1, start % all.length);
-                    render(2, (start + 1) % all.length);
-                }, 6000);
-            }
+
+                const clamp = (v, mi, ma) => Math.max(mi, Math.min(ma, v));
+
+                const go = (dir) => {
+                    const { page } = metrics();
+                    const max = vp.scrollWidth - vp.clientWidth;
+                    const target = clamp(vp.scrollLeft + dir * page, 0, Math.max(0, max));
+
+                    const oldSnap = vp.style.scrollSnapType;
+                    vp.style.scrollSnapType = 'none';
+                    vp.scrollTo({ left: target, behavior: 'smooth' });
+
+                    const restore = () => { vp.style.scrollSnapType = ''; };
+                    vp.addEventListener('scrollend', restore, { once:true });
+                    setTimeout(restore, 350);
+                };
+
+                const resnap = () => {
+                    const { page } = metrics();
+                    if (page <= 0) return;
+                    const idx = Math.round(vp.scrollLeft / page);
+                    const target = idx * page;
+                    const oldSnap = vp.style.scrollSnapType;
+                    vp.style.scrollSnapType = 'none';
+                    vp.scrollTo({ left: target, behavior: 'auto' });
+                    vp.style.scrollSnapType = oldSnap || '';
+                };
+
+                const updateNav = () => {
+                    const max = vp.scrollWidth - vp.clientWidth;
+                    const atStart = vp.scrollLeft <= 0;
+                    const atEnd   = vp.scrollLeft >= (max - 1);
+                    prev.disabled = atStart;
+                    prev.setAttribute('aria-disabled', String(atStart));
+                    next.disabled = atEnd;
+                    next.setAttribute('aria-disabled', String(atEnd));
+                };
+
+                prev.addEventListener('click', (e) => { e.preventDefault(); go(-1); });
+                next.addEventListener('click', (e) => { e.preventDefault(); go(+1); });
+
+                vp.setAttribute('tabindex', '0');
+                vp.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowLeft')  { e.preventDefault(); go(-1); }
+                    if (e.key === 'ArrowRight') { e.preventDefault(); go(+1); }
+                });
+
+                // Swipe mobile
+                let sx = 0, sy = 0, dx = 0, dy = 0, touching = false;
+                vp.addEventListener('touchstart', (e) => {
+                    const t = e.touches[0];
+                    touching = true; sx = t.clientX; sy = t.clientY; dx = 0; dy = 0;
+                }, {passive:true});
+                vp.addEventListener('touchmove', (e) => {
+                    if (!touching) return;
+                    const t = e.touches[0];
+                    dx = t.clientX - sx;
+                    dy = t.clientY - sy;
+                }, {passive:true});
+                vp.addEventListener('touchend', () => {
+                    if (!touching) return;
+                    touching = false;
+                    if (Math.abs(dx) > Math.max(40, Math.abs(dy))) {
+                        if (dx < 0) go(+1); else go(-1);
+                    }
+                });
+
+                let resizeTid;
+                window.addEventListener('resize', () => {
+                    clearTimeout(resizeTid);
+                    resizeTid = setTimeout(() => { resnap(); updateNav(); }, 120);
+                });
+
+                vp.addEventListener('scroll', updateNav, { passive:true });
+                updateNav();
+            };
+
+            // =========================
+            // Plantes — init idempotent
+            // =========================
+            const initHomePlants = () => {
+                const zone = document.getElementById('home-plants-zone');
+                if (!zone) return;
+                if (zone.dataset.plantsBound === '1') return;
+                zone.dataset.plantsBound = '1';
+
+                // Reconstitue les données Twig côté JS
+                {% set plantesData = [] %}
+                {% for p in homePlantes %}
+                {% set img = p.image|default('')|trim %}
+                {% if img %}
+                {% set src =
+                    (img starts with 'http') ? img
+                    : (img starts with 'uploads/') ? asset(img)
+                    : (img starts with 'plantes/') ? asset('uploads/' ~ img)
+                    : asset('uploads/plantes/' ~ img)
+                %}
+                {% else %}
+                {% set src = phPlantePath %}
+                {% endif %}
+                {% set plantesData = plantesData|merge([{
+                    'id': p.id,
+                    'name': p.nomCommun,
+                    'src': src,
+                    'url': path('plante_show', { id: p.id })
+                }]) %}
+                {% endfor %}
+                const all = {{ plantesData|json_encode|raw }};
+                if (all.length <= 2) return;
+
+                let start = 0;
+                const render = () => {
+                    const a1 = document.getElementById('plant-slot-1');
+                    const a2 = document.getElementById('plant-slot-2');
+                    if (!a1 || !a2) return;
+                    const i1 = start % all.length;
+                    const i2 = (start + 1) % all.length;
+                    const set = (a, item) => {
+                        a.href = item.url;
+                        const img  = a.querySelector('img');
+                        const name = a.querySelector('.home-plant__name');
+                        if (img)  img.src = item.src;
+                        if (name) name.textContent = item.name;
+                    };
+                    set(a1, all[i1]);
+                    set(a2, all[i2]);
+                };
+
+                const next = () => { start = (start + 2) % all.length; render(); };
+                const prev = () => { start = (start - 2 + (all.length * 1000)) % all.length; render(); };
+
+                // focus auto pour activer ← →
+                setTimeout(() => { zone.focus({ preventScroll: true }); }, 0);
+
+                // Clic sur le fond (pas sur les liens) => suivant
+                zone.addEventListener('click', (e) => {
+                    const a = e.target.closest('a.home-plant');
+                    if (a) return;
+                    e.preventDefault();
+                    next();
+                });
+
+                // Molette / trackpad
+                zone.addEventListener('wheel', (e) => {
+                    const absX = Math.abs(e.deltaX);
+                    const absY = Math.abs(e.deltaY);
+                    if (absX > absY ? absX > 10 : absY > 10) {
+                        e.preventDefault();
+                        (e.deltaX > 0 || e.deltaY > 0) ? next() : prev();
+                    }
+                }, { passive: false });
+
+                // Drag souris
+                let mx = 0, my = 0, dragging = false;
+                zone.addEventListener('mousedown', (e) => {
+                    if (e.button !== 0) return;
+                    dragging = true; mx = e.clientX; my = e.clientY;
+                });
+                window.addEventListener('mousemove', (e) => {
+                    if (!dragging) return;
+                    const dx = e.clientX - mx;
+                    const dy = e.clientY - my;
+                    if (Math.abs(dx) > Math.max(40, Math.abs(dy))) {
+                        dragging = false;
+                        dx < 0 ? next() : prev();
+                    }
+                });
+                window.addEventListener('mouseup', () => { dragging = false; });
+
+                // Clavier
+                zone.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowLeft')  { e.preventDefault(); prev(); }
+                    if (e.key === 'ArrowRight') { e.preventDefault(); next(); }
+                });
+
+                // Swipe tactile
+                let sx=0, sy=0, dx=0, dy=0, touching=false;
+                zone.addEventListener('touchstart', (e) => {
+                    const t = e.touches[0]; touching = true; sx=t.clientX; sy=t.clientY; dx=0; dy=0;
+                }, {passive:true});
+                zone.addEventListener('touchmove', (e) => {
+                    if (!touching) return;
+                    const t = e.touches[0]; dx=t.clientX-sx; dy=t.clientY-sy;
+                }, {passive:true});
+                zone.addEventListener('touchend', () => {
+                    if (!touching) return; touching=false;
+                    if (Math.abs(dx) > Math.max(40, Math.abs(dy))) { if (dx<0) next(); else prev(); }
+                });
+
+                render();
+            };
+
+            // Lance l’init sur tous les cas (DOM, Turbo, retour arrière)
+            const runAll = () => {
+                initHomeCarousel();
+                initHomePlants();
+            };
+            onAllLoads(runAll);
         })();
     </script>
 {% endblock %}

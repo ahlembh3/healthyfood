@@ -30,6 +30,13 @@ class CommentaireRepository extends ServiceEntityRepository
         ->getQuery()
         ->getResult();
 }
-
+    public function findLastNotFlagged(): ?Commentaire {
+        return $this->createQueryBuilder('c')
+            ->andWhere('c.signaler = :s')          // ou c.isFlagged / c.reported
+            ->setParameter('s', false)
+            ->orderBy('c.date', 'DESC')
+            ->setMaxResults(1)
+            ->getQuery()->getOneOrNullResult();
+    }
     
 }

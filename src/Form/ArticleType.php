@@ -37,6 +37,11 @@ class ArticleType extends AbstractType
                     ]),
                 ],
             ])
+            ->add('source', TextType::class, [
+                'label' => 'Source',
+                'required' => false,
+                'attr' => ['placeholder' => 'Nom du média, livre, etc.'],
+            ])
 
             ->add('categorie', ChoiceType::class, [
                 'label' => 'Catégorie',

@@ -5,6 +5,10 @@
 {% block page_title %}{{ article.titre }}{% endblock %}
 
 {% block content %}
+    {# Qui peut voir/éditer ? #}
+    {% set isOwner = app.user and article.utilisateur and app.user.id == article.utilisateur.id %}
+    {% set canEdit = is_granted('ROLE_ADMIN') or isOwner %}
+
 
     {# Flash messages #}
     {% for message in app.flashes('success') %}
@@ -21,14 +25,19 @@
     <div class="mb-3 text-muted">
         <span class="me-3"><strong>Catégorie :</strong> {{ article.categorie ?? '—' }}</span>
         <span class="me-3"><strong>Publié le :</strong> {{ article.date ? article.date|date('d/m/Y') : '—' }}</span>
-        <span><strong>Statut :</strong>
+
+        {% if canEdit %}
+            <span>
+      <strong>Statut :</strong>
       {% if article.validation %}
           <span class="badge bg-success">Validé</span>
       {% else %}
           <span class="badge bg-warning text-dark">En attente</span>
       {% endif %}
     </span>
+        {% endif %}
     </div>
+
 
     {# Image #}
     {% set imgSrc = article.image ? asset('uploads/' ~ article.image) : asset('images/placeholders/placeholder-article.jpg') %}
@@ -42,24 +51,45 @@
                 onerror="this.onerror=null;this.src='{{ asset('images/placeholders/placeholder-article.jpg') }}'">
     </figure>
 
-    {# Contenu (SANS |raw : on nettoie tout HTML potentiel) #}
+    {# --- Contenu : Titre + texte (mise en page minimale si pas de HTML) --- #}
     {% set raw = article.contenu|default('') %}
-    {% set normalized = raw
-        |replace({'<br>':'\n','<br/>':'\n','<br />':'\n'})
-        |striptags
-        |trim
-    %}
-    {# Contenu assaini côté contrôleur, pas de |raw nécessaire #}
-    <section class="border p-3 rounded bg-light">
-        {% if contenu %}
-            {{ contenu }}
+    {% set text = raw|replace({'<br>':'\n','<br/>':'\n','<br />':'\n'})|trim %}
+    <section class="card shadow-sm p-3">
+        <h2 class="h5 mb-3">📝 Titre</h2>
+        <p class="fw-semibold mb-3">{{ article.titre }}</p>
+
+        <h2 class="h5 mb-2">📄 Contenu</h2>
+        {# s’il y a des balises courantes, on suppose du HTML déjà mis en forme #}
+        {% if '<p' in raw or '<ul' in raw or '<ol' in raw or '<div' in raw or '<h' in raw or '<br' in raw %}
+            {{ raw|raw }}
         {% else %}
-            <p class="text-muted m-0">Aucun contenu.</p>
+            <div class="lh-base" style="white-space:pre-line">
+                {{ text|striptags }}
+            </div>
         {% endif %}
     </section>
 
+    {# --- Auteur --- #}
+    <p class="mt-3">
+        <strong>Auteur :</strong>
+        {{ article.utilisateur ? (article.utilisateur.prenom ~ ' ' ~ article.utilisateur.nom)|trim : 'Compte supprimé' }}
+    </p>
 
-    <p class="mt-3"><strong>Auteur :</strong> {{ article.utilisateur ? article.utilisateur.email : 'Compte supprimé' }}</p>
+    {# --- Source : lien si c’est une URL, sinon texte brut --- #}
+    {% set src = article.source|default('')|trim %}
+    {% if src %}
+        {% set isUrl = src starts with 'http://' or src starts with 'https://' or src starts with '//' or src starts with 'www.' %}
+        <p class="mt-2">
+            <strong>Source :</strong>
+            {% if isUrl %}
+                {% set href = src starts with 'www.' ? 'https://' ~ src : (src starts with '//' ? 'https:' ~ src : src) %}
+                <a href="{{ href|e('html_attr') }}" target="_blank" rel="noopener nofollow">{{ src }}</a>
+            {% else %}
+                {{ src }}
+            {% endif %}
+        </p>
+    {% endif %}
+
 
     {# Validation admin #}
     {% if is_granted('ROLE_ADMIN') %}
@@ -131,7 +161,7 @@
         <p class="text-muted">Connectez-vous pour ajouter un commentaire.</p>
     {% endif %}
 
-    {# Boutons bas de page (Retour / Modifier / Supprimer) #}
+    {# --- Boutons bas de page (Retour / Modifier / Supprimer) --- #}
     {% set from = app.request.get('from')|default('') %}
     {% set backRoute = 'article_index' %}
     {% set backParams = {} %}
@@ -149,13 +179,22 @@
         {% set backRoute = 'article_mes_articles' %}
     {% endif %}
 
+    {# 1) URL de repli si pas de referer exploitable #}
+    {% set defaultBackUrl = path(backRoute, backParams) %}
+
+    {# 2) Referer (si interne) sinon on garde la fallback #}
+    {% set ref  = app.request.headers.get('referer')|default('') %}
+    {% set host = app.request.schemeAndHttpHost %}
+    {% set backUrl = (ref and (ref starts with host or ref starts with '/')) ? ref : defaultBackUrl %}
+
     <div class="d-flex gap-2 mt-4 flex-wrap">
-        <a href="{{ path(backRoute, backParams) }}" class="btn btn-secondary">← Retour</a>
+        <a href="{{ backUrl }}" class="btn btn-secondary">← Retour à la liste</a>
 
         {% if canEdit %}
             <a href="{{ path('article_edit', { id: article.id, from: from }) }}" class="btn btn-primary btn-sm">Modifier</a>
             {{ include('article/_delete_form.html.twig') }}
         {% endif %}
     </div>
+
 
 {% endblock %}

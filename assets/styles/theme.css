@@ -20,16 +20,17 @@
     /* Layout */
     --site-max:1200px;
     --content-max:1080px;
-    --site-pad:16px; /* base mobile */
+    --site-pad:16px;
 
     /* UI */
     --shadow:0 8px 20px rgba(0,0,0,.08);
     --radius:.75rem;
     --tap-size:44px;
+
+    /* Slider */
+    --hf-gap:16px;
 }
-/* Très petits écrans (ex: 320px) */
 @media (max-width:360px){ :root{ --site-pad:12px; } }
-/* Très grands écrans */
 @media (min-width:1400px){ :root{ --site-pad:24px; } }
 
 /* ---------- Dark mode ---------- */
@@ -54,18 +55,15 @@ body{
 }
 h1,h2,h3,.navbar-brand,.btn,.hero-title{ font-family:var(--font-title); font-weight:600; }
 
-/* Typo fluide (mobile-first) */
 h1{ font-size:clamp(1.6rem,5.5vw,2.4rem); }
 h2{ font-size:clamp(1.4rem,4.2vw,2rem); }
 h3{ font-size:clamp(1.2rem,3.8vw,1.7rem); }
 p,li{ font-size:clamp(1rem,3.5vw,1.1rem); }
 
-/* Liens & focus */
 a{ text-decoration:none; color:var(--c-vert-dark); transition:color .2s ease; }
 a:hover{ color:var(--c-vert); }
 :focus-visible{ outline:3px solid var(--c-vert); outline-offset:2px; border-radius:.35rem; }
 
-/* Médias */
 img{ max-width:100%; height:auto; }
 .cover{ width:100%; height:100%; object-fit:cover; object-position:center; }
 .ratio-16x9{ aspect-ratio:16/9; }
@@ -76,7 +74,6 @@ img{ max-width:100%; height:auto; }
 .tea-img--sm{ max-height:320px; object-fit:cover; }
 .img-center{ margin-inline:auto; }
 
-/* Transitions (réduction si demandée) */
 *{ transition: color .2s ease, background-color .2s ease, border-color .2s ease, box-shadow .2s ease, transform .2s ease; }
 :root.reduce-motion *{ transition:none !important; }
 
@@ -91,7 +88,7 @@ img{ max-width:100%; height:auto; }
 }
 .section-fw{ width:100%; }
 
-/* ---------- Header (mobile-first) ---------- */
+/* ---------- Header ---------- */
 .site-header{
     background:var(--c-blanccasse);
     border-bottom:1px solid rgba(0,0,0,.08);
@@ -111,7 +108,6 @@ img{ max-width:100%; height:auto; }
 .brand-logo{ height:40px; width:auto; display:block; }
 .brand-text{ line-height:1; }
 
-/* Nav (mobile fermé par défaut) */
 .nav-toggle{
     display:flex; flex-direction:column; justify-content:space-around;
     width:32px; height:26px; background:transparent; border:none; cursor:pointer; padding:0;
@@ -232,13 +228,8 @@ i.bi, span.bi { font-style: normal; display: inline-block; }
     justify-items:start;
     text-align:left !important;
 }
-.actions__btn{ line-height:1; }
-.actions__icon{ font-size:1.1rem; line-height:1; }
-.actions__label{ position:absolute; left:-9999px; width:1px; height:1px; overflow:hidden; }
 .actions .btn{
-    width:2.25rem;
-    height:2.25rem;
-    padding:.35rem;
+    width:2.25rem; height:2.25rem; padding:.35rem;
     display:inline-flex; align-items:center; justify-content:center;
     border-radius:.5rem;
 }
@@ -249,19 +240,14 @@ i.bi, span.bi { font-style: normal; display: inline-block; }
     .btn{ padding:.5rem .7rem; min-height:40px; }
     .actions{ row-gap:.35rem; }
     .actions .btn{ width:2rem; height:2rem; padding:.3rem; }
-    .actions__icon{ font-size:1rem; }
     .table{ font-size:.9rem; }
     .table th,.table td{ padding:.45rem .5rem; }
 }
-
-/* ---------- Breakpoints (mobile-first) ---------- */
 @media (min-width:576px){ .btn{ width:auto; } }
 @media (min-width:768px){
     .content-grid{ grid-template-columns:2fr 1fr; }
     .footer-content{ flex-direction:row; justify-content:space-between; align-items:center; }
-    .actions{ display:flex; gap:.5rem; justify-content:flex-end; align-items:center; flex-wrap:nowrap; }
-    .actions .btn{ width:auto; height:auto; padding:.375rem .75rem; }
-    .actions__label{ position:static; width:auto; height:auto; overflow:visible; margin-left:.35rem; }
+    .actions{ display:flex; gap:.5rem; justify-content:flex-end; align-items:center; }
 }
 @media (min-width:992px){
     .brand-logo{ height:56px; }
@@ -277,123 +263,24 @@ i.bi, span.bi { font-style: normal; display: inline-block; }
 @media (min-width:1200px){ .card-body{ padding:1.25rem; } }
 
 /* =========================
-   HOME — SLIDER (prefix hf-)
-   Carrousel horizontal + barre de progression
+   HOME — SLIDER (hf-)
    ========================= */
 .hf-slider{ position:relative; }
-.hf-slider{ --hf-gap:16px; }
-/* =========================
-   HOME — SPOTLIGHT (articles + commentaires + plantes + recherche)
-   ========================= */
-.home-spotlight{
-    display:grid;
-    gap:24px;
-    grid-template-columns: 1fr 1.35fr; /* gauche plus étroite */
-    align-items:start;
-    margin-top: 1rem;
-}
-@media (max-width: 991.98px){
-    .home-spotlight{ grid-template-columns: 1fr; }
-}
-
-.home-spotlight__h3{
-    font-size: clamp(1.05rem, 2.5vw, 1.15rem);
-    font-weight: 600;
-    margin: 0 0 .5rem 0;
-}
-
-/* Liste des articles */
-.home-articles{
-    list-style: none;
-    padding: 0;
-    margin: 0 0 1rem 0;
-}
-.home-articles li{ margin-bottom: .4rem; }
-.home-article-link{
-    text-decoration: none;
-    color: var(--c-texte);
-}
-.home-article-link:hover{ color: var(--c-vert-dark); text-decoration: underline; }
-
-/* Dernier commentaire (capsule) */
-.home-comment{
-    display:block;
-    background: rgba(92,154,116,.12);
-    border: 1px solid rgba(0,0,0,.06);
-    border-radius: .75rem;
-    padding: .75rem .9rem;
-    color: inherit;
-    text-decoration: none;
-}
-.home-comment:hover{ background: rgba(92,154,116,.16); }
-
-/* Plantes (2 cartes) */
-.home-plants-grid{
-    display:grid;
-    gap:16px;
-    grid-template-columns: repeat(2, 1fr);
-}
-@media (max-width: 480px){
-    .home-plants-grid{ grid-template-columns: 1fr 1fr; }
-}
-.home-plant{
-    display:block;
-    text-decoration:none;
-    color:inherit;
-    background: var(--c-blanccasse);
-    border: 1px solid rgba(0,0,0,.06);
-    border-radius: .9rem;
-    box-shadow: var(--shadow);
-    overflow: hidden;
-}
-.home-plant__name{
-    text-align:center;
-    font-weight: 600;
-    padding: .5rem .25rem .75rem;
-}
-
-/* Recherche "plante médicinale" */
-.home-plant-search{
-    margin-top: 16px;
-    background: #e9f5ee;
-    border: 1px solid rgba(0,0,0,.06);
-    border-radius: .9rem;
-    padding: .9rem;
-}
-.home-plant-search__title{
-    font-weight: 600;
-    margin-bottom: .5rem;
-}
-.home-plant-search__group{
-    display:flex;
-    gap: 8px;
-    align-items: stretch;
-}
-.home-plant-search__input{
-    flex: 1 1 auto;
-    border: 1px solid rgba(0,0,0,.15);
-    border-radius: .5rem;
-    padding: .55rem .75rem;
-    background: #fff;
-}
-.home-plant-search__btn{
-    border: 1px solid rgba(0,0,0,.15);
-    border-radius: .5rem;
-    padding: .55rem .75rem;
-    background: var(--c-blanccasse);
-    cursor: pointer;
-}
-.home-plant-search__btn:hover{ background:#fff; }
-
 
 /* viewport défilant */
 .hf-viewport{
     overflow-x:auto; overflow-y:hidden;
-    scroll-snap-type:x mandatory;
+    scroll-snap-type:x proximity;            /* + souple que mandatory */
     -webkit-overflow-scrolling:touch;
-    padding-bottom:.25rem;
+    touch-action: pan-y;
     max-width:100%;
+    padding-bottom:0;
+    scrollbar-width:none;                    /* Firefox: cache la scrollbar */
+    -ms-overflow-style:none;                 /* IE/Edge legacy */
+    position:relative;
 }
+.hf-viewport::-webkit-scrollbar{ height:0; } /* WebKit: cache la scrollbar */
+.hf-viewport::after{ content:none !important; }
 
 /* piste en colonnes (1/2/3 cartes) */
 .hf-track{
@@ -401,7 +288,7 @@ i.bi, span.bi { font-style: normal; display: inline-block; }
     grid-auto-flow:column;
     gap:var(--hf-gap);
     grid-auto-columns:85%;
-    padding-inline:2px; /* évite le "collage" au bord gauche */
+    padding-inline:2px; /* évite collage bord gauche */
 }
 @media (min-width:576px){
     .hf-track{ grid-auto-columns:calc((100% - var(--hf-gap))/2); }
@@ -410,7 +297,7 @@ i.bi, span.bi { font-style: normal; display: inline-block; }
     .hf-track{ grid-auto-columns:calc((100% - 2*var(--hf-gap))/3); }
 }
 
-/* snap propre sur la dernière carte pour éviter le vide à droite */
+/* snap propre */
 .hf-track > .hf-card:last-child{
     scroll-snap-align:end;
     scroll-snap-stop:always;
@@ -432,44 +319,99 @@ i.bi, span.bi { font-style: normal; display: inline-block; }
 
 /* tag, media, texte */
 .hf-tag{
-    position:absolute;
-    top:.5rem;
-    left:.5rem;
-    margin:0;
-    z-index:2;
+    position:absolute; top:.5rem; left:.5rem; z-index:2;
     background:rgba(92,154,116,.95);
     color:#fff; font-weight:600;
     padding:.25rem .6rem; border-radius:.5rem; font-size:.9rem;
-    pointer-events:none;          /* clics passent à la carte */
+    pointer-events:none;
 }
 .hf-media{ border-bottom:1px solid rgba(0,0,0,.06); }
 .hf-body{ padding:.9rem .9rem 1rem; }
 .hf-title{ font-size:1rem; margin:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 
-/* flèches */
+/* flèches — toujours visibles, mieux positionnées */
 .hf-nav{
-    position:absolute; top:40%; transform:translateY(-50%);
+    position:absolute; top:50%; transform:translateY(-50%);
     background:#fff; border:1px solid rgba(0,0,0,.1);
     width:40px; height:40px; border-radius:50%; box-shadow:var(--shadow);
     display:flex; align-items:center; justify-content:center; font-size:1.25rem;
-    z-index:3;
+    z-index:20; cursor:pointer; user-select:none;
 }
-.hf-prev{ left:-6px; }
-.hf-next{ right:-6px; }
-@media (max-width:575.98px){ .hf-nav{ display:none; } }
+.hf-prev{ left:8px; }   /* au lieu de -6px */
+.hf-next{ right:8px; }  /* au lieu de -6px */
+@media (max-width:575.98px){
+    .hf-nav{ width:34px; height:34px; font-size:1rem; }
+}
 
-/* barre de progression */
-.hf-progress{
-    height:4px; background:rgba(0,0,0,.08);
-    border-radius:4px; margin-top:.5rem; overflow:hidden;
+/* =========================
+   HOME — SPOTLIGHT (articles + plantes)
+   ========================= */
+.home-spotlight{
+    display:grid; gap:24px; grid-template-columns: 1fr 1.35fr; align-items:start; margin-top: 1rem;
 }
-.hf-progress-bar{
-    height:100%; width:0%; background:var(--c-vert);
+@media (max-width: 991.98px){ .home-spotlight{ grid-template-columns: 1fr; } }
+
+.home-spotlight__h3{
+    font-size: clamp(1.05rem, 2.5vw, 1.15rem);
+    font-weight: 600; margin: 0 0 .5rem 0;
 }
+
+/* Liste des articles */
+.home-articles{ list-style: none; padding: 0; margin: 0 0 1rem 0; }
+.home-articles li{ margin-bottom: .4rem; }
+.home-article-link{ text-decoration: none; color: var(--c-texte); }
+.home-article-link:hover{ color: var(--c-vert-dark); text-decoration: underline; }
+
+/* Dernier commentaire */
+.home-comment{
+    display:block; background: rgba(92,154,116,.12);
+    border: 1px solid rgba(0,0,0,.06); border-radius: .75rem;
+    padding: .75rem .9rem; color: inherit; text-decoration: none;
+}
+.home-comment:hover{ background: rgba(92,154,116,.16); }
+
+/* Plantes (2 cartes) */
+.home-plants-grid{ display:grid; gap:16px; grid-template-columns: repeat(2, 1fr); }
+@media (max-width: 480px){ .home-plants-grid{ grid-template-columns: 1fr 1fr; } }
+.home-plant{
+    display:block; text-decoration:none; color:inherit;
+    background: var(--c-blanccasse);
+    border: 1px solid rgba(0,0,0,.06);
+    border-radius: .9rem; box-shadow: var(--shadow); overflow: hidden;
+}
+.home-plant__name{ text-align:center; font-weight: 600; padding: .5rem .25rem .75rem; }
+
+/* Recherche */
+.home-plant-search{
+    margin-top: 16px; background: #e9f5ee;
+    border: 1px solid rgba(0,0,0,.06);
+    border-radius: .9rem; padding: .9rem;
+}
+.home-plant-search__title{ font-weight: 600; margin-bottom: .5rem; }
+.home-plant-search__group{ display:flex; gap: 8px; align-items: stretch; }
+.home-plant-search__input{
+    flex: 1 1 auto; border: 1px solid rgba(0,0,0,.15);
+    border-radius: .5rem; padding: .55rem .75rem; background: #fff;
+}
+.home-plant-search__btn{
+    border: 1px solid rgba(0,0,0,.15);
+    border-radius: .5rem; padding: .55rem .75rem; background: var(--c-blanccasse);
+    cursor: pointer;
+}
+.home-plant-search__btn:hover{ background:#fff; }
+
+/* Zone interactive plantes */
+#home-plants-zone{ position:relative; }
+#home-plants-zone:focus-visible{ outline:3px solid var(--c-vert); outline-offset:3px; }
 
 /* motion */
 @media (prefers-reduced-motion: reduce){
     .hf-viewport{ scroll-behavior:auto; }
 }
 .hf-viewport { scroll-snap-stop: always; }
+
+.rating-stars{ display:inline-flex; align-items:center; gap:.25rem; font-size:1.5rem; }
+.rating-stars .star-btn{ background:transparent; border:none; padding:.25rem; line-height:1; cursor:pointer; }
+.rating-stars .star-btn.is-active{ color:#f1c40f; }
+.rating-stars .star-btn:focus-visible{ outline:2px solid var(--c-vert-dark); border-radius:.25rem; }
 
