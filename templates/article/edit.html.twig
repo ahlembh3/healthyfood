@@ -9,7 +9,8 @@
     {{ include('article/_form.html.twig', {
         button_label: 'Modifier',
         form_title: 'Modifier l’article',
-        article: article
+        article: article,
+        form_action: path('article_edit', {id: article.id})
     }) }}
 
     {% set backHref = is_granted('ROLE_ADMIN')

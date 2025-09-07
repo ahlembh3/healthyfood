@@ -16,7 +16,6 @@ class ArticleRepository extends ServiceEntityRepository
 
     /**
      * Derniers articles validés (pour mise en avant).
-     *
      * @return Article[]
      */
     public function findLatestValidated(int $limit = 2): array
@@ -50,8 +49,7 @@ class ArticleRepository extends ServiceEntityRepository
     /**
      * Recherche approximative tolérante aux fautes :
      * - Préfiltre SQL (LIKE sur tokens)
-     * - Reclassement côté PHP (similar_text + levenshtein)
-     *
+     *  - Reclassement côté PHP (similar_text + levenshtein)
      * @return Article[] Reclassés par pertinence puis date desc.
      */
     public function fuzzySearchValidated(
@@ -79,7 +77,9 @@ class ArticleRepository extends ServiceEntityRepository
                 $orX->add($qb->expr()->like('LOWER(a.contenu)', $param));
                 $qb->setParameter(substr($param, 1), '%'.$tok.'%');
             }
-            if ($orX->count() > 0) {
+
+            // ✅ Correction: on teste le nombre de parties de l'expression
+            if (count($orX->getParts()) > 0) {
                 $qb->andWhere($orX);
             }
         }
@@ -95,7 +95,7 @@ class ArticleRepository extends ServiceEntityRepository
         foreach ($candidats as $a) {
             $titleNorm   = $this->normalizeForSearch((string) $a->getTitre());
             $contentNorm = $this->normalizeForSearch(strip_tags((string) ($a->getContenu() ?? '')));
-            $contentNorm = mb_substr($contentNorm, 0, 800); // éviter des comparaisons trop lourdes
+            $contentNorm = mb_substr($contentNorm, 0, 800);
 
             $scoreTitle   = $this->similarityPercent($normalized, $titleNorm);
             $scoreContent = $this->similarityPercent($normalized, $contentNorm);
@@ -104,6 +104,7 @@ class ArticleRepository extends ServiceEntityRepository
             // Bonus si un token est présent ou proche
             foreach ($tokens as $tok) {
                 if ($tok === '') continue;
+
                 if (str_contains($titleNorm, $tok) || str_contains($contentNorm, $tok)) {
                     $score += 10;
                 } elseif (mb_strlen($tok) >= 4) {
@@ -127,7 +128,7 @@ class ArticleRepository extends ServiceEntityRepository
             if ($cmp !== 0) return $cmp;
             $dx = $x[0]->getDate();
             $dy = $y[0]->getDate();
-            return $dy <=> $dx; // date desc
+            return $dy <=> $dx;     // date desc
         });
 
         return array_map(static fn($row) => $row[0], $scored);
@@ -135,7 +136,6 @@ class ArticleRepository extends ServiceEntityRepository
 
     /**
      * Catégories disponibles (dynamiques) pour la liste publique.
-     *
      * @return string[]
      */
     public function getAvailableCategories(): array
@@ -153,7 +153,6 @@ class ArticleRepository extends ServiceEntityRepository
 
     // ----------------- Helpers privés -----------------
 
-    /** Normalise un texte pour la recherche. */
     private function normalizeForSearch(string $s): string
     {
         $s = trim($s);
@@ -161,17 +160,11 @@ class ArticleRepository extends ServiceEntityRepository
 
         if (class_exists(\Transliterator::class)) {
             $tr = \Transliterator::create('Any-Latin; Latin-ASCII; Lower()');
-            if ($tr) {
-                $s = $tr->transliterate($s);
-            } else {
-                $s = mb_strtolower($s, 'UTF-8');
-            }
+            $s  = $tr ? $tr->transliterate($s) : mb_strtolower($s, 'UTF-8');
         } else {
             $s = mb_strtolower($s, 'UTF-8');
             $conv = @iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $s);
-            if ($conv !== false) {
-                $s = $conv;
-            }
+            if ($conv !== false) $s = $conv;
         }
 
         $s = preg_replace('/[^a-z0-9\s]+/u', ' ', $s) ?? $s;
@@ -179,7 +172,6 @@ class ArticleRepository extends ServiceEntityRepository
         return trim($s);
     }
 
-    /** Pourcentage de similarité (0..100) via similar_text. */
     private function similarityPercent(string $a, string $b): float
     {
         if ($a === '' || $b === '') return 0.0;
@@ -187,7 +179,6 @@ class ArticleRepository extends ServiceEntityRepository
         return (float) $percent;
     }
 
-    /** Mot du corpus le plus proche (distance de Levenshtein minimale). */
     private function closestWord(string $haystack, string $needle): string
     {
         $bestWord = '';

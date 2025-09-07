@@ -24,7 +24,7 @@ class PlanteController extends AbstractController
         $page = $request->query->getInt('page', 1);
 
         if ($q !== '') {
-            // Recherche floue (renvoie un array) -> paginator sait paginer un array
+            // Recherche floue (array) -> KNP sait paginer un array
             $results = $planteRepository->fuzzySearch(
                 $q,
                 limitCandidates: 400,
@@ -37,7 +37,7 @@ class PlanteController extends AbstractController
                 6
             );
         } else {
-            // Liste “classique” paginable via Query
+            // Liste « classique » paginée en SQL
             $pagination = $paginator->paginate(
                 $planteRepository->queryAll(),
                 $page,
@@ -60,12 +60,12 @@ class PlanteController extends AbstractController
             ->getQuery()
             ->getResult();
 
-        // On travaille par ID (plus fiable que comparer des objets/proxies)
+        // Calcul basé sur les IDs pour éviter les soucis de proxy
         $ids = array_map(static fn(Plante $p) => $p->getId(), $allPlantes);
         $currentIndex = array_search($plante->getId(), $ids, true);
 
         $previousPlante = null;
-        $nextPlante = null;
+        $nextPlante     = null;
 
         if ($currentIndex !== false) {
             if ($currentIndex > 0) {
@@ -77,16 +77,16 @@ class PlanteController extends AbstractController
         }
 
         return $this->render('plante/show.html.twig', [
-            'plante'          => $plante,
-            'previousPlante'  => $previousPlante,
-            'nextPlante'      => $nextPlante,
+            'plante'         => $plante,
+            'previousPlante' => $previousPlante,
+            'nextPlante'     => $nextPlante,
         ]);
     }
 
     #[Route('/recherche', name: 'plante_search', methods: ['GET'])]
     public function search(Request $request): Response
     {
-        // Canonicalise vers l’index avec le paramètre q
+        // Canonicaliser vers l’index avec le paramètre q
         $q = $request->query->get('q', '');
         return $this->redirectToRoute('plante_index', ['q' => $q]);
     }

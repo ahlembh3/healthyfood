@@ -1,27 +1,41 @@
 {# templates/commentaire/index.html.twig #}
 {% extends 'base.html.twig' %}
 
-{% block title %}Liste des commentaires{% endblock %}
-{% block page_title %}Tous les commentaires{% endblock %}
+{% block title %}Gestion des commentaires - Admin{% endblock %}
+{% block page_title %}Gestion des commentaires{% endblock %}
 
 {% block content %}
-    {# Filtres admin #}
-    {% if is_granted('ROLE_ADMIN') %}
-        {% set onlySignaled = app.request.query.get('signale') %}
-        <div class="btn-group mb-4" role="group" aria-label="Filtres commentaires">
-            <a href="{{ path('commentaire_index') }}"
-               class="btn btn-outline-primary {{ not onlySignaled ? 'active' : '' }}"
-                    {{ not onlySignaled ? 'aria-pressed=true aria-current=page' : '' }}>
-                Tous
-            </a>
-
-            <a href="{{ path('commentaire_index', {'signale': 1}) }}"
-               class="btn btn-outline-danger {{ onlySignaled ? 'active' : '' }}"
-                    {{ onlySignaled ? 'aria-pressed=true aria-current=page' : '' }}>
-                Signalés uniquement
-            </a>
+    {# En-tête : icône + titre + compteur + filtres à droite #}
+    {% set onlySignaled = app.request.query.get('signale') %}
+    <section class="mb-4 d-flex flex-column flex-sm-row align-items-sm-center gap-3">
+        <div class="d-flex align-items-center gap-3">
+            <i class="bi bi-chat-square-text fs-3 text-success" aria-hidden="true"></i>
+            <div>
+                <h2 class="h5 mb-1">Tous les commentaires</h2>
+                <p class="text-muted mb-0">
+                    {{ commentaires|length }} {{ commentaires|length == 1 ? 'résultat' : 'résultats' }}
+                </p>
+            </div>
         </div>
-    {% endif %}
+
+        {% if is_granted('ROLE_ADMIN') %}
+            <div class="ms-sm-auto">
+                <div class="btn-group" role="group" aria-label="Filtres commentaires">
+                    <a href="{{ path('commentaire_index') }}"
+                       class="btn btn-outline-primary {{ not onlySignaled ? 'active' : '' }}"
+                            {{ not onlySignaled ? 'aria-pressed=true aria-current=page' : '' }}>
+                        Tous
+                    </a>
+
+                    <a href="{{ path('commentaire_index', {'signale': 1}) }}"
+                       class="btn btn-outline-danger {{ onlySignaled ? 'active' : '' }}"
+                            {{ onlySignaled ? 'aria-pressed=true aria-current=page' : '' }}>
+                        Signalés uniquement
+                    </a>
+                </div>
+            </div>
+        {% endif %}
+    </section>
 
     {% if commentaires is empty %}
         <div class="alert alert-info">Aucun commentaire trouvé.</div>
@@ -30,7 +44,7 @@
             {% for commentaire in commentaires %}
                 {% set isSignaled = commentaire.signaler|default(false) %}
                 <article class="list-group-item mb-3 border rounded p-3 shadow-sm {{ isSignaled ? 'border-danger bg-light' : '' }}">
-                    <header class="d-flex justify-content-between align-items-start">
+                    <header class="d-flex justify-content-between align-items-start gap-3">
                         <div>
                             <h3 class="h6 mb-1">
                                 {{ commentaire.utilisateur ? commentaire.utilisateur.email : 'Compte supprimé' }}
@@ -39,12 +53,16 @@
                                 {{ commentaire.date ? commentaire.date|date('d/m/Y H:i') : '' }}
                             </small>
                         </div>
-                        <span class="badge bg-{{ isSignaled ? 'danger' : 'success' }}">
-              {{ isSignaled ? 'Signalé' : 'Valide' }}
+                        <span class="badge {{ isSignaled ? 'text-bg-danger' : 'text-bg-success' }}">
+              {% if isSignaled %}
+                  <i class="bi bi-flag-fill me-1" aria-hidden="true"></i> Signalé
+              {% else %}
+                  <i class="bi bi-check2 me-1" aria-hidden="true"></i> Valide
+              {% endif %}
             </span>
                     </header>
 
-                    <p class="mt-2 mb-1">{{ commentaire.contenu }}</p>
+                    <p class="mt-2 mb-1 text-break">{{ commentaire.contenu }}</p>
                     <p class="mb-2">
                         <strong>Note :</strong> {{ commentaire.note is not null ? commentaire.note : 'Non notée' }}
                     </p>
@@ -52,15 +70,16 @@
                     <div class="d-flex gap-2">
                         <a href="{{ path('commentaire_show', { id: commentaire.id }) }}"
                            class="btn btn-sm btn-outline-primary">
-                            Voir
+                            <i class="bi bi-eye me-1" aria-hidden="true"></i> Voir
                         </a>
-                        {# Exemple : si tu as une route pour désignaler #}
-                        {# {% if is_granted('ROLE_ADMIN') and isSignaled %}
+                        {# Exemple : bouton désignaler si une route existe
+            {% if is_granted('ROLE_ADMIN') and isSignaled %}
               <a href="{{ path('commentaires_designaler', { id: commentaire.id }) }}"
                  class="btn btn-sm btn-outline-secondary">
-                Désignaler
+                <i class="bi bi-flag me-1"></i> Désignaler
               </a>
-            {% endif %} #}
+            {% endif %}
+                        #}
                     </div>
                 </article>
             {% endfor %}

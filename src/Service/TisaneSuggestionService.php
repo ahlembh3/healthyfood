@@ -65,6 +65,13 @@ class TisaneSuggestionService
         }
 
         // 4) Classement des tisanes
-        return $this->tisaneRepo->findSuggestions($bienfaitIds, $ingredientIds, $types, $limit, $wB, $wA);
+        return $this->tisaneRepo->findSuggestions(
+            bienfaitIds:   $bienfaitIds,
+            ingredientIds: $ingredientIds,
+            types:         $types,
+            limit:         $limit,
+            wB:            $wB,
+            wA:            $wA
+        );
     }
 }

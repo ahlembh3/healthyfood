@@ -50,21 +50,25 @@ final class UtilisateurController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $plain = $form->get('password')->getData();
+            $plain = (string) $form->get('password')->getData();
             $utilisateur->setPassword($this->passwordHasher->hashPassword($utilisateur, $plain));
 
             $this->em->persist($utilisateur);
             $this->em->flush();
 
             $this->addFlash('success', 'Utilisateur créé.');
-            return $this->redirectToRoute('utilisateurs_liste');
+            return $this->redirectToRoute('utilisateurs_liste'); // ✅ redirect en succès
         }
+
+        // ✅ 422 si soumis mais invalide (nécessaire avec Turbo)
+        $status = ($form->isSubmitted() && !$form->isValid()) ? 422 : 200;
 
         return $this->render('utilisateur/new.html.twig', [
             'utilisateur' => $utilisateur,
             'form' => $form,
-        ]);
+        ], new Response('', $status));
     }
+
 
     #[Route('/{id<\d+>}', name: 'afficher', methods: ['GET'])]
     #[IsGranted('ROLE_ADMIN')]
@@ -84,16 +88,18 @@ final class UtilisateurController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $this->em->flush();
-
             $this->addFlash('success', 'Utilisateur modifié.');
-            return $this->redirectToRoute('utilisateurs_liste');
+            return $this->redirectToRoute('utilisateurs_liste'); // ✅ redirect en succès
         }
+
+        $status = ($form->isSubmitted() && !$form->isValid()) ? 422 : 200;
 
         return $this->render('utilisateur/edit.html.twig', [
             'utilisateur' => $utilisateur,
             'form' => $form,
-        ]);
+        ], new Response('', $status));
     }
+
 
     #[Route('/{id<\d+>}', name: 'supprimer', methods: ['POST'])]
     #[IsGranted('ROLE_ADMIN')]
@@ -156,14 +162,16 @@ final class UtilisateurController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $this->em->flush();
-
             $this->addFlash('success', 'Votre profil a bien été mis à jour.');
-            return $this->redirectToRoute('utilisateurs_mon_profil');
+            return $this->redirectToRoute('utilisateurs_mon_profil'); // ✅ redirect en succès
         }
+
+        $status = ($form->isSubmitted() && !$form->isValid()) ? 422 : 200;
 
         return $this->render('utilisateur/edit.html.twig', [
             'utilisateur' => $utilisateur,
             'form' => $form,
-        ]);
+        ], new Response('', $status));
     }
+
 }

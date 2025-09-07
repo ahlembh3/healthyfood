@@ -18,37 +18,18 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\String\Slugger\SluggerInterface;
 use Symfony\Component\HtmlSanitizer\HtmlSanitizerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
-use Twig\Markup;
 
 #[Route('/articles')]
 class ArticleController extends AbstractController
 {
-    /**
-     * Point d’entrée “articles” :
-     * - visiteur (non connecté)  -> liste publique
-     * - connecté non-admin       -> mes articles
-     * - admin                    -> gestion admin
-     */
     #[Route('', name: 'article_index', methods: ['GET'])]
     public function home(Request $request): Response
     {
-        //$user = $this->getUser();
-
-       // if (!$user) {
-            // préserve ?q=...&categorie=...
-            return $this->redirectToRoute('article_liste', $request->query->all());
-        //}
-
-        //if ($this->isGranted('ROLE_ADMIN')) {
-          //  return $this->redirectToRoute('article_liste_admin');
-       // }
-
-        //return $this->redirectToRoute('article_mes_articles');
+        // Redirige sur la liste en préservant les paramètres
+        return $this->redirectToRoute('article_liste', $request->query->all());
     }
 
-    // --- Liste publique (recherche + filtre + pagination) ---
-    // src/Controller/ArticleController.php
-
+    // Liste publique (recherche + filtre + pagination)
     #[Route('/liste', name: 'article_liste', methods: ['GET'])]
     public function index(
         Request $request,
@@ -60,7 +41,6 @@ class ArticleController extends AbstractController
         $page      = max(1, (int) $request->query->get('page', 1));
 
         if ($search !== '') {
-            // liste PHP déjà reclassée → on pagine un tableau
             $articlesArr = $articleRepository->fuzzySearchValidated(
                 $search,
                 $categorie,
@@ -69,7 +49,6 @@ class ArticleController extends AbstractController
             );
             $articles = $paginator->paginate($articlesArr, $page, 6);
         } else {
-            // pagination SQL efficace
             $articles = $paginator->paginate(
                 $articleRepository->queryValidated($categorie),
                 $page,
@@ -79,7 +58,7 @@ class ArticleController extends AbstractController
 
         $categoriesDisponibles = $articleRepository->getAvailableCategories();
 
-        // mémorise l’URL de retour
+        // Mémoriser l’URL de retour
         $returnUrl = $this->generateUrl('article_liste', [
             'q'         => $search,
             'categorie' => $categorie,
@@ -95,14 +74,11 @@ class ArticleController extends AbstractController
         ]);
     }
 
-
-    // --- Liste admin (gestion) ---
     #[Route('/admin/liste', name: 'article_liste_admin', methods: ['GET'])]
     public function listeAdmin(ArticleRepository $articleRepository, Request $request): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
-        // mémoriser l’URL de retour pour l’admin
         $request->getSession()->set('article_return_url', $this->generateUrl('article_liste_admin'));
 
         return $this->render('article/index.html.twig', [
@@ -110,7 +86,6 @@ class ArticleController extends AbstractController
         ]);
     }
 
-    // --- Mes articles (utilisateur connecté) ---
     #[Route('/mes-articles', name: 'article_mes_articles', methods: ['GET'])]
     public function mesArticles(ArticleRepository $articleRepository, Request $request): Response
     {
@@ -120,8 +95,6 @@ class ArticleController extends AbstractController
         }
 
         $articles = $articleRepository->findBy(['utilisateur' => $user], ['date' => 'DESC']);
-
-        // mémoriser l’URL de retour perso
         $request->getSession()->set('article_return_url', $this->generateUrl('article_mes_articles'));
 
         return $this->render('article/mes_articles.html.twig', [
@@ -129,7 +102,6 @@ class ArticleController extends AbstractController
         ]);
     }
 
-    // --- Création ---
     #[Route('/new', name: 'article_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $em, SluggerInterface $slugger): Response
     {
@@ -140,10 +112,11 @@ class ArticleController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            // date & auteur : aussi sécurisés par PrePersist/NotNull
             $article->setDate(new \DateTimeImmutable());
             $article->setUtilisateur($this->getUser());
 
-            // Si contenu brut -> transforme en HTML simple (baseline)
+            // Si contenu brut, on met un HTML minimal
             $contenu = $article->getContenu();
             if (strip_tags($contenu) === $contenu) {
                 $article->setContenu(nl2br($contenu));
@@ -171,12 +144,14 @@ class ArticleController extends AbstractController
             return $this->redirectToRoute($route);
         }
 
+        // ✅ IMPORTANT : 422 si soumis mais invalide (Turbo)
+        $status = ($form->isSubmitted() && !$form->isValid()) ? 422 : 200;
+
         return $this->render('article/new.html.twig', [
             'form' => $form->createView(),
-        ]);
+        ], new Response('', $status));
     }
 
-    // --- Affichage d’un article ---
     #[Route('/{id}', name: 'article_show', methods: ['GET', 'POST'])]
     public function show(
         Request $request,
@@ -185,15 +160,14 @@ class ArticleController extends AbstractController
         EntityManagerInterface $em,
         PaginatorInterface $paginator
     ): Response {
+        // Nettoyage du contenu
         $decoded = html_entity_decode($article->getContenu() ?? '', ENT_QUOTES | ENT_HTML5, 'UTF-8');
         $clean   = $sanitizer->sanitize($decoded);
         $contenu = new \Twig\Markup($clean, 'UTF-8');
 
-        // déterminer l’URL de retour
-        $from     = (string) $request->query->get('from', '');
-        $session  = $request->getSession();
-        $backUrl  = null;
-
+        // Back URL (selon contexte)
+        $from    = (string) $request->query->get('from', '');
+        $session = $request->getSession();
         if ($from === 'liste') {
             $backUrl = $session->get('article_return_url') ?: $this->generateUrl('article_liste');
         } elseif ($from === 'mes') {
@@ -205,7 +179,7 @@ class ArticleController extends AbstractController
             $backUrl = $session->get('article_return_url') ?? $this->generateUrl('article_liste');
         }
 
-        // Pagination commentaires (type = 2 pour Article)
+        // Commentaires (type = 2 pour Article)
         $query = $em->getRepository(Commentaire::class)->createQueryBuilder('c')
             ->where('c.article = :article')
             ->andWhere('c.type = 2')
@@ -219,7 +193,7 @@ class ArticleController extends AbstractController
             5
         );
 
-        // Formulaire commentaire si connecté
+        // Formulaire commentaire (si connecté)
         $formView = null;
         if ($this->getUser()) {
             $commentaire = new Commentaire();
@@ -246,7 +220,7 @@ class ArticleController extends AbstractController
             $formView = $form->createView();
         }
 
-        // droits d’édition/suppression
+        // Droits d’édition
         $canEdit = $this->isGranted('ROLE_ADMIN')
             || ($this->getUser() && $article->getUtilisateur() === $this->getUser() && !$article->isValidation());
 
@@ -256,20 +230,17 @@ class ArticleController extends AbstractController
             'formCommentaire' => $formView,
             'backUrl'         => $backUrl,
             'canEdit'         => $canEdit,
-            'contenu'  => $contenu,
+            'contenu'         => $contenu,
         ]);
     }
 
-    // --- Édition ---
     #[Route('/{id}/edit', name: 'article_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, Article $article, EntityManagerInterface $em, SluggerInterface $slugger): Response
     {
         $user = $this->getUser();
-
         if (!$user || (!$this->isGranted('ROLE_ADMIN') && $article->getUtilisateur() !== $user)) {
             throw $this->createAccessDeniedException("Vous n'avez pas le droit de modifier cet article.");
         }
-
         if (!$this->isGranted('ROLE_ADMIN') && $article->isValidation()) {
             throw $this->createAccessDeniedException("L’article a déjà été validé par l’administrateur.");
         }
@@ -302,14 +273,15 @@ class ArticleController extends AbstractController
             $route = $this->isGranted('ROLE_ADMIN') ? 'article_liste_admin' : 'article_mes_articles';
             return $this->redirectToRoute($route);
         }
+        // ✅ IMPORTANT : 422 si soumis mais invalide (Turbo)
+        $status = ($form->isSubmitted() && !$form->isValid()) ? 422 : 200;
 
         return $this->render('article/edit.html.twig', [
             'form'    => $form->createView(),
             'article' => $article,
-        ]);
+        ], new Response('', $status));
     }
 
-    // --- Suppression ---
     #[Route('/{id}/delete', name: 'article_delete', methods: ['POST'])]
     public function delete(Request $request, Article $article, EntityManagerInterface $em): Response
     {
@@ -331,7 +303,6 @@ class ArticleController extends AbstractController
         return $this->redirectToRoute($route);
     }
 
-    // --- Validation (admin) ---
     #[Route('/{id}/valider', name: 'article_valider', methods: ['POST'])]
     public function valider(Request $request, Article $article, EntityManagerInterface $em): Response
     {

@@ -7,11 +7,12 @@ use App\Form\TisaneType;
 use App\Repository\TisaneRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Form\FormError;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\String\Slugger\SluggerInterface;
-use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Bundle\SecurityBundle\Attribute\IsGranted;
 
 #[Route('/admin/tisanes')]
@@ -34,7 +35,7 @@ class AdminTisaneController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            // Gestion de l'upload d'image
+            // Upload image (facultatif)
             $imageFile = $form->get('imageFile')->getData();
             if ($imageFile) {
                 $mime = $imageFile->getMimeType();
@@ -42,35 +43,36 @@ class AdminTisaneController extends AbstractController
                 $ext  = $map[$mime] ?? $imageFile->guessExtension() ?? 'bin';
 
                 $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
-                $safeFilename = $slugger->slug($originalFilename);
-                $newFilename = $safeFilename.'-'.uniqid().'.'.$ext;
+                $safeFilename     = $slugger->slug($originalFilename);
+                $newFilename      = $safeFilename.'-'.uniqid().'.'.$ext;
 
                 try {
                     $imageFile->move($this->getParameter('tisanes_directory'), $newFilename);
                     $tisane->setImage($newFilename);
                 } catch (\Throwable $e) {
-                    // feedback clair dans le formulaire
-                    $form->get('imageFile')->addError(new \Symfony\Component\Form\FormError(
+                    $form->get('imageFile')->addError(new FormError(
                         "Impossible d'enregistrer l'image. Vérifiez les droits d'écriture du dossier."
                     ));
-                    // on n'interrompt pas : laisse l’utilisateur corriger
                 }
             }
 
+            if ($form->isValid()) {
+                $entityManager->persist($tisane);
+                $entityManager->flush();
 
-
-            $entityManager->persist($tisane);
-            $entityManager->flush();
-
-            $this->addFlash('success', 'Tisane créée avec succès');
-
-            return $this->redirectToRoute('admin_tisane_index', [], Response::HTTP_SEE_OTHER);
+                $this->addFlash('success', 'Tisane créée avec succès');
+                return $this->redirectToRoute('admin_tisane_index', [], Response::HTTP_SEE_OTHER);
+            }
+            // sinon, on retombe en-dessous pour renvoyer 422
         }
+
+        // ✅ 422 si soumis mais invalide (Turbo : reste sur la page et affiche les erreurs)
+        $status = ($form->isSubmitted() && !$form->isValid()) ? 422 : 200;
 
         return $this->render('admin_dashboard/tisane/new.html.twig', [
             'tisane' => $tisane,
-            'form' => $form,
-        ]);
+            'form'   => $form,
+        ])->setStatusCode($status);
     }
 
     #[Route('/{id}', name: 'admin_tisane_show', methods: ['GET'])]
@@ -88,14 +90,14 @@ class AdminTisaneController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            // Gestion de l'upload d'image
+            // Upload image (facultatif)
             $imageFile = $form->get('imageFile')->getData();
             if ($imageFile) {
                 // Supprimer l'ancienne image si elle existe
                 if ($tisane->getImage()) {
                     $oldImage = $this->getParameter('tisanes_directory').'/'.$tisane->getImage();
-                    if (file_exists($oldImage)) {
-                        unlink($oldImage);
+                    if (is_file($oldImage)) {
+                        @unlink($oldImage);
                     }
                 }
 
@@ -104,32 +106,34 @@ class AdminTisaneController extends AbstractController
                 $ext  = $map[$mime] ?? $imageFile->guessExtension() ?? 'bin';
 
                 $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
-                $safeFilename = $slugger->slug($originalFilename);
-                $newFilename = $safeFilename.'-'.uniqid().'.'.$ext;
+                $safeFilename     = $slugger->slug($originalFilename);
+                $newFilename      = $safeFilename.'-'.uniqid().'.'.$ext;
 
                 try {
                     $imageFile->move($this->getParameter('tisanes_directory'), $newFilename);
                     $tisane->setImage($newFilename);
                 } catch (\Throwable $e) {
-                    // feedback clair dans le formulaire
-                    $form->get('imageFile')->addError(new \Symfony\Component\Form\FormError(
+                    $form->get('imageFile')->addError(new FormError(
                         "Impossible d'enregistrer l'image. Vérifiez les droits d'écriture du dossier."
                     ));
-                    // on n'interrompt pas : laisse l’utilisateur corriger
                 }
             }
 
-            $entityManager->flush();
+            if ($form->isValid()) {
+                $entityManager->flush();
 
-            $this->addFlash('success', 'Tisane modifiée avec succès');
-
-            return $this->redirectToRoute('admin_tisane_index', [], Response::HTTP_SEE_OTHER);
+                $this->addFlash('success', 'Tisane modifiée avec succès');
+                return $this->redirectToRoute('admin_tisane_index', [], Response::HTTP_SEE_OTHER);
+            }
+            // sinon, on renvoie 422 plus bas
         }
+
+        $status = ($form->isSubmitted() && !$form->isValid()) ? 422 : 200;
 
         return $this->render('admin_dashboard/tisane/edit.html.twig', [
             'tisane' => $tisane,
-            'form' => $form,
-        ]);
+            'form'   => $form,
+        ])->setStatusCode($status);
     }
 
     #[Route('/{id}', name: 'admin_tisane_delete', methods: ['POST'])]
@@ -139,8 +143,8 @@ class AdminTisaneController extends AbstractController
             // Supprimer l'image associée
             if ($tisane->getImage()) {
                 $imagePath = $this->getParameter('tisanes_directory').'/'.$tisane->getImage();
-                if (file_exists($imagePath)) {
-                    unlink($imagePath);
+                if (is_file($imagePath)) {
+                    @unlink($imagePath);
                 }
             }
 

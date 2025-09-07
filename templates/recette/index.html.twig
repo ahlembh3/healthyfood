@@ -1,107 +1,131 @@
-{# templates/recette/index.html.twig (ou admin) #}
+{# templates/recette/index.html.twig #}
 {% extends 'base.html.twig' %}
 {% import 'admin_dashboard/_actions.html.twig' as A %}
 
-{% block title %}Liste des recettes{% endblock %}
-{% block page_title %}Liste des recettes{% endblock %}
+{% block title %}Gestion des Recettes - Admin{% endblock %}
+{% block page_title %}Gestion des Recettes{% endblock %}
 
 {% block content %}
-    <div class="table-responsive">
-        <table class="table table-hover align-middle">
-            <caption class="visually-hidden">
-                Tableau des recettes (ID, titre, validation, + colonnes supplémentaires selon la largeur d’écran) avec actions.
-            </caption>
+    <section class="page-head mb-4 d-flex flex-column flex-sm-row align-items-sm-center gap-3">
+        <div class="d-flex align-items-center gap-3">
+            <i class="bi bi-egg-fried fs-3 text-success" aria-hidden="true"></i>
+            <div>
+                <h2 class="h5 mb-1">Liste des recettes</h2>
+                <p class="text-muted mb-0">
+                    {{ recettes|length }} {{ recettes|length == 1 ? 'résultat' : 'résultats' }}
+                </p>
+            </div>
+        </div>
+        <div class="ms-sm-auto">
+            <a href="{{ path('recette_new') }}" class="btn btn-success">
+                <i class="bi bi-plus-lg me-1" aria-hidden="true"></i> Nouvelle recette
+            </a>
+        </div>
+    </section>
 
-            <thead class="table-light">
-            <tr>
-                {# Toujours visibles #}
-                <th scope="col" style="width:80px;">Id</th>
-                <th scope="col">Titre</th>
-                <th scope="col">Validation</th>
+    <div class="card border-0 shadow-sm">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle recettes-table">
+                    <caption class="visually-hidden">
+                        Tableau des recettes (ID, titre, validation, portions, difficulté, etc.) avec actions.
+                    </caption>
 
-                {# ≥ md #}
-                <th scope="col" class="d-none d-md-table-cell">Portions</th>
-                <th scope="col" class="d-none d-md-table-cell">Difficulté</th>
+                    <thead class="table-light">
+                    <tr>
+                        <th scope="col" style="width:80px;">#</th>
+                        <th scope="col">Titre</th>
+                        <th scope="col">Validation</th>
 
-                {# ≥ lg #}
-                <th scope="col" class="d-none d-lg-table-cell">Préparation</th>
-                <th scope="col" class="d-none d-lg-table-cell">Note</th>
+                        <th scope="col" class="d-none d-md-table-cell">Portions</th>
+                        <th scope="col" class="d-none d-md-table-cell">Difficulté</th>
 
-                {# ≥ xl (très larges écrans) #}
-                <th scope="col" class="d-none d-xl-table-cell">Description</th>
-                <th scope="col" class="d-none d-xl-table-cell">Instructions</th>
+                        <th scope="col" class="d-none d-lg-table-cell">Préparation</th>
+                        <th scope="col" class="d-none d-lg-table-cell">Note</th>
 
-                {# Actions toujours visibles ; colonne compacte pour éviter les demi-boutons #}
-                <th scope="col" class="text-end" style="width:1%; white-space:nowrap;">Actions</th>
-            </tr>
-            </thead>
+                        {# On garde 2 colonnes pour < XL, mais on fusionnera en desktop via CSS #}
+                        <th scope="col" class="d-none d-xl-table-cell">Description</th>
+                        <th scope="col" class="d-none d-xl-table-cell col-instr-th">Instructions</th>
 
-            <tbody>
-            {% for recette in recettes %}
-                <tr>
-                    {# Toujours visibles #}
-                    <th scope="row">{{ recette.id }}</th>
-                    <td class="text-break">{{ recette.titre }}</td>
+                        <th scope="col" class="text-end" style="width:1%; white-space:nowrap;">Actions</th>
+                    </tr>
+                    </thead>
 
-                    <td>
-                        {% if recette.validation %}
-                            <span class="badge text-bg-success">Validée</span>
-                        {% else %}
-                            <form
-                                    method="post"
-                                    action="{{ path('recette_valider', { id: recette.id }) }}"
-                                    class="d-inline"
-                                    onsubmit="if(confirm('Valider cette recette ?')){ this.querySelector('button[type=submit]').disabled = true; return true; } return false;"
-                            >
-                                <input type="hidden" name="_token" value="{{ csrf_token('valider' ~ recette.id) }}">
-                                <button class="btn btn-outline-primary btn-sm" aria-label="Valider la recette {{ recette.titre }}">Valider</button>
-                            </form>
-                        {% endif %}
-                    </td>
+                    <tbody>
+                    {% for recette in recettes %}
+                        <tr>
+                            <td class="text-muted">{{ recette.id }}</td>
 
-                    {# ≥ md #}
-                    <td class="d-none d-md-table-cell">{{ recette.portions }}</td>
-                    <td class="d-none d-md-table-cell">{{ recette.difficulte }}</td>
+                            {# Titre : pas de casse de mots en desktop (géré en CSS) #}
+                            <td class="truncate-title-xl">{{ recette.titre }}</td>
 
-                    {# ≥ lg #}
-                    <td class="d-none d-lg-table-cell">{{ recette.tempsPreparation }}&nbsp;min</td>
-                    <td class="d-none d-lg-table-cell">
-                        {% if moyennes[recette.id] is defined %}
-                            <span class="badge text-bg-secondary">{{ moyennes[recette.id] }}/5</span>
-                        {% else %}
-                            <span class="text-muted">Pas notée</span>
-                        {% endif %}
-                    </td>
+                            <td>
+                                {% if recette.validation %}
+                                    <span class="badge text-bg-success">Validée</span>
+                                {% else %}
+                                    <form method="post"
+                                          action="{{ path('recette_valider', { id: recette.id }) }}"
+                                          class="d-inline"
+                                          onsubmit="if(confirm('Valider cette recette ?')){ this.querySelector('button[type=submit]').disabled = true; return true; } return false;">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('valider' ~ recette.id) }}">
+                                        <button class="btn btn-outline-primary btn-sm"
+                                                aria-label="Valider la recette {{ recette.titre }}">Valider</button>
+                                    </form>
+                                {% endif %}
+                            </td>
 
-                    {# ≥ xl #}
-                    <td class="d-none d-xl-table-cell">{{ recette.description|u.truncate(60) }}</td>
-                    <td class="d-none d-xl-table-cell">{{ recette.instructions|u.truncate(60) }}</td>
+                            <td class="d-none d-md-table-cell">{{ recette.portions }}</td>
+                            <td class="d-none d-md-table-cell">{{ recette.difficulte }}</td>
 
-                    {# Actions (macro = icônes en mobile, boutons texte en desktop) #}
-                    <td class="text-end">
-                        {{ A.row(
-                            { href: path('recette_show', { id: recette.id, from: 'admin' }), label: 'Afficher' },
-                            { href: path('recette_edit', { id: recette.id }), label: 'Modifier' },
-                            {
-                                href:   path('recette_delete', { id: recette.id }),
-                                label:  'Supprimer',
-                                token:  csrf_token('delete' ~ recette.id),
-                                confirm:'Confirmer la suppression ?',
-                                disabled:false
-                            }
-                        ) }}
-                    </td>
-                </tr>
-            {% else %}
-                <tr>
-                    <td colspan="10" class="text-center text-muted py-4">Aucune recette trouvée.</td>
-                </tr>
-            {% endfor %}
-            </tbody>
-        </table>
+                            <td class="d-none d-lg-table-cell">{{ recette.tempsPreparation }}&nbsp;min</td>
+                            <td class="d-none d-lg-table-cell">
+                                {% if moyennes[recette.id] is defined %}
+                                    <span class="badge text-bg-secondary">{{ moyennes[recette.id] }}/5</span>
+                                {% else %}
+                                    <span class="text-muted">Pas notée</span>
+                                {% endif %}
+                            </td>
+
+                            {# === Description : on EMPILE aussi les instructions ici (visible en desktop) === #}
+                            <td class="d-none d-xl-table-cell col-desc">
+                                <div class="desc-instr">
+                                    <div class="line">
+                                        <span class="label">Description</span>
+                                        <div class="clamp-2">{{ recette.description }}</div>
+                                    </div>
+                                    <div class="line show-only-xl">
+                                        <span class="label">Instructions</span>
+                                        <div class="clamp-2">{{ recette.instructions }}</div>
+                                    </div>
+                                </div>
+                            </td>
+
+                            {# Colonne instructions classique (sera MASQUÉE en desktop via CSS) #}
+                            <td class="d-none d-xl-table-cell col-instr">
+                                {{ recette.instructions }}
+                            </td>
+
+                            <td class="text-end">
+                                {{ A.row(
+                                    { href: path('recette_show', { id: recette.id, from: 'admin' }), label: 'Voir' },
+                                    { href: path('recette_edit', { id: recette.id }), label: 'Modifier' },
+                                    {
+                                        href:   path('recette_delete', { id: recette.id }),
+                                        label:  'Supprimer',
+                                        token:  csrf_token('delete' ~ recette.id),
+                                        confirm:'Supprimer « ' ~ (recette.titre ?: 'cette recette') ~ ' » ?'
+                                    }
+                                ) }}
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="10" class="text-center text-muted py-4">Aucune recette trouvée.</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
-
-    <a href="{{ path('recette_new') }}" class="btn btn-primary mt-3">
-        Ajouter une nouvelle recette
-    </a>
 {% endblock %}

@@ -14,82 +14,79 @@ use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Validator\Constraints\File;
 
 class RecetteForm extends AbstractType
 {
-    private IngredientRepository $ingredientRepository;
-
-    // Injection du repository dans le constructeur
-    public function __construct(IngredientRepository $ingredientRepository)
+    public function __construct(private readonly IngredientRepository $ingredientRepository)
     {
-        $this->ingredientRepository = $ingredientRepository;
     }
 
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
             ->add('titre', TextType::class, [
-                'label' => 'Titre de la recette'
+                'label' => 'Titre de la recette',
             ])
             ->add('image', FileType::class, [
-                'label' => 'Image (fichier PNG, JPG, etc.)',
-                'mapped' => false,
+                'label'    => 'Image (fichier PNG, JPG, etc.)',
+                'mapped'   => false,
                 'required' => false,
                 'constraints' => [
-                    new \Symfony\Component\Validator\Constraints\File([
-                        'maxSize' => '2M',
-                        'mimeTypes' => ['image/jpeg', 'image/png', 'image/webp'],
-                        'mimeTypesMessage' => 'Veuillez télécharger une image valide (jpeg, png, webp).',
-                        'maxSizeMessage' => 'L\'image ne doit pas dépasser 2 Mo.',
+                    new File([
+                        'maxSize'           => '2M',
+                        'mimeTypes'         => ['image/jpeg', 'image/png', 'image/webp'],
+                        'mimeTypesMessage'  => 'Veuillez télécharger une image valide (jpeg, png, webp).',
+                        'maxSizeMessage'    => "L'image ne doit pas dépasser 2 Mo.",
                     ]),
                 ],
             ])
-
             ->add('description', TextareaType::class, [
-                'label' => 'Description',
+                'label'    => 'Description',
                 'required' => false,
-                'attr' => ['rows' => 4],
+                'attr'     => ['rows' => 4],
             ])
             ->add('tempsCuisson', IntegerType::class, [
-                'label' => 'Temps de cuisson (minutes)',
+                'label'    => 'Temps de cuisson (minutes)',
                 'required' => false,
-                'attr' => ['min' => 0],
+                'attr'     => ['min' => 0],
             ])
             ->add('recetteIngredients', CollectionType::class, [
-                'entry_type' => RecetteIngredientType::class,
+                'entry_type'    => RecetteIngredientType::class,
                 'entry_options' => [
                     'ingredient_repository' => $this->ingredientRepository,
                 ],
-                'allow_add' => true,
-                'allow_delete' => true,
-                'by_reference' => false,
-                'label' => false,
-                'prototype' => true, // Important pour le JavaScript
-                'prototype_name' => '__name__', // Important pour le JavaScript
+                'allow_add'       => true,
+                'allow_delete'     => true,
+                'by_reference'     => false,
+                'label'            => false,
+                'prototype'        => true,
+                'prototype_name'   => '__name__',
+                'error_bubbling'   => false, // pour voir les erreurs de collection
             ])
             ->add('instructions', TextareaType::class, [
                 'label' => 'Instructions',
-                'attr' => ['rows' => 6],
+                'attr'  => ['rows' => 6],
             ])
             ->add('tempsPreparation', IntegerType::class, [
-                'label' => 'Temps de préparation (minutes)',
+                'label'    => 'Temps de préparation (minutes)',
                 'required' => false,
-                'attr' => ['min' => 0],
+                'attr'     => ['min' => 0],
             ])
             ->add('difficulte', ChoiceType::class, [
-                'label' => 'Difficulté',
-                'choices' => [
-                    'Facile' => 'Facile',
-                    'Moyen' => 'Moyen',
+                'label'       => 'Difficulté',
+                'choices'     => [
+                    'Facile'    => 'Facile',
+                    'Moyen'     => 'Moyen',
                     'Difficile' => 'Difficile',
                 ],
                 'placeholder' => 'Sélectionnez une difficulté',
-                'required' => false,
+                'required'    => false,
             ])
             ->add('portions', IntegerType::class, [
-                'label' => 'Nombre de portions',
+                'label'    => 'Nombre de portions',
                 'required' => false,
-                'attr' => ['min' => 1],
+                'attr'     => ['min' => 1],
             ]);
     }
 

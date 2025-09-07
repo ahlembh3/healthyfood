@@ -7,7 +7,8 @@
 {% block content %}
     {% include 'article/_form.html.twig' with {
         button_label: form_button|default('Créer'),
-        form_title: form_title|default('Ajouter un article')
+        form_title: form_title|default('Ajouter un article'),
+        form_action: path('article_new')
     } %}
 
     <div class="mt-3">

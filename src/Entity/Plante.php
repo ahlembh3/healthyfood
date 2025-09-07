@@ -22,24 +22,28 @@ class Plante
     #[Assert\Length(max: 255, maxMessage: "Le nom commun ne doit pas dépasser {{ limit }} caractères.")]
     private ?string $nomCommun = null;
 
+    #[Assert\NotBlank(message: "Le nom scientifique est obligatoire.")]
     #[ORM\Column(length: 255)]
     private ?string $nomScientifique = null;
 
+    #[Assert\NotBlank(message: "La description est obligatoire.")]
     #[ORM\Column(type: Types::TEXT)]
     private ?string $description = null;
 
+    #[Assert\NotBlank(message: "La partie utilisée est obligatoire.")]
     #[ORM\Column(length: 255)]
     private ?string $partieUtilisee = null;
 
+    #[Assert\NotBlank(message: "Les précautions sont obligatoires.")]
     #[ORM\Column(type: Types::TEXT)]
     private ?string $precautions = null;
-
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
     #[Assert\File(
-    maxSize: '2M',
-    mimeTypes: ['image/jpeg', 'image/png', 'image/webp'],
-    mimeTypesMessage: "Veuillez fournir une image au format jpeg, png ou webp.",
-    maxSizeMessage: "L'image ne doit pas dépasser 2 Mo.")]
+        maxSize: '2M',
+        mimeTypes: ['image/jpeg', 'image/png', 'image/webp'],
+        mimeTypesMessage: "Veuillez fournir une image au format jpeg, png ou webp.",
+        maxSizeMessage: "L'image ne doit pas dépasser 2 Mo."
+    )]
     private ?string $image = null;
 
     #[ORM\ManyToMany(targetEntity: Bienfait::class, inversedBy: 'plantes')]
@@ -52,7 +56,12 @@ class Plante
     public function __construct()
     {
         $this->bienfaits = new ArrayCollection();
-        $this->tisanes = new ArrayCollection();
+        $this->tisanes   = new ArrayCollection();
+    }
+
+    public function __toString(): string
+    {
+        return (string) ($this->nomCommun ?? 'Plante');
     }
 
     public function getId(): ?int
@@ -114,11 +123,16 @@ class Plante
         $this->precautions = $precautions;
         return $this;
     }
-    
-    public function getImage(): ?string { return $this->image; }
-    public function setImage(?string $image): static {
-    $this->image = $image;
-    return $this;
+
+    public function getImage(): ?string
+    {
+        return $this->image;
+    }
+
+    public function setImage(?string $image): static
+    {
+        $this->image = $image;
+        return $this;
     }
 
     /** @return Collection<int, Bienfait> */
@@ -127,47 +141,43 @@ class Plante
         return $this->bienfaits;
     }
 
+    public function addBienfait(Bienfait $bienfait): static
+    {
+        if (!$this->bienfaits->contains($bienfait)) {
+            $this->bienfaits->add($bienfait);
+        }
+        return $this;
+    }
+
+    public function removeBienfait(Bienfait $bienfait): static
+    {
+        $this->bienfaits->removeElement($bienfait);
+        return $this;
+    }
+
     /** @return Collection<int, Tisane> */
     public function getTisanes(): Collection
     {
         return $this->tisanes;
     }
+
     public function addTisane(Tisane $tisane): static
     {
-    if (!$this->tisanes->contains($tisane)) {
-        $this->tisanes->add($tisane);
-        if (!$tisane->getPlantes()->contains($this)) {
-            $tisane->addPlante($this); // <--- synchronisation inverse
+        if (!$this->tisanes->contains($tisane)) {
+            $this->tisanes->add($tisane);
+            // synchronisation inverse en mémoire (pas de boucle infinie grâce aux guards)
+            if (!$tisane->getPlantes()->contains($this)) {
+                $tisane->addPlante($this);
+            }
         }
+        return $this;
     }
 
-    return $this;
-    }
-   public function addBienfait(Bienfait $bienfait): static
+    public function removeTisane(Tisane $tisane): static
     {
-    if (!$this->bienfaits->contains($bienfait)) {
-        $this->bienfaits->add($bienfait);
+        if ($this->tisanes->removeElement($tisane)) {
+            $tisane->removePlante($this);
+        }
+        return $this;
     }
-
-    return $this;
-    }
-
-   public function removeBienfait(Bienfait $bienfait): static
-   {
-    $this->bienfaits->removeElement($bienfait);
-
-    return $this;
-   }
-
-   public function removeTisane(Tisane $tisane): static
-   {
-       if ($this->tisanes->removeElement($tisane)) {
-           $tisane->removePlante($this);
-       }
-
-       return $this;
-   }
-
-
 }
-

@@ -1,37 +1,39 @@
-{# templates/admin_dashboard/_actions.html.twig #}
 {% macro row(view=null, edit=null, del=null) %}
-    {# view|edit|del = null OU un objet:
-     { href:'...', label:'...', token:'...', confirm:'...', disabled:true|false } #}
+    {% set view = view ?? {} %}
+    {% set edit = edit ?? {} %}
+    {% set del  = del  ?? {} %}
 
-    {% set vlabel = view and view.label is defined ? view.label : 'Voir' %}
-    {% set elabel = edit and edit.label is defined ? edit.label : 'Modifier' %}
-    {% set dlabel = del  and del.label  is defined ? del.label  : 'Supprimer' %}
-    {% set dmsg   = del  and del.confirm is defined ? del.confirm : 'Confirmer la suppression ?' %}
+    {% set vlabel = view.label  is defined ? view.label  : 'Voir' %}
+    {% set elabel = edit.label  is defined ? edit.label  : 'Modifier' %}
+    {% set dlabel = del.label   is defined ? del.label   : 'Supprimer' %}
+    {% set dmsg   = del.confirm is defined ? del.confirm : 'Confirmer la suppression ?' %}
 
     <div class="actions" role="group" aria-label="Actions">
-        {% if view %}
-            <a href="{{ view.href }}" class="btn btn-outline-primary btn-sm px-3 actions__btn" aria-label="{{ vlabel }}">
+        {% if view.href is defined %}
+            <a href="{{ view.href|default('#') }}" class="btn btn-outline-primary btn-sm px-3 actions__btn" aria-label="{{ vlabel }}">
                 <i class="bi bi-eye actions__icon" aria-hidden="true"></i>
-                <span class="actions__label">{{ vlabel }}</span>
+                <span class="actions__label d-none d-sm-inline">{{ vlabel }}</span>
             </a>
         {% endif %}
 
-        {% if edit %}
-            <a href="{{ edit.href }}" class="btn btn-secondary btn-sm px-3 actions__btn" aria-label="{{ elabel }}">
+        {% if edit.href is defined %}
+            <a href="{{ edit.href|default('#') }}" class="btn btn-secondary btn-sm px-3 actions__btn" aria-label="{{ elabel }}">
                 <i class="bi bi-pencil actions__icon" aria-hidden="true"></i>
-                <span class="actions__label">{{ elabel }}</span>
+                <span class="actions__label d-none d-sm-inline">{{ elabel }}</span>
             </a>
         {% endif %}
 
-        {% if del %}
-            <form method="post" action="{{ del.href }}" class="m-0 actions__form"
+        {% if del.href is defined %}
+            <form method="post" action="{{ del.href|default('#') }}" class="m-0 actions__form"
                   onsubmit="return confirm('{{ dmsg|e('js') }}');">
-                <input type="hidden" name="_token" value="{{ del.token }}">
+                {% if del.token is defined %}
+                    <input type="hidden" name="_token" value="{{ del.token }}">
+                {% endif %}
                 <button type="submit" class="btn btn-danger btn-sm px-3 actions__btn"
                         aria-label="{{ dlabel }}"
-                        {% if del.disabled %}disabled aria-disabled="true"{% endif %}>
+                        {% if del.disabled|default(false) %}disabled aria-disabled="true"{% endif %}>
                     <i class="bi bi-trash actions__icon" aria-hidden="true"></i>
-                    <span class="actions__label">{{ dlabel }}</span>
+                    <span class="actions__label d-none d-sm-inline">{{ dlabel }}</span>
                 </button>
             </form>
         {% endif %}

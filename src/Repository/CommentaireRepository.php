@@ -6,14 +6,6 @@ use App\Entity\Commentaire;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
-/**
- * @extends ServiceEntityRepository<Commentaire>
- *
- * @method Commentaire|null find($id, $lockMode = null, $lockVersion = null)
- * @method Commentaire|null findOneBy(array $criteria, array $orderBy = null)
- * @method Commentaire[]    findAll()
- * @method Commentaire[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
- */
 class CommentaireRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
@@ -21,22 +13,30 @@ class CommentaireRepository extends ServiceEntityRepository
         parent::__construct($registry, Commentaire::class);
     }
 
+    /**
+     * Moyenne des notes par recette (type=1), uniquement quand la note n'est pas nulle.
+     * Retourne un tableau de lignes: ['recette_id' => int, 'moyenne' => float]
+     */
     public function getMoyenneNoteParRecette(): array
-{
-    return $this->createQueryBuilder('c')
-        ->select('IDENTITY(c.recette) AS recette_id, AVG(c.note) AS moyenne')
-        ->where('c.note IS NOT NULL')
-        ->groupBy('c.recette')
-        ->getQuery()
-        ->getResult();
-}
-    public function findLastNotFlagged(): ?Commentaire {
+    {
         return $this->createQueryBuilder('c')
-            ->andWhere('c.signaler = :s')          // ou c.isFlagged / c.reported
+            ->select('IDENTITY(c.recette) AS recette_id, AVG(c.note) AS moyenne')
+            ->where('c.type = 1')                 // on limite aux commentaires de recette
+            ->andWhere('c.recette IS NOT NULL')   // sécurité
+            ->andWhere('c.note IS NOT NULL')
+            ->groupBy('c.recette')
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function findLastNotFlagged(): ?Commentaire
+    {
+        return $this->createQueryBuilder('c')
+            ->andWhere('c.signaler = :s')
             ->setParameter('s', false)
             ->orderBy('c.date', 'DESC')
             ->setMaxResults(1)
-            ->getQuery()->getOneOrNullResult();
+            ->getQuery()
+            ->getOneOrNullResult();
     }
-    
 }

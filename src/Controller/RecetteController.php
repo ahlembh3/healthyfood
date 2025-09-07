@@ -4,24 +4,23 @@ namespace App\Controller;
 
 use App\Entity\Recette;
 use App\Entity\RecetteIngredient;
+use App\Entity\Commentaire;
 use App\Form\RecetteForm;
 use App\Form\CommentaireType;
 use App\Repository\RecetteRepository;
 use App\Repository\IngredientRepository;
 use App\Repository\CommentaireRepository;
+use App\Service\TisaneSuggestionService;
 use Doctrine\ORM\EntityManagerInterface;
+use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Form\FormError;
+use Symfony\Component\HttpFoundation\File\Exception\FileException;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\String\Slugger\SluggerInterface;
-use App\Entity\Commentaire;
-use App\Service\TisaneSuggestionService;
-use Knp\Component\Pager\PaginatorInterface;
-use Symfony\Component\HttpFoundation\File\UploadedFile;
-use Symfony\Component\Form\FormError;
-
 
 #[Route('/recettes')]
 final class RecetteController extends AbstractController
@@ -35,19 +34,8 @@ final class RecetteController extends AbstractController
     #[Route('/', name: 'recette_index', methods: ['GET'])]
     public function index(): Response
     {
-        //$user = $this->getUser();
-
-        //if (!$user) {
-            return $this->redirectToRoute('recette_liste');
-        //}
-
-        //if (!in_array('ROLE_ADMIN', $user->getRoles(), true)) {
-            //return $this->redirectToRoute('recette_mes_recettes');
-        //}
-
-        //return $this->redirectToRoute('recette_liste_admin');
+        return $this->redirectToRoute('recette_liste');
     }
-
 
     #[Route('/liste', name: 'recette_liste', methods: ['GET'])]
     public function listePublique(
@@ -57,14 +45,14 @@ final class RecetteController extends AbstractController
         IngredientRepository $ingredientRepo,
         PaginatorInterface $paginator
     ): Response {
-        $q        = trim((string)$request->query->get('q', ''));
-        $ingName  = trim((string)$request->query->get('ingredient', ''));
-        $type     = trim((string)$request->query->get('type', ''));
-        $saison   = trim((string)$request->query->get('saison', ''));
-        $bienfait = trim((string)$request->query->get('bienfait', ''));
+        $q        = trim((string) $request->query->get('q', ''));
+        $ingName  = trim((string) $request->query->get('ingredient', ''));
+        $type     = trim((string) $request->query->get('type', ''));
+        $saison   = trim((string) $request->query->get('saison', ''));
+        $bienfait = trim((string) $request->query->get('bienfait', ''));
         $calMax   = $request->query->get('calMax');
 
-        $page    = max(1, (int)$request->query->get('page', 1));
+        $page    = max(1, (int) $request->query->get('page', 1));
         $perPage = 9;
 
         $types = $ingredientRepo->findDistinctTypes();
@@ -77,8 +65,8 @@ final class RecetteController extends AbstractController
             'bienfait'   => $bienfait,
         ];
 
-        // --- 1) Voie “fuzzy” quand q est renseigné ---
         if ($q !== '') {
+            // Recherche fuzzy (reclassement PHP)
             $results = $recetteRepository->fuzzySearchPublic(
                 $q,
                 $filters,
@@ -86,19 +74,18 @@ final class RecetteController extends AbstractController
                 minScore: 18
             );
 
-            // Filtre calories si demandé
+            // Filtre calories côté PHP si demandé
             if ($calMax !== null && $calMax !== '') {
-                $calMaxF = (float)$calMax;
-                $results = array_values(array_filter($results, function(\App\Entity\Recette $r) use ($calMaxF) {
+                $calMaxF = (float) $calMax;
+                $results = array_values(array_filter($results, function (Recette $r) use ($calMaxF) {
                     $total = 0.0;
                     foreach ($r->getRecetteIngredients() as $ri) {
                         $ing = $ri->getIngredient();
-                        if (!$ing) continue;
+                        if (!$ing) { continue; }
                         $u = $ing->getUnite();
-                        // ne compte que g/ml
-                        if (in_array($u, ['gramme','grammes','g','millilitre','millilitres','ml'], true)) {
+                        if (in_array($u, ['gramme', 'grammes', 'g', 'millilitre', 'millilitres', 'ml'], true)) {
                             $factor = ($ri->getQuantite() ?? 0) / 100.0;
-                            $total += (float)($ing->getCalories() ?? 0) * $factor;
+                            $total += (float) ($ing->getCalories() ?? 0) * $factor;
                         }
                     }
                     return $total <= $calMaxF;
@@ -106,40 +93,37 @@ final class RecetteController extends AbstractController
             }
 
             $recettes = $paginator->paginate($results, $page, $perPage);
-        }
-        // --- 2) Voie “classique” (LIKE) quand q est vide ---
-        else {
+        } else {
+            // Requête SQL paginée
             $query = $recetteRepository->queryPublicWithFilters($filters);
 
             if ($calMax !== null && $calMax !== '') {
-                // On charge puis on filtre en PHP (car le calcul est applicatif)
                 $results = $query->getResult();
-                $calMaxF = (float)$calMax;
-                $results = array_values(array_filter($results, function(\App\Entity\Recette $r) use ($calMaxF) {
+                $calMaxF = (float) $calMax;
+                $results = array_values(array_filter($results, function (Recette $r) use ($calMaxF) {
                     $total = 0.0;
                     foreach ($r->getRecetteIngredients() as $ri) {
                         $ing = $ri->getIngredient();
-                        if (!$ing) continue;
+                        if (!$ing) { continue; }
                         $u = $ing->getUnite();
-                        if (in_array($u, ['gramme','grammes','g','millilitre','millilitres','ml'], true)) {
+                        if (in_array($u, ['gramme', 'grammes', 'g', 'millilitre', 'millilitres', 'ml'], true)) {
                             $factor = ($ri->getQuantite() ?? 0) / 100.0;
-                            $total += (float)($ing->getCalories() ?? 0) * $factor;
+                            $total += (float) ($ing->getCalories() ?? 0) * $factor;
                         }
                     }
                     return $total <= $calMaxF;
                 }));
                 $recettes = $paginator->paginate($results, $page, $perPage);
             } else {
-                // Pagination SQL efficace
                 $recettes = $paginator->paginate($query, $page, $perPage);
             }
         }
 
-        // Moyennes des notes (inchangé)
+        // Moyennes des notes
         $moyennes = $commentaireRepository->getMoyenneNoteParRecette();
         $moyennesParRecette = [];
         foreach ($moyennes as $item) {
-            $moyennesParRecette[(int)$item['recette_id']] = round((float)$item['moyenne'], 2);
+            $moyennesParRecette[(int) $item['recette_id']] = round((float) $item['moyenne'], 2);
         }
 
         return $this->render('recette/recettes_liste.html.twig', [
@@ -180,7 +164,6 @@ final class RecetteController extends AbstractController
     public function mesRecettes(RecetteRepository $recetteRepository): Response
     {
         $user = $this->getUser();
-
         if (!$user) {
             throw $this->createAccessDeniedException("Vous devez être connecté pour voir vos recettes.");
         }
@@ -197,9 +180,9 @@ final class RecetteController extends AbstractController
     {
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
 
-
         $recette = new Recette();
 
+        // Une ligne vide pour l’UI
         if ($recette->getRecetteIngredients()->count() === 0) {
             $recette->addRecetteIngredient(new RecetteIngredient());
         }
@@ -207,32 +190,37 @@ final class RecetteController extends AbstractController
         $form = $this->createForm(RecetteForm::class, $recette);
         $form->handleRequest($request);
 
-        if ($form->isSubmitted() && $form->isValid()) {
+        if ($form->isSubmitted()) {
+            // Nettoie les lignes vides et rattache correctement
+            $this->sanitizeRecetteIngredients($recette, $em);
+            $items = $recette->getRecetteIngredients();
 
+            if (count($items) === 0) {
+                $form->get('recetteIngredients')->addError(new FormError('Ajoutez au moins un ingrédient.'));
+            }
+
+        }
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            // Upload image
+            /** @var UploadedFile|null $imageFile */
             $imageFile = $form->get('image')->getData();
             if ($imageFile) {
                 $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
-                $safeFilename = $slugger->slug($originalFilename);
-                $newFilename = $safeFilename . '-' . uniqid() . '.' . $imageFile->guessExtension();
+                $safeFilename     = $slugger->slug($originalFilename);
+                $newFilename      = $safeFilename.'-'.uniqid().'.'.$imageFile->guessExtension();
 
                 try {
-                    $imageFile->move(
-                        $this->getParameter('recettes_directory'),
-                        $newFilename
-                    );
+                    $imageFile->move($this->getParameter('recettes_directory'), $newFilename);
                     $recette->setImage($newFilename);
                 } catch (FileException $e) {
                     $this->addFlash('danger', 'Erreur lors du téléchargement de l\'image.');
                 }
             }
 
-            foreach ($recette->getRecetteIngredients() as $ri) {
-                $ri->setRecette($recette);
-                $em->persist($ri);
-            }
-
             $recette->setUtilisateur($this->getUser());
 
+            // Cascade persist sur RecetteIngredient via OneToMany
             $em->persist($recette);
             $em->flush();
 
@@ -243,10 +231,13 @@ final class RecetteController extends AbstractController
             );
         }
 
+        // 422 si invalide (Turbo)
+        $status = ($form->isSubmitted() && !$form->isValid()) ? 422 : 200;
+
         return $this->render('recette/new.html.twig', [
-            'form' => $form->createView(),
+            'form'    => $form->createView(),
             'recette' => $recette,
-        ]);
+        ], new Response('', $status));
     }
 
     #[Route('/{id}', name: 'recette_show', methods: ['GET', 'POST'])]
@@ -257,10 +248,9 @@ final class RecetteController extends AbstractController
         CommentaireRepository $commentaireRepository,
         EntityManagerInterface $em
     ): Response {
-        // --- D’où on vient ? (pour le bouton "Retour") --------------------------
+        // Origine pour le bouton Retour
         $from = $request->query->get('from'); // 'liste' | 'mes' | 'admin' | null
-
-        $filterKeys = ['q','ingredient','type','saison','bienfait','calMax'];
+        $filterKeys = ['q', 'ingredient', 'type', 'saison', 'bienfait', 'calMax'];
         $filters = [];
         foreach ($filterKeys as $k) {
             $v = $request->query->get($k);
@@ -269,28 +259,23 @@ final class RecetteController extends AbstractController
             }
         }
 
-        $backRoute  = 'recette_liste'; // défaut
+        $backRoute  = 'recette_liste';
         $backParams = $filters;
-        $isAdmin = $this->isGranted('ROLE_ADMIN');
-        $user    = $this->getUser();
+        $isAdmin    = $this->isGranted('ROLE_ADMIN');
+        $user       = $this->getUser();
 
         if ($isAdmin) {
-            if ($from === 'liste') {
-                $backRoute  = 'recette_liste';
-                $backParams = $filters;
-            } else {
-                $backRoute  = 'recette_liste_admin';
-                $backParams = [];
-            }
+            $backRoute  = $from === 'liste' ? 'recette_liste' : 'recette_liste_admin';
+            $backParams = $from === 'liste' ? $filters : [];
         } elseif ($user) {
             if ($from === 'mes') {
-                $backRoute  = 'recette_mes_recettes';
+                $backRoute = 'recette_mes_recettes';
                 $backParams = [];
             } elseif ($from === 'liste') {
-                $backRoute  = 'recette_liste';
+                $backRoute = 'recette_liste';
                 $backParams = $filters;
             } else {
-                $backRoute  = 'recette_mes_recettes';
+                $backRoute = 'recette_mes_recettes';
                 $backParams = [];
             }
         } else {
@@ -298,12 +283,10 @@ final class RecetteController extends AbstractController
             $backParams = $filters;
         }
 
-        // --- Formulaire commentaire ---------------------------------------------
+        // Form commentaire
         $commentaire = new Commentaire();
         $form = $this->createForm(CommentaireType::class, $commentaire, [
             'is_recette' => true,
-            // Assure que la note vide est bien traitée comme NULL par le form
-            // (à condition d’avoir 'empty_data' => null dans CommentaireType)
         ]);
         $form->handleRequest($request);
 
@@ -313,27 +296,24 @@ final class RecetteController extends AbstractController
                 throw $this->createAccessDeniedException("Vous devez être connecté pour commenter.");
             }
 
-
             // Renseigner les champs requis AVANT la validation
             $commentaire->setUtilisateur($user);
             $commentaire->setType(1); // 1 = recette
             $commentaire->setDate(new \DateTimeImmutable());
             $commentaire->setRecette($recette);
 
-            // Règle métier : autoriser "note seule" OU "commentaire seul"
+            // Autoriser "note seule" OU "commentaire seul"
             $contenuTrim = trim((string) $commentaire->getContenu());
             $note = $commentaire->getNote();
 
             if ($contenuTrim === '' && $note === null) {
-                // Les deux vides -> on force une erreur lisible
                 $form->addError(new FormError('Veuillez saisir un commentaire ou une note.'));
             } elseif ($contenuTrim === '' && $note !== null) {
-                // Note seule : l’entité a @NotBlank sur contenu -> on met un minuscule espace
-                // pour satisfaire la contrainte sans afficher de texte.
+                // satisfait un éventuel NotBlank côté entité
                 $commentaire->setContenu(' ');
             }
 
-            // Clamp 0..5 si une note a été saisie
+            // Clamp 0..5
             if ($note !== null && $note !== '') {
                 $commentaire->setNote(max(0, min(5, (int) $note)));
             } else {
@@ -347,7 +327,6 @@ final class RecetteController extends AbstractController
                 $this->addFlash('success', 'Votre commentaire a été ajouté.');
                 return $this->redirectToRoute('recette_show', ['id' => $recette->getId()]);
             } else {
-                // Alerte avec les causes exactes
                 $details = [];
                 foreach ($form->getErrors(true, true) as $err) {
                     $origin = $err->getOrigin();
@@ -358,7 +337,7 @@ final class RecetteController extends AbstractController
             }
         }
 
-        // --- Commentaires de cette recette (les plus récents d’abord) ----------
+        // Commentaires (récents d’abord)
         $commentaires = $commentaireRepository->createQueryBuilder('c')
             ->andWhere('c.recette = :recette')
             ->andWhere('c.type = 1')
@@ -367,7 +346,7 @@ final class RecetteController extends AbstractController
             ->getQuery()
             ->getResult();
 
-        // --- Moyenne des notes (type=1 + note non nulle) -----------------------
+        // Moyenne des notes
         $moyenne = $commentaireRepository->createQueryBuilder('c')
             ->select('AVG(c.note) as moyenne')
             ->andWhere('c.recette = :recette')
@@ -376,9 +355,9 @@ final class RecetteController extends AbstractController
             ->setParameter('recette', $recette)
             ->getQuery()
             ->getSingleScalarResult();
-        $moyenne = $moyenne !== null ? round((float)$moyenne, 2) : null;
+        $moyenne = $moyenne !== null ? round((float) $moyenne, 2) : null;
 
-        // --- Tisanes suggérées --------------------------------------------------
+        // Tisanes suggérées
         $suggestions = $sugg->suggestForRecette($recette, limit: 3, wB: 2.0, wA: 1.0);
         $tisanesSuggerees = array_map(fn($r) => $r['tisane'], $suggestions);
         $tisanesReasons = [];
@@ -402,8 +381,6 @@ final class RecetteController extends AbstractController
         ]);
     }
 
-
-
     #[Route('/{id}/edit', name: 'recette_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, Recette $recette, EntityManagerInterface $em, SluggerInterface $slugger): Response
     {
@@ -412,36 +389,48 @@ final class RecetteController extends AbstractController
             throw $this->createAccessDeniedException('Vous ne pouvez modifier que vos propres recettes.');
         }
 
+        // Interdire l’édition d’une recette validée pour un non-admin
+        if (!$this->isGranted('ROLE_ADMIN') && $recette->isValidation()) {
+            throw $this->createAccessDeniedException("La recette a déjà été validée par l’administrateur.");
+        }
+
         $ancienneImage = $recette->getImage();
 
         $form = $this->createForm(RecetteForm::class, $recette);
         $form->handleRequest($request);
 
+        if ($form->isSubmitted()) {
+            $this->sanitizeRecetteIngredients($recette, $em);
+            $items = $recette->getRecetteIngredients();
+
+            if (count($items) === 0) {
+                $form->get('recetteIngredients')->addError(new FormError('Ajoutez au moins un ingrédient.'));
+            }
+        }
+
         if ($form->isSubmitted() && $form->isValid()) {
+            /** @var UploadedFile|null $imageFile */
             $imageFile = $form->get('image')->getData();
 
             if ($imageFile) {
                 $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
-                $safeFilename = $slugger->slug($originalFilename);
-                $newFilename = $safeFilename.'-'.uniqid().'.'.$imageFile->guessExtension();
+                $safeFilename     = $slugger->slug($originalFilename);
+                $newFilename      = $safeFilename.'-'.uniqid().'.'.$imageFile->guessExtension();
 
                 try {
-                    // Supprimer l'ancienne image si elle existe
-                    if ($ancienneImage && file_exists($this->getParameter('uploads_directory').'/'.$ancienneImage)) {
-                        unlink($this->getParameter('recettes_directory').'/'.$ancienneImage);
+                    $dir = $this->getParameter('recettes_directory');
+
+                    if ($ancienneImage && file_exists($dir.'/'.$ancienneImage)) {
+                        @unlink($dir.'/'.$ancienneImage);
                     }
 
-                    // Upload de la nouvelle image
-                    $imageFile->move(
-                        $this->getParameter('recettes_directory'),
-                        $newFilename
-                    );
+                    $imageFile->move($dir, $newFilename);
                     $recette->setImage($newFilename);
                 } catch (FileException $e) {
                     $this->addFlash('danger', 'Erreur lors du téléchargement de l\'image.');
                 }
             } else {
-                // Garder l'ancienne image si aucune nouvelle n'est fournie
+                // Conserver l’ancienne si aucune nouvelle
                 $recette->setImage($ancienneImage);
             }
 
@@ -454,15 +443,13 @@ final class RecetteController extends AbstractController
             );
         }
 
+        $status = ($form->isSubmitted() && !$form->isValid()) ? 422 : 200;
+
         return $this->render('recette/edit.html.twig', [
-            'form' => $form->createView(),
+            'form'    => $form->createView(),
             'recette' => $recette,
-        ]);
+        ], new Response('', $status));
     }
-
-
-
-
 
     #[Route('/{id}/delete', name: 'recette_delete', methods: ['POST'])]
     public function delete(Request $request, Recette $recette, EntityManagerInterface $em): Response
@@ -480,7 +467,7 @@ final class RecetteController extends AbstractController
             );
         }
 
-        if ($this->isCsrfTokenValid('delete' . $recette->getId(), $request->getPayload()->getString('_token'))) {
+        if ($this->isCsrfTokenValid('delete' . $recette->getId(), $request->request->get('_token'))) {
             $em->remove($recette);
             $em->flush();
 
@@ -509,4 +496,29 @@ final class RecetteController extends AbstractController
         return $this->redirectToRoute('recette_liste_admin');
     }
 
+    /**
+     * Supprime les lignes d’ingrédients vides, fixe la relation propriétaire,
+     * et applique une valeur par défaut pour la quantité si nécessaire.
+     */
+    private function sanitizeRecetteIngredients(Recette $recette, EntityManagerInterface $em): void
+    {
+        foreach ($recette->getRecetteIngredients()->toArray() as $ri) {
+            // Lignes vides → on retire
+            if (!$ri->getIngredient() || $ri->getQuantite() === null || $ri->getQuantite() <= 0) {
+                $recette->removeRecetteIngredient($ri);
+                if (null !== $ri->getId()) {
+                    $em->remove($ri);
+                }
+                continue;
+            }
+
+            // Relation propriétaire
+            $ri->setRecette($recette);
+
+            // Valeur par défaut si null
+            if ($ri->getQuantite() === null) {
+                $ri->setQuantite(100.0);
+            }
+        }
+    }
 }

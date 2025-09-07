@@ -1,0 +1,74 @@
+{% extends 'base.html.twig' %}
+{% import 'admin_dashboard/_actions.html.twig' as A %}
+
+{% block title %}Gestion des Plantes - Admin{% endblock %}
+{% block page_title %}Gestion des Plantes{% endblock %}
+
+{% block content %}
+    <section class="mb-4 d-flex flex-column flex-sm-row align-items-sm-center gap-3">
+        <div class="d-flex align-items-center gap-3">
+            <i class="bi bi-flower1 fs-3 text-success" aria-hidden="true"></i>
+            <div>
+                <h2 class="h5 mb-1">Liste des plantes</h2>
+                <p class="text-muted mb-0">{{ plantes|length }} {{ plantes|length == 1 ? 'résultat' : 'résultats' }}</p>
+            </div>
+        </div>
+        <div class="ms-sm-auto">
+            <a href="{{ path('admin_plante_new') }}" class="btn btn-success">
+                <i class="bi bi-plus-lg me-1" aria-hidden="true"></i> Nouvelle plante
+            </a>
+        </div>
+    </section>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body">
+            {% if plantes is empty %}
+                <div class="text-center py-5">
+                    <i class="bi bi-emoji-smile fs-1 text-success d-block mb-2" aria-hidden="true"></i>
+                    <p class="text-muted mb-3">Aucune plante pour le moment.</p>
+                    <a href="{{ path('admin_plante_new') }}" class="btn btn-success">
+                        <i class="bi bi-plus-lg me-1"></i> Créer la première plante
+                    </a>
+                </div>
+            {% else %}
+                <div class="table-responsive">
+                    <table class="table align-middle table-hover">
+                        <thead class="table-light">
+                        <tr>
+                            <th style="width:80px;">#</th>
+                            <th>Nom commun</th>
+                            <th class="d-none d-lg-table-cell">Nom scientifique</th>
+                            <th class="text-end" style="width:1%; white-space:nowrap;">Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for p in plantes %}
+                            <tr>
+                                <td class="text-muted">{{ p.id }}</td>
+                                <td class="text-break">
+                                    <div class="fw-semibold">{{ p.nomCommun }}</div>
+                                    <div class="text-muted small">
+                                        {% if p.image %}
+                                            <i class="bi bi-image me-1"></i>Avec image
+                                        {% else %}
+                                            <i class="bi bi-image-alt me-1"></i>Sans image
+                                        {% endif %}
+                                    </div>
+                                </td>
+                                <td class="d-none d-lg-table-cell text-break">{{ p.nomScientifique }}</td>
+                                <td class="text-end">
+                                    {{ A.row(
+                                        { href: path('admin_plante_show', {id:p.id}), label:'Voir' },
+                                        { href: path('admin_plante_edit', {id:p.id}), label:'Modifier' },
+                                        { href: path('admin_plante_delete', {id:p.id}), label:'Supprimer', token: csrf_token('delete' ~ p.id), confirm: 'Supprimer « ' ~ (p.nomCommun ?: 'cette plante') ~ ' » ?' }
+                                    ) }}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}
