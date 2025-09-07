@@ -2,6 +2,12 @@
    theme.css — Santé & Nature (mobile-first, responsive)
    Palette, typo, accessibilité, dark mode
    ========================================================= */
+/* ===== Reset minimal / base ===== */
+*,*::before,*::after{ box-sizing:border-box; }
+html:focus-within{ scroll-behavior:smooth; }
+body,h1,h2,h3,h4,p,figure,blockquote,dl,dd{ margin:0; }
+img,svg,video,canvas,audio,iframe{ display:block; max-width:100%; }
+button,input,select,textarea{ font:inherit; color:inherit; }
 
 /* ---------- Variables ---------- */
 :root{
@@ -216,12 +222,16 @@ img{ max-width:100%; height:auto; }
 .a11y-panel[hidden]{ display:none !important; }
 
 /* ---------- Tables admin & actions ---------- */
-i.bi, span.bi { font-style: normal; display: inline-block; }
+/* Icônes Bootstrap : ne pas forcer display pour permettre le masquage contextuel */
+i.bi, span.bi { font-style: normal; }
 .bi::before { font-family: "bootstrap-icons" !important; }
 .table-responsive{ overflow-x:auto; overflow-y:visible; }
 .table-responsive .dropdown-menu{ position:absolute; z-index:1051; }
 .text-break{ word-wrap:break-word; word-break:break-word; }
 
+/* Actions (macro admin_dashboard/_actions.html.twig)
+   - XS : icône visible, libellé masqué par d-none d-sm-inline
+   - ≥576px : icône cachée, texte visible, tout sur une ligne */
 .actions{
     display:grid;
     row-gap:.5rem;
@@ -233,7 +243,10 @@ i.bi, span.bi { font-style: normal; display: inline-block; }
     display:inline-flex; align-items:center; justify-content:center;
     border-radius:.5rem;
 }
+.actions__btn { display:inline-flex; align-items:center; gap:.35rem; white-space:nowrap; }
+.actions__icon { line-height:1; }
 
+/* Petits écrans fins */
 @media (max-width:360px){
     .card-header{ padding:.75rem .9rem; }
     .card-body{ padding:.9rem; }
@@ -243,12 +256,31 @@ i.bi, span.bi { font-style: normal; display: inline-block; }
     .table{ font-size:.9rem; }
     .table th,.table td{ padding:.45rem .5rem; }
 }
-@media (min-width:576px){ .btn{ width:auto; } }
+
+/* À partir de sm : texte seul dans les actions, tout sur une ligne */
+@media (min-width:576px){
+    .btn{ width:auto; }
+    .actions{
+        display:flex;
+        gap:.5rem;
+        justify-content:flex-end;
+        align-items:center;
+        flex-wrap:nowrap; /* même ligne */
+    }
+    .actions__icon{ display:none !important; }     /* cache icônes */
+    .actions__label{ display:inline !important; }  /* montre texte */
+    .actions .btn{
+        width:auto; height:auto; padding:.5rem .85rem;
+    }
+}
+
+/* ≥768px : mise en page */
 @media (min-width:768px){
     .content-grid{ grid-template-columns:2fr 1fr; }
     .footer-content{ flex-direction:row; justify-content:space-between; align-items:center; }
-    .actions{ display:flex; gap:.5rem; justify-content:flex-end; align-items:center; }
 }
+
+/* ≥992px : navbar desktop */
 @media (min-width:992px){
     .brand-logo{ height:56px; }
     .navbar-brand{ gap:.65rem; font-size:1.25rem; }
@@ -260,35 +292,37 @@ i.bi, span.bi { font-style: normal; display: inline-block; }
     }
     .nav-link{ padding:.5rem 0; border-bottom:none; }
 }
-@media (min-width:1200px){ .card-body{ padding:1.25rem; } }
+
+/* ≥1200px : confort */
+@media (min-width:1200px){
+    .card-body{ padding:1.25rem; }
+}
 
 /* =========================
    HOME — SLIDER (hf-)
    ========================= */
 .hf-slider{ position:relative; }
 
-/* viewport défilant */
 .hf-viewport{
     overflow-x:auto; overflow-y:hidden;
-    scroll-snap-type:x proximity;            /* + souple que mandatory */
+    scroll-snap-type:x proximity;
     -webkit-overflow-scrolling:touch;
     touch-action: pan-y;
     max-width:100%;
     padding-bottom:0;
-    scrollbar-width:none;                    /* Firefox: cache la scrollbar */
-    -ms-overflow-style:none;                 /* IE/Edge legacy */
+    scrollbar-width:none;
+    -ms-overflow-style:none;
     position:relative;
 }
-.hf-viewport::-webkit-scrollbar{ height:0; } /* WebKit: cache la scrollbar */
+.hf-viewport::-webkit-scrollbar{ height:0; }
 .hf-viewport::after{ content:none !important; }
 
-/* piste en colonnes (1/2/3 cartes) */
 .hf-track{
     display:grid;
     grid-auto-flow:column;
     gap:var(--hf-gap);
     grid-auto-columns:85%;
-    padding-inline:2px; /* évite collage bord gauche */
+    padding-inline:2px;
 }
 @media (min-width:576px){
     .hf-track{ grid-auto-columns:calc((100% - var(--hf-gap))/2); }
@@ -297,13 +331,11 @@ i.bi, span.bi { font-style: normal; display: inline-block; }
     .hf-track{ grid-auto-columns:calc((100% - 2*var(--hf-gap))/3); }
 }
 
-/* snap propre */
 .hf-track > .hf-card:last-child{
     scroll-snap-align:end;
     scroll-snap-stop:always;
 }
 
-/* carte */
 .hf-card{
     position: relative;
     display:flex; flex-direction:column;
@@ -317,7 +349,6 @@ i.bi, span.bi { font-style: normal; display: inline-block; }
 .hf-card.is-recette{ background:#e9f5ee; }
 .hf-card.is-tisane{ background:#eff8ea; }
 
-/* tag, media, texte */
 .hf-tag{
     position:absolute; top:.5rem; left:.5rem; z-index:2;
     background:rgba(92,154,116,.95);
@@ -329,7 +360,7 @@ i.bi, span.bi { font-style: normal; display: inline-block; }
 .hf-body{ padding:.9rem .9rem 1rem; }
 .hf-title{ font-size:1rem; margin:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 
-/* flèches — toujours visibles, mieux positionnées */
+/* flèches */
 .hf-nav{
     position:absolute; top:50%; transform:translateY(-50%);
     background:#fff; border:1px solid rgba(0,0,0,.1);
@@ -337,8 +368,8 @@ i.bi, span.bi { font-style: normal; display: inline-block; }
     display:flex; align-items:center; justify-content:center; font-size:1.25rem;
     z-index:20; cursor:pointer; user-select:none;
 }
-.hf-prev{ left:8px; }   /* au lieu de -6px */
-.hf-next{ right:8px; }  /* au lieu de -6px */
+.hf-prev{ left:8px; }
+.hf-next{ right:8px; }
 @media (max-width:575.98px){
     .hf-nav{ width:34px; height:34px; font-size:1rem; }
 }
@@ -404,14 +435,138 @@ i.bi, span.bi { font-style: normal; display: inline-block; }
 #home-plants-zone{ position:relative; }
 #home-plants-zone:focus-visible{ outline:3px solid var(--c-vert); outline-offset:3px; }
 
-/* motion */
+/* Motion */
 @media (prefers-reduced-motion: reduce){
     .hf-viewport{ scroll-behavior:auto; }
 }
 .hf-viewport { scroll-snap-stop: always; }
 
+/* Note/étoiles */
 .rating-stars{ display:inline-flex; align-items:center; gap:.25rem; font-size:1.5rem; }
 .rating-stars .star-btn{ background:transparent; border:none; padding:.25rem; line-height:1; cursor:pointer; }
 .rating-stars .star-btn.is-active{ color:#f1c40f; }
 .rating-stars .star-btn:focus-visible{ outline:2px solid var(--c-vert-dark); border-radius:.25rem; }
 
+/* === Desktop only (>=1200px) === */
+@media (min-width: 1200px){
+
+    /* En-tête : ne coupe pas les mots et évite les overflows flex */
+    .page-head h2,
+    .page-head p{
+        word-break: keep-all;
+        overflow-wrap: normal;
+        hyphens: none;
+    }
+    .page-head > *{ min-width: 0; }
+
+    /* Colonne Titre : ellipsis au lieu de couper les mots */
+    .truncate-title-xl{
+        max-width: 420px;           /* ajuste si besoin */
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    /* Description & Instructions : compact avec ellipsis */
+    .truncate-xl{
+        max-width: 300px;           /* évite d'élargir la table */
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    /* Actions : 3 boutons visibles sans agrandir le tableau */
+    td:last-child .actions{
+        display: inline-flex;
+        gap: .4rem;
+        align-items: center;
+        justify-content: flex-end;
+        flex-wrap: nowrap;          /* pas de retour à la ligne en desktop */
+    }
+    td:last-child .actions .btn{
+        padding: .35rem .6rem !important;  /* plus fin que px-3 */
+        font-size: .875rem;                 /* ≈14px */
+        line-height: 1.2;
+        box-shadow: none;                   /* optionnel, plus compact visuellement */
+    }
+
+    /* Laisse la colonne "Actions" compacte sans forcer la largeur globale */
+    th.text-end[style*="white-space:nowrap"],
+    td.text-end:last-child{
+        width: 1%;
+        white-space: nowrap;
+    }
+
+}
+/* === Desktop only (>=1200px) : empiler Description + Instructions dans la même colonne === */
+@media (min-width: 1200px){
+
+    /* En-tête : éviter les césures bizarres */
+    .page-head h2,
+    .page-head p{
+        word-break: keep-all;
+        overflow-wrap: normal;
+        hyphens: none;
+    }
+    .page-head > *{ min-width: 0; }
+
+    /* Titre : ellipsis propre au lieu de couper les mots */
+    .truncate-title-xl{
+        max-width: 420px;           /* ajuste si besoin */
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    /* Masquer la colonne "Instructions" en desktop */
+    .recettes-table th.col-instr-th,
+    .recettes-table td.col-instr{
+        display: none !important;
+    }
+
+    /* Mise en forme de la colonne "Description" qui contient 2 lignes (Desc + Instr) */
+    .recettes-table td.col-desc .desc-instr{
+        display: flex;
+        flex-direction: column;
+        gap: .35rem;
+        min-width: 260px;           /* garde une largeur raisonnable sans élargir la table */
+        max-width: 360px;           /* ajuste si besoin */
+    }
+    .recettes-table td.col-desc .label{
+        display: block;
+        font-size: .75rem;
+        color: #6c757d;
+        text-transform: uppercase;
+        letter-spacing: .02em;
+        margin-bottom: .15rem;
+    }
+    /* Empêcher la grande phrase d'étirer la table : clamp sur 2 lignes */
+    .recettes-table td.col-desc .clamp-2{
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+        overflow: hidden;
+    }
+
+    /* Montrer la 2e ligne (instructions) UNIQUEMENT en desktop */
+    .recettes-table td.col-desc .show-only-xl{ display: block; }
+
+    /* Actions : 3 boutons sur UNE seule ligne, compacts */
+    .recettes-table td.text-end .actions{
+        display: inline-flex;
+        gap: .45rem;
+        align-items: center;
+        justify-content: flex-end;
+        flex-wrap: nowrap;
+    }
+    .recettes-table td.text-end .actions .btn{
+        padding: .35rem .6rem !important;
+        font-size: .875rem;
+        line-height: 1.2;
+    }
+}
+
+/* Par défaut (mobile/tablette) : ne pas afficher le doublon d'instructions dans la description */
+@media (max-width: 1199.98px){
+    .recettes-table td.col-desc .show-only-xl{ display: none; }
+}

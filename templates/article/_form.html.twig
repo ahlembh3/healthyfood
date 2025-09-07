@@ -1,118 +1,89 @@
 {# templates/article/_form.html.twig #}
+{% form_theme form 'bootstrap_5_layout.html.twig' %}
+
+
 <div class="d-flex justify-content-center mt-5">
-    <div class="card shadow p-4" style="max-width: 600px; width: 100%;">
+    <div class="card shadow p-4" style="max-width: 720px; width: 100%;">
         <h1 class="text-center mb-4" id="form-title">{{ form_title|default('Ajouter un article') }}</h1>
 
-        {# NB: pas besoin de 'enctype' → géré automatiquement par Symfony #}
+        {# Bandeau haut si formulaire invalide #}
+        {% if form.vars.submitted and not form.vars.valid %}
+            <div class="alert alert-danger" role="alert">Veuillez corriger les erreurs ci-dessous.</div>
+        {% endif %}
+
+        {# Erreurs racine (CSRF, etc.) #}
+        {{ form_errors(form) }}
+
+        {# IMPORTANT : méthode/action explicites #}
         {{ form_start(form, {
+            method: 'POST',
+            action: form_action|default(path(app.request.attributes.get('_route'), app.request.attributes.get('_route_params'))),
             attr: {
+                id: 'article_form',
                 class: 'needs-validation',
                 novalidate: 'novalidate',
                 'aria-labelledby': 'form-title'
             }
         }) }}
 
-        {# Titre #}
-        <div class="mb-3">
-            {{ form_label(form.titre, null, { label_attr: { class: 'form-label' } }) }}
-            {% set titre_errors_id = form.titre.vars.id ~ '_errors' %}
-            {{ form_widget(form.titre, {
-                attr: {
-                    class: 'form-control',
-                    'aria-describedby': titre_errors_id,
-                    'aria-invalid': form.titre.vars.valid ? 'false' : 'true',
-                    autocomplete: 'off'
-                }
-            }) }}
-            <div id="{{ titre_errors_id }}" class="text-danger" role="alert">
-                {{ form_errors(form.titre) }}
+        {# Chaque form_row rend label + widget + erreurs selon le thème Bootstrap 5 #}
+        {{ form_row(form.titre, {
+            label: 'Titre de l’article',
+            row_attr: { class: 'mb-3' },
+            attr: { autocomplete: 'off' }
+        }) }}
+
+        {# Contenu — TinyMCE sera initialisé par base.html.twig (classe "tinymce-editor") #}
+        {{ form_row(form.contenu, {
+            label: 'Contenu',
+            row_attr: { class: 'mb-3' },
+            attr: { class: 'tinymce-editor', rows: 10 }
+        }) }}
+
+        {{ form_row(form.categorie, {
+            label: 'Catégorie',
+            row_attr: { class: 'mb-3' }
+        }) }}
+
+        {{ form_row(form.source, {
+            label: 'Source',
+            row_attr: { class: 'mb-1' },
+            attr: { placeholder: 'Nom du média, livre… ou une URL' },
+            help: 'Exemples : « Le Monde », « Rapport OMS 2023 » ou https://exemple.com/article'
+        }) }}
+
+        {{ form_row(form.image, {
+            label: 'Image (PNG, JPG, WEBP)',
+            row_attr: { class: 'mb-3' },
+            attr: { accept: 'image/*', onchange: 'previewArticleImage(event)' }
+        }) }}
+
+        {# Image actuelle (édition) #}
+        {% if article is defined and article.image %}
+            <div class="mt-2">
+                <p class="mb-1 text-muted">Image actuelle :</p>
+                <img
+                        src="{{ asset('uploads/' ~ article.image) }}"
+                        alt="Image actuelle de l’article"
+                        class="img-fluid border rounded"
+                        style="max-height: 200px;"
+                        loading="lazy"
+                >
             </div>
+        {% endif %}
+
+        {# Aperçu nouvelle image #}
+        <div class="mt-3">
+            <img
+                    id="imagePreview"
+                    src="#"
+                    alt="Aperçu de l’image sélectionnée"
+                    class="img-fluid d-none border rounded"
+                    style="max-height: 300px;"
+            >
         </div>
 
-        {# Contenu (TinyMCE) #}
-        <div class="mb-3">
-            {{ form_label(form.contenu, null, { label_attr: { class: 'form-label' } }) }}
-            {% set contenu_errors_id = form.contenu.vars.id ~ '_errors' %}
-            {{ form_widget(form.contenu, {
-                attr: {
-                    class: 'form-control tinymce-editor',
-                    rows: 5,
-                    'aria-describedby': contenu_errors_id,
-                    'aria-invalid': form.contenu.vars.valid ? 'false' : 'true'
-                }
-            }) }}
-            <div id="{{ contenu_errors_id }}" class="text-danger" role="alert">
-                {{ form_errors(form.contenu) }}
-            </div>
-            <small class="text-muted">
-                Conseil : structurez vos idées en paragraphes. (Le HTML sera nettoyé côté serveur pour la sécurité.)
-            </small>
-        </div>
-
-        {# Catégorie #}
-        <div class="mb-3">
-            {{ form_label(form.categorie, null, { label_attr: { class: 'form-label' } }) }}
-            {% set cat_errors_id = form.categorie.vars.id ~ '_errors' %}
-            {{ form_widget(form.categorie, {
-                attr: {
-                    class: 'form-select',
-                    'aria-describedby': cat_errors_id,
-                    'aria-invalid': form.categorie.vars.valid ? 'false' : 'true'
-                }
-            }) }}
-            <div id="{{ cat_errors_id }}" class="text-danger" role="alert">
-                {{ form_errors(form.categorie) }}
-            </div>
-        </div>
-        {# source #}
-        <div class="mb-3">
-            {{ form_label(form.source) }}
-            {{ form_widget(form.source, { attr: { class: 'form-control' } }) }}
-            {{ form_errors(form.source) }}
-        </div>
-
-
-        {# Image #}
-        <div class="mb-3">
-            {{ form_label(form.image, null, { label_attr: { class: 'form-label' } }) }}
-            {% set img_errors_id = form.image.vars.id ~ '_errors' %}
-            {{ form_widget(form.image, {
-                attr: {
-                    class: 'form-control',
-                    accept: 'image/*',
-                    onchange: 'previewArticleImage(event)',
-                    'aria-describedby': img_errors_id,
-                    'aria-invalid': form.image.vars.valid ? 'false' : 'true'
-                }
-            }) }}
-            <div id="{{ img_errors_id }}" class="text-danger" role="alert">
-                {{ form_errors(form.image) }}
-            </div>
-
-            {# Image actuelle (édition) #}
-            {% if article is defined and article.image %}
-                <div class="mt-3">
-                    <p class="mb-1 text-muted">Image actuelle :</p>
-                    <img
-                            src="{{ asset('uploads/' ~ article.image) }}"
-                            alt="Image actuelle de l’article"
-                            class="img-fluid border rounded"
-                            style="max-height: 200px;"
-                            loading="lazy">
-                </div>
-            {% endif %}
-
-            {# Aperçu nouvelle image #}
-            <div class="mt-3">
-                <img id="imagePreview"
-                     src="#"
-                     alt="Aperçu de l’image sélectionnée"
-                     class="img-fluid d-none border rounded"
-                     style="max-height: 300px;">
-            </div>
-        </div>
-
-        <button type="submit" class="btn btn-primary w-100 mt-2">
+        <button type="submit" class="btn btn-primary w-100 mt-3" form="article_form">
             <i class="bi bi-check-circle me-2" aria-hidden="true"></i>{{ button_label|default('Enregistrer') }}
         </button>
 
@@ -120,25 +91,27 @@
     </div>
 </div>
 
-{# Aperçu image : safe fallback si la fonction n’existe pas encore #}
+{# ---- Script léger d’aperçu image (TinyMCE est géré par base.html.twig) ---- #}
 <script>
-    if (typeof previewArticleImage !== 'function') {
-        function previewArticleImage(e) {
-            const input = e.target;
-            const preview = document.getElementById('imagePreview');
-            if (!preview) return;
+    (function () {
+        if (typeof window.previewArticleImage !== 'function') {
+            window.previewArticleImage = function (e) {
+                const input = e.target;
+                const preview = document.getElementById('imagePreview');
+                if (!preview) return;
 
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                reader.onload = (ev) => {
-                    preview.src = ev.target.result;
-                    preview.classList.remove('d-none');
-                };
-                reader.readAsDataURL(input.files[0]);
-            } else {
-                preview.src = '#';
-                preview.classList.add('d-none');
-            }
+                if (input.files && input.files[0]) {
+                    const reader = new FileReader();
+                    reader.onload = (ev) => {
+                        preview.src = ev.target.result;
+                        preview.classList.remove('d-none');
+                    };
+                    reader.readAsDataURL(input.files[0]);
+                } else {
+                    preview.src = '#';
+                    preview.classList.add('d-none');
+                }
+            };
         }
-    }
+    })();
 </script>

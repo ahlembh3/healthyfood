@@ -21,7 +21,8 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     private ?int $id = null;
     
     #[Assert\NotBlank(message: "L'email est obligatoire.")]
-    #[Assert\Email(message: "L'email '{{ value }}' n'est pas valide.")]
+    #[Assert\Email(message: "L'email '{{ value }}' n'est pas valide.",
+        mode: 'html5')]
     #[ORM\Column(length: 180)]
     private ?string $email = null;
 
@@ -30,11 +31,13 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
      */
     #[ORM\Column]
     private array $roles = [];
-    
-    #[Assert\NotBlank(message: "Le mot de passe est obligatoire.")]
+
+    #[Assert\NotBlank(message: "Le mot de passe est obligatoire.", groups: ['Registration'])]
     #[Assert\Regex(
         pattern: "/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/",
-        message: "Le mot de passe doit contenir au moins 8 caractères, une majuscule, une minuscule et un chiffre." )]
+        message: "Le mot de passe doit contenir au moins 8 caractères, une majuscule, une minuscule et un chiffre.",
+        groups: ['Registration']
+    )]
     #[ORM\Column]
     private ?string $password = null;
     

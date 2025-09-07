@@ -21,13 +21,13 @@ class CommentaireController extends AbstractController
         CommentaireRepository $commentaireRepository,
         PaginatorInterface $paginator
     ): Response {
-        $signale = $request->query->get('signale'); // "1" ou null
+        $signale = $request->query->get('signale'); // "1" pour signalés
 
         $qb = $commentaireRepository->createQueryBuilder('c')
             ->orderBy('c.signaler', 'DESC')
             ->addOrderBy('c.date', 'DESC');
 
-        // Ne permettre le filtre 'signalés uniquement' qu'aux admins
+        // Filtre "signalés uniquement" réservé aux admins
         if ($signale && $this->isGranted('ROLE_ADMIN')) {
             $qb->andWhere('c.signaler = :true')->setParameter('true', true);
         }
@@ -89,7 +89,7 @@ class CommentaireController extends AbstractController
             }
         }
 
-        // Redirige vers le contenu lié si possible, sinon vers l’accueil
+        // Retour vers la ressource liée
         if ($commentaire->getRecette()) {
             return $this->redirectToRoute('recette_show', ['id' => $commentaire->getRecette()->getId()]);
         }
@@ -103,7 +103,10 @@ class CommentaireController extends AbstractController
     #[IsGranted('ROLE_ADMIN')]
     public function commentairesSignales(CommentaireRepository $commentaireRepository): Response
     {
-        $commentaires = $commentaireRepository->findBy(['signaler' => true], ['signaleLe' => 'DESC', 'date' => 'DESC']);
+        $commentaires = $commentaireRepository->findBy(
+            ['signaler' => true],
+            ['signaleLe' => 'DESC', 'date' => 'DESC']
+        );
 
         return $this->render('commentaire/signales.html.twig', [
             'commentaires' => $commentaires,
@@ -116,7 +119,6 @@ class CommentaireController extends AbstractController
     {
         if ($this->isCsrfTokenValid('designaler' . $commentaire->getId(), $request->request->get('_token'))) {
             $commentaire->setSignaler(false);
-            // (optionnel) nettoyer l’info de signalement
             $commentaire->setSignalePar(null);
             $commentaire->setSignaleLe(null);
 

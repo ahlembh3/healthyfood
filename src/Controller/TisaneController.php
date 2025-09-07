@@ -4,7 +4,6 @@ namespace App\Controller;
 
 use App\Entity\Tisane;
 use App\Repository\TisaneRepository;
-use Doctrine\ORM\EntityManagerInterface;
 use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -24,24 +23,21 @@ class TisaneController extends AbstractController
         $page = max(1, (int) $request->query->get('page', 1));
 
         if ($q !== '') {
-            // Recherche fuzzy (tolérante aux fautes)
+            // Recherche fuzzy (tolérance fautes d’orthographe)
             $results = $tisaneRepository->fuzzySearch(
                 $q,
                 limitCandidates: 400,
                 minScore: 18
             );
 
-            // Pagination sur tableau (KNP gère très bien)
+            // Pagination sur array (gérée par KNP)
             $tisanes = $paginator->paginate($results, $page, 9);
         } else {
-            // Recherche simple (LIKE) paginée en SQL
+            // Recherche simple LIKE paginée en SQL (plus performant sans q)
             $qb = $tisaneRepository->queryIndex('');
-            $tisanes = $paginator->paginate(
-                $qb,
-                $page,
-                9,
-                ['wrap-queries' => true]
-            );
+            $tisanes = $paginator->paginate($qb, $page, 9, [
+                'wrap-queries' => true,
+            ]);
         }
 
         return $this->render('tisane/index.html.twig', [
@@ -51,9 +47,10 @@ class TisaneController extends AbstractController
     }
 
     #[Route('/{id}', name: 'tisane_show', requirements: ['id' => '\d+'], methods: ['GET'])]
-    public function show(int $id, EntityManagerInterface $em): Response
+    public function show(int $id, TisaneRepository $tisaneRepository): Response
     {
-        $tisane = $em->getRepository(Tisane::class)->createQueryBuilder('t')
+        // Pré-chargement des relations pour la vue (1 seule tisane → ok d’ajouter les deux joins)
+        $tisane = $tisaneRepository->createQueryBuilder('t')
             ->select('t, p, b')
             ->leftJoin('t.plantes', 'p')
             ->leftJoin('t.bienfaits', 'b')
@@ -61,12 +58,21 @@ class TisaneController extends AbstractController
             ->getQuery()
             ->getOneOrNullResult();
 
-        if (!$tisane) {
-            throw $this->createNotFoundException("Tisane non trouvée.");
+        if (!$tisane instanceof Tisane) {
+            throw $this->createNotFoundException('Tisane non trouvée.');
         }
 
         return $this->render('tisane/show.html.twig', [
             'tisane' => $tisane,
+        ]);
+    }
+
+    #[Route('/recherche', name: 'tisane_search', methods: ['GET'])]
+    public function search(Request $request): Response
+    {
+        // Canonicaliser vers l’index avec le paramètre q
+        return $this->redirectToRoute('tisane_index', [
+            'q' => $request->query->get('q', ''),
         ]);
     }
 }

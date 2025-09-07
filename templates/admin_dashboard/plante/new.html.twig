@@ -1,0 +1,15 @@
+{% extends 'base.html.twig' %}
+{% block title %}Nouvelle Plante{% endblock %}
+{% block page_title %}Ajouter une plante{% endblock %}
+
+{% block content %}
+    {% include 'admin_dashboard/plante/_form.html.twig' with {
+        form: form,
+        plante: plante,
+        title: 'Créer une plante',
+        btn_label: 'Créer'
+    } %}
+    <div class="mt-3">
+        <a href="{{ path('admin_plante_index') }}" class="btn btn-outline-secondary">← Retour à la liste</a>
+    </div>
+{% endblock %}

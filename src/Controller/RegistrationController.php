@@ -21,9 +21,8 @@ final class RegistrationController extends AbstractController
         EntityManagerInterface $em,
         UserPasswordHasherInterface $hasher
     ): Response {
-        // Si déjà connecté, redirige où tu veux
         if ($this->getUser()) {
-            return $this->redirectToRoute('utilisateurs_dashboard'); // ou 'app_home'
+            return $this->redirectToRoute('utilisateurs_dashboard');
         }
 
         $user = new Utilisateur();
@@ -35,20 +34,8 @@ final class RegistrationController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            // Gère les 2 variantes possibles dans ton FormType :
-            //  - password (simple)
-            //  - plainPassword (RepeatedType)
-            $plain = null;
-            if ($form->has('password')) {
-                $plain = (string) $form->get('password')->getData();
-            } elseif ($form->has('plainPassword')) {
-                // RepeatedType : on prend le 1er champ
-                $plain = (string) $form->get('plainPassword')->getData();
-            }
-
-            if ($plain !== '') {
-                $user->setPassword($hasher->hashPassword($user, $plain));
-            }
+            $plain = (string) $form->get('password')->getData();
+            $user->setPassword($hasher->hashPassword($user, $plain));
 
             $em->persist($user);
             $em->flush();
@@ -57,8 +44,15 @@ final class RegistrationController extends AbstractController
             return $this->redirectToRoute('app_login');
         }
 
+        // Si le formulaire est soumis mais invalide, le template affichera automatiquement les erreurs
+        if ($form->isSubmitted() && !$form->isValid()) {
+            $this->addFlash('error', 'Veuillez corriger les erreurs ci-dessous.');
+        }
+        // 422 si invalide pour que Turbo mette à jour la page
+        $status = ($form->isSubmitted() && !$form->isValid()) ? 422 : 200;
+
         return $this->render('security/register.html.twig', [
-            'form' => $form->createView(), // ✅ passe la FormView à Twig
-        ]);
+            'form' => $form->createView(),
+        ], new Response('', $status));
     }
 }

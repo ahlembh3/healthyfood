@@ -1,0 +1,41 @@
+{% extends 'base.html.twig' %}
+{% block title %}Plante #{{ plante.id }}{% endblock %}
+{% block page_title %}{{ plante.nomCommun }}{% endblock %}
+
+{% block content %}
+    <div class="card border-0 shadow-sm">
+        <div class="card-body">
+            <h2 class="h5">{{ plante.nomCommun }}</h2>
+            <p class="text-muted mb-1"><strong>Nom scientifique :</strong> {{ plante.nomScientifique }}</p>
+            <p class="mb-3"><strong>Partie utilisée :</strong> {{ plante.partieUtilisee }}</p>
+
+            {% if plante.image %}
+                <img src="{{ asset('uploads/plantes/' ~ plante.image) }}" alt="Image de la plante" class="img-fluid rounded mb-3" style="max-height:300px">
+            {% endif %}
+
+            <h3 class="h6">Description</h3>
+            <p>{{ plante.description }}</p>
+
+            <h3 class="h6 mt-3">Précautions</h3>
+            <p>{{ plante.precautions }}</p>
+
+            {% if plante.bienfaits|length %}
+                <h3 class="h6 mt-3">Bienfaits</h3>
+                <div class="d-flex flex-wrap gap-2">
+                    {% for b in plante.bienfaits %}
+                        <span class="badge rounded-pill text-bg-success">{{ b.nom }}</span>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <div class="mt-4 d-flex gap-2">
+                <a href="{{ path('admin_plante_edit', {id: plante.id}) }}" class="btn btn-secondary">Modifier</a>
+                <form method="post" action="{{ path('admin_plante_delete', {id: plante.id}) }}" onsubmit="return confirm('Supprimer cette plante ?');">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ plante.id) }}">
+                    <button class="btn btn-danger">Supprimer</button>
+                </form>
+                <a href="{{ path('admin_plante_index') }}" class="btn btn-outline-secondary ms-auto">← Retour</a>
+            </div>
+        </div>
+    </div>
+{% endblock %}

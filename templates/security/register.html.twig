@@ -1,7 +1,9 @@
 {# templates/security/register.html.twig #}
 {% extends 'base.html.twig' %}
-
 {% block title %}Inscription{% endblock %}
+
+{# Si tu n'as pas déjà défini le thème Bootstrap globalement #}
+{% form_theme form 'bootstrap_5_layout.html.twig' %}
 
 {% block content %}
     <section class="container-content py-4">
@@ -13,217 +15,172 @@
                     </div>
 
                     <div class="card-body">
-                        {# Zone d’annonces #}
+                        {# Flash messages #}
                         <div aria-live="polite" aria-atomic="true">
                             {% for label, messages in app.flashes %}
                                 {% for message in messages %}
-                                    <div class="alert alert-{{ label == 'success' ? 'success' : (label in ['danger','error'] ? 'danger' : (label == 'warning' ? 'warning' : 'info')) }} mb-3" role="status">
+                                    <div class="alert alert-{{ label in ['danger','error'] ? 'danger' : (label == 'warning' ? 'warning' : (label == 'success' ? 'success' : 'info')) }} mb-3" role="status">
                                         {{ message }}
                                     </div>
                                 {% endfor %}
                             {% endfor %}
                         </div>
 
-                        {% if form_errors(form) %}
+                        {# Bandeau si le formulaire est invalide #}
+                        {% if form.vars.submitted and not form.vars.valid %}
                             <div class="alert alert-danger" role="alert">
-                                {{ form_errors(form) }}
+                                Veuillez corriger les erreurs ci-dessous.
                             </div>
                         {% endif %}
 
                         {{ form_start(form, { attr: { 'aria-labelledby': 'form-title', novalidate: 'novalidate' } }) }}
 
-                        {# Email #}
-                        {% if form.email is defined %}
-                            <div class="mb-3">
-                                {{ form_label(form.email, 'Email', { label_attr: { class: 'form-label' } }) }}
-                                <div class="input-group">
-                                    <span class="input-group-text" id="email-ico" aria-hidden="true">✉️</span>
-                                    {{ form_widget(form.email, {
-                                        attr: {
-                                            class: 'form-control',
-                                            autocomplete: 'email',
-                                            'aria-required': 'true',
-                                            'aria-describedby': 'email-ico ' ~ form.email.vars.id ~ '_error',
-                                            'aria-invalid': form.email.vars.valid ? 'false' : 'true'
-                                        }
-                                    }) }}
+                        {# ================== EMAIL ================== #}
+                        {% set emailInvalid = form.vars.submitted and (form.email.vars.errors|length > 0) %}
+                        <div class="mb-3">
+                            {{ form_label(form.email, 'Email', { label_attr: { class: 'form-label' } }) }}
+                            <div class="input-group">
+                                <span class="input-group-text" id="email-ico" aria-hidden="true">✉️</span>
+                                {{ form_widget(form.email, {
+                                    attr: {
+                                        class: 'form-control' ~ (emailInvalid ? ' is-invalid' : ''),
+                                        autocomplete: 'email',
+                                        'aria-required': 'true',
+                                        'aria-describedby': 'email-ico ' ~ form.email.vars.id ~ '_error',
+                                        'aria-invalid': emailInvalid ? 'true' : 'false'
+                                    }
+                                }) }}
+                            </div>
+                            {% if emailInvalid %}
+                                <div id="{{ form.email.vars.id }}_error" class="invalid-feedback d-block">
+                                    {{ form_errors(form.email) }}
                                 </div>
-                                {% if form_errors(form.email) %}
-                                    <div id="{{ form.email.vars.id }}_error" class="text-danger mt-1" role="alert">
-                                        {{ form_errors(form.email) }}
-                                    </div>
-                                {% endif %}
-                            </div>
-                        {% endif %}
+                            {% endif %}
+                        </div>
 
-                        {# Nom & Prénom #}
                         <div class="row">
+                            {# ================== NOM ================== #}
+                            {% set nomInvalid = form.vars.submitted and (form.nom.vars.errors|length > 0) %}
                             <div class="col-md-6">
-                                {% if form.nom is defined %}
-                                    <div class="mb-3">
-                                        {{ form_label(form.nom, 'Nom', { label_attr: { class: 'form-label' } }) }}
-                                        <div class="input-group">
-                                            <span class="input-group-text" id="nom-ico" aria-hidden="true">👤</span>
-                                            {{ form_widget(form.nom, {
-                                                attr: {
-                                                    class: 'form-control',
-                                                    autocomplete: 'family-name',
-                                                    'aria-required': 'true',
-                                                    'aria-describedby': 'nom-ico ' ~ form.nom.vars.id ~ '_error',
-                                                    'aria-invalid': form.nom.vars.valid ? 'false' : 'true'
-                                                }
-                                            }) }}
-                                        </div>
-                                        {% if form_errors(form.nom) %}
-                                            <div id="{{ form.nom.vars.id }}_error" class="text-danger mt-1" role="alert">
-                                                {{ form_errors(form.nom) }}
-                                            </div>
-                                        {% endif %}
+                                <div class="mb-3">
+                                    {{ form_label(form.nom, 'Nom', { label_attr: { class: 'form-label' } }) }}
+                                    <div class="input-group">
+                                        <span class="input-group-text" id="nom-ico" aria-hidden="true">👤</span>
+                                        {{ form_widget(form.nom, {
+                                            attr: {
+                                                class: 'form-control' ~ (nomInvalid ? ' is-invalid' : ''),
+                                                autocomplete: 'family-name',
+                                                'aria-required': 'true',
+                                                'aria-describedby': 'nom-ico ' ~ form.nom.vars.id ~ '_error',
+                                                'aria-invalid': nomInvalid ? 'true' : 'false'
+                                            }
+                                        }) }}
                                     </div>
-                                {% endif %}
+                                    {% if nomInvalid %}
+                                        <div id="{{ form.nom.vars.id }}_error" class="invalid-feedback d-block">
+                                            {{ form_errors(form.nom) }}
+                                        </div>
+                                    {% endif %}
+                                </div>
                             </div>
+
+                            {# ================== PRÉNOM ================== #}
+                            {% set prenomInvalid = form.vars.submitted and (form.prenom.vars.errors|length > 0) %}
                             <div class="col-md-6">
-                                {% if form.prenom is defined %}
-                                    <div class="mb-3">
-                                        {{ form_label(form.prenom, 'Prénom', { label_attr: { class: 'form-label' } }) }}
-                                        <div class="input-group">
-                                            <span class="input-group-text" id="prenom-ico" aria-hidden="true">🧑</span>
-                                            {{ form_widget(form.prenom, {
-                                                attr: {
-                                                    class: 'form-control',
-                                                    autocomplete: 'given-name',
-                                                    'aria-required': 'true',
-                                                    'aria-describedby': 'prenom-ico ' ~ form.prenom.vars.id ~ '_error',
-                                                    'aria-invalid': form.prenom.vars.valid ? 'false' : 'true'
-                                                }
-                                            }) }}
-                                        </div>
-                                        {% if form_errors(form.prenom) %}
-                                            <div id="{{ form.prenom.vars.id }}_error" class="text-danger mt-1" role="alert">
-                                                {{ form_errors(form.prenom) }}
-                                            </div>
-                                        {% endif %}
+                                <div class="mb-3">
+                                    {{ form_label(form.prenom, 'Prénom', { label_attr: { class: 'form-label' } }) }}
+                                    <div class="input-group">
+                                        <span class="input-group-text" id="prenom-ico" aria-hidden="true">🧑</span>
+                                        {{ form_widget(form.prenom, {
+                                            attr: {
+                                                class: 'form-control' ~ (prenomInvalid ? ' is-invalid' : ''),
+                                                autocomplete: 'given-name',
+                                                'aria-required': 'true',
+                                                'aria-describedby': 'prenom-ico ' ~ form.prenom.vars.id ~ '_error',
+                                                'aria-invalid': prenomInvalid ? 'true' : 'false'
+                                            }
+                                        }) }}
                                     </div>
-                                {% endif %}
+                                    {% if prenomInvalid %}
+                                        <div id="{{ form.prenom.vars.id }}_error" class="invalid-feedback d-block">
+                                            {{ form_errors(form.prenom) }}
+                                        </div>
+                                    {% endif %}
+                                </div>
                             </div>
                         </div>
 
-                        {# Préférences (facultatif) #}
-                        {% if form.preferences is defined %}
-                            <div class="mb-3">
-                                {{ form_label(form.preferences, 'Préférences', { label_attr: { class: 'form-label' } }) }}
-                                {{ form_widget(form.preferences, {
-                                    attr: {
-                                        class: 'form-control',
-                                        rows: '3',
-                                        placeholder: 'Décrivez vos préférences…',
-                                        'aria-describedby': form.preferences.vars.id ~ '_error',
-                                        'aria-invalid': form.preferences.vars.valid ? 'false' : 'true'
-                                    }
-                                }) }}
-                                {% if form_errors(form.preferences) %}
-                                    <div id="{{ form.preferences.vars.id }}_error" class="text-danger mt-1" role="alert">
-                                        {{ form_errors(form.preferences) }}
-                                    </div>
-                                {% endif %}
-                            </div>
-                        {% endif %}
+                        {# ================== PRÉFÉRENCES ================== #}
+                        {% set prefInvalid = form.vars.submitted and (form.preferences.vars.errors|length > 0) %}
+                        <div class="mb-3">
+                            {{ form_label(form.preferences, 'Préférences', { label_attr: { class: 'form-label' } }) }}
+                            {{ form_widget(form.preferences, {
+                                attr: {
+                                    class: 'form-control' ~ (prefInvalid ? ' is-invalid' : ''),
+                                    rows: '3',
+                                    placeholder: 'Décrivez vos préférences…',
+                                    'aria-describedby': form.preferences.vars.id ~ '_error',
+                                    'aria-invalid': prefInvalid ? 'true' : 'false'
+                                }
+                            }) }}
+                            {% if prefInvalid %}
+                                <div id="{{ form.preferences.vars.id }}_error" class="invalid-feedback d-block">
+                                    {{ form_errors(form.preferences) }}
+                                </div>
+                            {% endif %}
+                        </div>
 
-                        {# ====== MDP empilés (l’un sous l’autre) ====== #}
+                        {# ================== MOT DE PASSE + CONFIRMATION ================== #}
                         {% if form.password is defined %}
-                            {# Mot de passe #}
+                            {% set pwdInvalid = form.vars.submitted and (form.password.vars.errors|length > 0) %}
                             <div class="mb-3">
                                 {{ form_label(form.password, 'Mot de passe', { label_attr: { class: 'form-label' } }) }}
                                 <div class="input-group">
                                     <span class="input-group-text" id="pwd1-ico" aria-hidden="true">🔒</span>
                                     {{ form_widget(form.password, {
                                         attr: {
-                                            class: 'form-control',
+                                            class: 'form-control' ~ (pwdInvalid ? ' is-invalid' : ''),
                                             autocomplete: 'new-password',
                                             'aria-required': 'true',
                                             'aria-describedby': 'pwd1-ico ' ~ form.password.vars.id ~ '_error',
-                                            'aria-invalid': form.password.vars.valid ? 'false' : 'true'
+                                            'aria-invalid': pwdInvalid ? 'true' : 'false'
                                         }
                                     }) }}
                                 </div>
-                                {% if form_errors(form.password) %}
-                                    <div id="{{ form.password.vars.id }}_error" class="text-danger mt-1" role="alert">
+                                {% if pwdInvalid %}
+                                    <div id="{{ form.password.vars.id }}_error" class="invalid-feedback d-block">
                                         {{ form_errors(form.password) }}
+                                    </div>
+                                {% else %}
+                                    <div class="form-text">
+                                        Minimum 8 caractères, avec au moins une majuscule, une minuscule et un chiffre.
                                     </div>
                                 {% endif %}
                             </div>
+                        {% endif %}
 
-                            {# Confirmation #}
-                            {% if form.confirmPassword is defined %}
-                                <div class="mb-3">
-                                    {{ form_label(form.confirmPassword, 'Confirmer le mot de passe', { label_attr: { class: 'form-label' } }) }}
-                                    <div class="input-group">
-                                        <span class="input-group-text" id="pwd2-ico" aria-hidden="true">✅</span>
-                                        {{ form_widget(form.confirmPassword, {
-                                            attr: {
-                                                class: 'form-control',
-                                                autocomplete: 'new-password',
-                                                'aria-required': 'true',
-                                                'aria-describedby': 'pwd2-ico ' ~ form.confirmPassword.vars.id ~ '_error',
-                                                'aria-invalid': form.confirmPassword.vars.valid ? 'false' : 'true'
-                                            }
-                                        }) }}
-                                    </div>
-                                    {% if form_errors(form.confirmPassword) %}
-                                        <div id="{{ form.confirmPassword.vars.id }}_error" class="text-danger mt-1" role="alert">
-                                            {{ form_errors(form.confirmPassword) }}
-                                        </div>
-                                    {% endif %}
+                        {% if form.confirmPassword is defined %}
+                            {% set confInvalid = form.vars.submitted and (form.confirmPassword.vars.errors|length > 0) %}
+                            <div class="mb-3">
+                                {{ form_label(form.confirmPassword, 'Confirmer le mot de passe', { label_attr: { class: 'form-label' } }) }}
+                                <div class="input-group">
+                                    <span class="input-group-text" id="pwd2-ico" aria-hidden="true">✅</span>
+                                    {{ form_widget(form.confirmPassword, {
+                                        attr: {
+                                            class: 'form-control' ~ (confInvalid ? ' is-invalid' : ''),
+                                            autocomplete: 'new-password',
+                                            'aria-required': 'true',
+                                            'aria-describedby': 'pwd2-ico ' ~ form.confirmPassword.vars.id ~ '_error',
+                                            'aria-invalid': confInvalid ? 'true' : 'false'
+                                        }
+                                    }) }}
                                 </div>
-                            {% endif %}
-
-                        {% elseif form.plainPassword is defined %}
-                            {# RepeatedType: first puis second #}
-                            {% if form.plainPassword.first is defined %}
-                                <div class="mb-3">
-                                    {{ form_label(form.plainPassword.first, 'Mot de passe', { label_attr: { class: 'form-label' } }) }}
-                                    <div class="input-group">
-                                        <span class="input-group-text" id="pwd1-ico" aria-hidden="true">🔒</span>
-                                        {{ form_widget(form.plainPassword.first, {
-                                            attr: {
-                                                class: 'form-control',
-                                                autocomplete: 'new-password',
-                                                'aria-required': 'true',
-                                                'aria-describedby': 'pwd1-ico ' ~ form.plainPassword.first.vars.id ~ '_error',
-                                                'aria-invalid': form.plainPassword.first.vars.valid ? 'false' : 'true'
-                                            }
-                                        }) }}
+                                {% if confInvalid %}
+                                    <div id="{{ form.confirmPassword.vars.id }}_error" class="invalid-feedback d-block">
+                                        {{ form_errors(form.confirmPassword) }}
                                     </div>
-                                    {% if form_errors(form.plainPassword.first) %}
-                                        <div id="{{ form.plainPassword.first.vars.id }}_error" class="text-danger mt-1" role="alert">
-                                            {{ form_errors(form.plainPassword.first) }}
-                                        </div>
-                                    {% endif %}
-                                </div>
-                            {% endif %}
-
-                            {% if form.plainPassword.second is defined %}
-                                <div class="mb-3">
-                                    {{ form_label(form.plainPassword.second, 'Confirmer le mot de passe', { label_attr: { class: 'form-label' } }) }}
-                                    <div class="input-group">
-                                        <span class="input-group-text" id="pwd2-ico" aria-hidden="true">✅</span>
-                                        {{ form_widget(form.plainPassword.second, {
-                                            attr: {
-                                                class: 'form-control',
-                                                autocomplete: 'new-password',
-                                                'aria-required': 'true',
-                                                'aria-describedby': 'pwd2-ico ' ~ form.plainPassword.second.vars.id ~ '_error',
-                                                'aria-invalid': form.plainPassword.second.vars.valid ? 'false' : 'true'
-                                            }
-                                        }) }}
-                                    </div>
-                                    {% if form_errors(form.plainPassword.second) %}
-                                        <div id="{{ form.plainPassword.second.vars.id }}_error" class="text-danger mt-1" role="alert">
-                                            {{ form_errors(form.plainPassword.second) }}
-                                        </div>
-                                    {% endif %}
-                                </div>
-                            {% endif %}
+                                {% endif %}
+                            </div>
                         {% endif %}
 
                         <div class="d-grid gap-2 mt-3">
@@ -237,7 +194,7 @@
 
                 <p class="text-muted small mt-3">
                     En créant un compte, vous acceptez nos
-                    <a href="{#  {{ path('mentions_legales') }}#}" class="link-secondary">conditions d’utilisation</a>.
+                    <a href="#" class="link-secondary">conditions d’utilisation</a>.
                 </p>
             </div>
         </div>

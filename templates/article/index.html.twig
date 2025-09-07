@@ -1,78 +1,99 @@
-{# templates/article/index_admin.html.twig #}
+{# templates/article/index.html.twig #}
 {% extends 'base.html.twig' %}
 {% import 'admin_dashboard/_actions.html.twig' as A %}
 
-{% block title %}Articles (admin){% endblock %}
-{% block page_title %}Liste des articles{% endblock %}
+{% block title %}Gestion des Articles - Admin{% endblock %}
+{% block page_title %}Gestion des Articles{% endblock %}
 
 {% block content %}
-  <div class="table-responsive">
-    <table class="table table-hover align-middle">
-      <caption class="visually-hidden">
-        Tableau des articles (ID, titre, validation, + colonnes supplémentaires selon la largeur d’écran) avec actions.
-      </caption>
 
-      <thead class="table-light">
-      <tr>
-        {# Toujours visibles #}
-        <th scope="col" style="width:80px;">ID</th>
-        <th scope="col">Titre</th>
-        <th scope="col">Validation</th>
+    {# En-tête : icône + titre + compteur + bouton #}
+    <section class="mb-4 d-flex flex-column flex-sm-row align-items-sm-center gap-3">
+        <div class="d-flex align-items-center gap-3">
+            <i class="bi bi-journal-text fs-3 text-success" aria-hidden="true"></i>
+            <div>
+                <h2 class="h5 mb-1">Liste des articles</h2>
+                <p class="text-muted mb-0">
+                    {{ articles|length }} {{ articles|length == 1 ? 'résultat' : 'résultats' }}
+                </p>
+            </div>
+        </div>
+        <div class="ms-sm-auto">
+            <a href="{{ path('article_new') }}" class="btn btn-success">
+                <i class="bi bi-plus-lg me-1" aria-hidden="true"></i> Nouvel article
+            </a>
+        </div>
+    </section>
 
-        {# ≥ md #}
-        <th scope="col" class="d-none d-md-table-cell">Auteur</th>
+    <div class="card border-0 shadow-sm">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <caption class="visually-hidden">
+                        Tableau des articles (ID, titre, validation, auteur, date) avec actions voir/modifier/supprimer.
+                    </caption>
 
-        {# ≥ lg #}
-        <th scope="col" class="d-none d-lg-table-cell">Créé le</th>
+                    <thead class="table-light">
+                    <tr>
+                        <th scope="col" style="width:80px;">#</th>
+                        <th scope="col">Titre</th>
+                        <th scope="col">Validation</th>
+                        <th scope="col" class="d-none d-md-table-cell">Auteur</th>
+                        <th scope="col" class="d-none d-lg-table-cell">Créé le</th>
+                        <th scope="col" class="text-end" style="width:1%; white-space:nowrap;">Actions</th>
+                    </tr>
+                    </thead>
 
-        {# Colonne Actions compacte, pour éviter les demi-boutons en resize #}
-        <th scope="col" class="text-end" style="width:1%; white-space:nowrap;">Actions</th>
-      </tr>
-      </thead>
+                    <tbody>
+                    {% for article in articles %}
+                        <tr>
+                            <td class="text-muted">{{ article.id }}</td>
 
-      <tbody>
-      {% for article in articles %}
-        <tr>
-          {# Toujours visibles #}
-          <th scope="row">{{ article.id }}</th>
-          <td class="fw-semibold text-break">{{ article.titre }}</td>
-          <td>
-            {% if article.validation %}
-              <span class="badge text-bg-success">Validé</span>
-            {% else %}
-              <span class="badge text-bg-warning text-dark">En attente</span>
-            {% endif %}
-          </td>
+                            <td class="fw-semibold text-break">
+                                {{ article.titre }}
+                                {% if article.image %}
+                                    <div class="text-muted small"><i class="bi bi-image me-1"></i>Avec image</div>
+                                {% endif %}
+                            </td>
 
-          {# ≥ md #}
-          <td class="d-none d-md-table-cell">
-            {{ article.utilisateur ? article.utilisateur.email : '—' }}
-          </td>
+                            <td>
+                                {% if article.validation %}
+                                    <span class="badge text-bg-success">Validé</span>
+                                {% else %}
+                                    <span class="badge text-bg-warning text-dark">En attente</span>
+                                {% endif %}
+                            </td>
 
-          {# ≥ lg #}
-          <td class="d-none d-lg-table-cell">
-            {{ article.date ? article.date|date('d/m/Y') : '—' }}
-          </td>
+                            <td class="d-none d-md-table-cell">
+                                {{ article.utilisateur ? article.utilisateur.email : '—' }}
+                            </td>
 
-          {# Actions (macro = icônes en mobile, boutons texte en desktop) #}
-          <td class="text-end">
-            {{ A.row(
-              { href: path('article_show', { id: article.id, from: 'admin' }), label: 'Afficher' },
-              { href: path('article_edit', { id: article.id }), label: 'Modifier' }
-              # troisième slot (suppression) laissé vide ici
-            ) }}
-          </td>
-        </tr>
-      {% else %}
-        <tr>
-          <td colspan="6" class="text-center text-muted py-4">Aucun article trouvé.</td>
-        </tr>
-      {% endfor %}
-      </tbody>
-    </table>
-  </div>
+                            <td class="d-none d-lg-table-cell">
+                                {{ article.date ? article.date|date('d/m/Y') : '—' }}
+                            </td>
 
-  <a href="{{ path('article_new') }}" class="btn btn-success mt-3">
-    Ajouter un nouvel article
-  </a>
+                            <td class="text-end">
+                                {{ A.row(
+                                    { href: path('article_show',  { id: article.id, from: 'admin' }), label: 'Voir' },
+                                    { href: path('article_edit',  { id: article.id }),                 label: 'Modifier' },
+                                    {
+                                        href:    path('article_delete', { id: article.id }),
+                                        label:   'Supprimer',
+                                        token:   csrf_token('delete' ~ article.id),
+                                        confirm: 'Supprimer « ' ~ (article.titre ?: 'cet article') ~ ' » ?'
+                                    }
+                                ) }}
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="6" class="text-center text-muted py-4">Aucun article trouvé.</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
 {% endblock %}

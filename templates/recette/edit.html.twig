@@ -4,7 +4,6 @@
 {% block page_title %}Modifier la recette{% endblock %}
 
 {% block content %}
-    {# Le partial _form NE doit pas faire {% extends %} et ne doit pas contenir de <script> #}
     {% include 'recette/_form.html.twig' with {
         form: form,
         recette: recette,
@@ -13,11 +12,7 @@
     } %}
 
     <div class="d-flex justify-content-between mt-4">
-        <a href="{% if is_granted('ROLE_ADMIN') %}
-                {{ path('recette_liste_admin') }}
-              {% else %}
-                {{ path('recette_mes_recettes') }}
-              {% endif %}"
+        <a href="{{ is_granted('ROLE_ADMIN') ? path('recette_liste_admin') : path('recette_mes_recettes') }}"
            class="btn btn-outline-secondary">
             Retour à la liste
         </a>
@@ -26,30 +21,26 @@
 
 {% block javascripts %}
     {{ parent() }}
+    {# le même script que dans new.html.twig #}
     <script>
-        // Aperçu de l'image (si non déplacé dans assets/app.js)
-        function previewImage(event) {
-            const input = event.target;
-            const preview = document.getElementById('imagePreview');
-            if (!preview) return;
-
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    preview.src = e.target.result;
-                    preview.classList.remove('d-none');
-                };
-                reader.readAsDataURL(input.files[0]);
-            } else {
-                const original = preview.dataset.originalSrc;
-                if (original) {
-                    preview.src = original;
-                    preview.classList.remove('d-none');
-                } else {
-                    preview.src = '#';
-                    preview.classList.add('d-none');
-                }
+        (function () {
+            function slug(str){return (str||'').toString().normalize('NFD').replace(/\p{Diacritic}/gu,'').toLowerCase().replace(/\s+/g,' ').trim();}
+            function updateUnitForWrapper(w){const s=w.querySelector('.ingredient-select'),q=w.querySelector('.ingredient-quantite');if(!s||!q)return;const o=s.options[s.selectedIndex],u=o&&o.value?(o.getAttribute('data-unit')||'unité'):'unité';q.placeholder=`Quantité (${u})`;let h=w.querySelector('.unit-hint');if(!h){h=document.createElement('small');h.className='text-muted unit-hint ms-2 d-inline-block';q.insertAdjacentElement('afterend',h);}h.textContent=u;}
+            function filterIngredientOptions(w){const t=w.querySelector('.ingredient-type'),s=w.querySelector('.ingredient-select');if(!t||!s)return;const wtd=slug(t.value),opts=s.options;let ok=false;for(let i=0;i<opts.length;i++){const o=opts[i];if(!o.value){o.hidden=false;o.disabled=false;continue;}const tp=slug(o.getAttribute('data-type')||'');const show=!wtd||tp===wtd;o.hidden=!show;o.disabled=!show;if(o.selected&&show)ok=true;}if(!ok)s.value='';updateUnitForWrapper(w);}
+            function addBlock(list){const idx=Number(list.dataset.index||0),html=list.dataset.prototype.replace(/__name__/g,idx),w=document.createElement('div');w.className='ingredient-item border rounded p-3 mb-3 position-relative';w.innerHTML=html+'<button type="button" class="btn btn-sm btn-outline-danger position-absolute top-0 end-0 m-2" data-remove-ingredient>&times;</button>';list.appendChild(w);list.dataset.index=String(idx+1);filterIngredientOptions(w);updateUnitForWrapper(w);}
+            function bindOnce(){if(window.__recetteFormBound)return;window.__recetteFormBound=true;
+                document.addEventListener('click',function(e){if(e.target.matches('[data-add-ingredient]')){e.preventDefault();const list=document.querySelector('[data-ingredients]');if(list)addBlock(list);}else if(e.target.matches('[data-remove-ingredient]')){e.preventDefault();const it=e.target.closest('.ingredient-item');if(it)it.remove();}});
+                document.addEventListener('change',function(e){if(e.target.matches('.ingredient-type')){const w=e.target.closest('.ingredient-item')||document;filterIngredientOptions(w);updateUnitForWrapper(w);}else if(e.target.matches('.ingredient-select')){const w=e.target.closest('.ingredient-item')||document;updateUnitForWrapper(w);}});
+                const list=document.querySelector('[data-ingredients]');if(list){const items=list.querySelectorAll('.ingredient-item');list.dataset.index=String(items.length);if(items.length===0){addBlock(list);}items.forEach(w=>{filterIngredientOptions(w);updateUnitForWrapper(w);});}
             }
+            if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',bindOnce,{once:true});}else{bindOnce();}
+            document.addEventListener('turbo:load',bindOnce);
+        })();
+
+        function previewImage(event){
+            const input=event.target,preview=document.getElementById('imagePreview');if(!preview)return;
+            if(input.files&&input.files[0]){const r=new FileReader();r.onload=(e)=>{preview.src=e.target.result;preview.classList.remove('d-none');};r.readAsDataURL(input.files[0]);}
+            else{const orig=preview.dataset.originalSrc;if(orig){preview.src=orig;preview.classList.remove('d-none');}else{preview.src='#';preview.classList.add('d-none');}}
         }
     </script>
 {% endblock %}

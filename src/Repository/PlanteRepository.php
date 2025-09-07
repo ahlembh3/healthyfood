@@ -4,8 +4,8 @@ namespace App\Repository;
 
 use App\Entity\Plante;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\Persistence\ManagerRegistry;
 use Doctrine\ORM\Query;
+use Doctrine\Persistence\ManagerRegistry;
 
 class PlanteRepository extends ServiceEntityRepository
 {
@@ -48,17 +48,13 @@ class PlanteRepository extends ServiceEntityRepository
 
             foreach ($tokens as $tok) {
                 $param = ':t'.$i++;
-                // nomCommun
                 $or->add($qb->expr()->like('LOWER(p.nomCommun)', $param));
-                // nomScientifique
                 $or->add($qb->expr()->like('LOWER(p.nomScientifique)', $param));
-                // description
                 $or->add($qb->expr()->like('LOWER(p.description)', $param));
-
                 $qb->setParameter(substr($param, 1), '%'.$tok.'%');
             }
 
-            if ($or->count() > 0) {
+            if (count($or->getParts()) > 0) {
                 $qb->andWhere($or);
             }
         }
@@ -77,21 +73,20 @@ class PlanteRepository extends ServiceEntityRepository
             $desc    = $this->normalizeForSearch(strip_tags((string) ($plante->getDescription() ?? '')));
             $desc    = mb_substr($desc, 0, 800);
 
-            $scoreNom   = max(
+            $scoreNom  = max(
                 $this->similarityPercent($normalized, $nomComm),
                 $this->similarityPercent($normalized, $nomSci)
             );
-            $scoreDesc  = $this->similarityPercent($normalized, $desc);
-            $score      = max($scoreNom, $scoreDesc);
+            $scoreDesc = $this->similarityPercent($normalized, $desc);
+            $score     = max($scoreNom, $scoreDesc);
 
-            // Bonus si un token apparaît (ou quasi) dans nom/desc
+            // Bonus si un token apparaît (ou quasi)
             foreach ($tokens as $tok) {
-                if ($tok === '') continue;
+                if ($tok === '') { continue; }
 
                 if (str_contains($nomComm, $tok) || str_contains($nomSci, $tok) || str_contains($desc, $tok)) {
                     $score += 10;
-                } elseif (mb_strlen($tok) >= 4) {
-                    // cherche un mot très proche dans le corpus de la plante
+                } elseif (mb_strlen($tok, 'UTF-8') >= 4) {
                     $closest = $this->closestWord($nomComm.' '.$nomSci.' '.$desc, $tok);
                     $dist    = levenshtein($tok, $closest);
                     if ($dist <= 2) {
@@ -100,7 +95,7 @@ class PlanteRepository extends ServiceEntityRepository
                 }
             }
 
-            $score = min(100, (float) $score);
+            $score = min(100.0, (float) $score);
 
             if ($score >= $minScore) {
                 $scored[] = [$plante, $score];
@@ -108,9 +103,8 @@ class PlanteRepository extends ServiceEntityRepository
         }
 
         usort($scored, static function ($a, $b) {
-            // score desc, puis nomCommun asc pour stabilité
-            $cmp = $b[1] <=> $a[1];
-            if ($cmp !== 0) return $cmp;
+            $cmp = $b[1] <=> $a[1]; // score desc
+            if ($cmp !== 0) { return $cmp; }
             return strcmp((string) $a[0]->getNomCommun(), (string) $b[0]->getNomCommun());
         });
 
@@ -123,21 +117,15 @@ class PlanteRepository extends ServiceEntityRepository
     private function normalizeForSearch(string $s): string
     {
         $s = trim($s);
-        if ($s === '') return '';
+        if ($s === '') { return ''; }
 
         if (class_exists(\Transliterator::class)) {
             $tr = \Transliterator::create('Any-Latin; Latin-ASCII; Lower()');
-            if ($tr) {
-                $s = $tr->transliterate($s);
-            } else {
-                $s = mb_strtolower($s, 'UTF-8');
-            }
+            $s  = $tr ? $tr->transliterate($s) : mb_strtolower($s, 'UTF-8');
         } else {
             $s = mb_strtolower($s, 'UTF-8');
             $conv = @iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $s);
-            if ($conv !== false) {
-                $s = $conv;
-            }
+            if ($conv !== false) { $s = $conv; }
         }
 
         $s = preg_replace('/[^a-z0-9\s]+/u', ' ', $s) ?? $s;
@@ -148,7 +136,7 @@ class PlanteRepository extends ServiceEntityRepository
     /** Pourcentage de similarité (0..100) via similar_text. */
     private function similarityPercent(string $a, string $b): float
     {
-        if ($a === '' || $b === '') return 0.0;
+        if ($a === '' || $b === '') { return 0.0; }
         similar_text($a, $b, $percent);
         return (float) $percent;
     }
@@ -165,7 +153,7 @@ class PlanteRepository extends ServiceEntityRepository
                 $best = $d;
                 $bestWord = $w;
             }
-            if ($best === 0) break;
+            if ($best === 0) { break; }
         }
 
         return $bestWord;

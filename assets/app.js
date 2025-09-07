@@ -178,3 +178,7 @@ function initOnce() {
 document.addEventListener('turbo:load', () => { initOnce(); bindPageUI(); });
 // Cas non Turbo (1er chargement plein)
 document.addEventListener('DOMContentLoaded', () => { initOnce(); bindPageUI(); });
+
+
+
+

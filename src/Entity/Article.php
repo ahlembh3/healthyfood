@@ -9,9 +9,8 @@ use Symfony\Component\Validator\Constraints as Assert;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\ArrayCollection;
 
-
-
 #[ORM\Entity(repositoryClass: ArticleRepository::class)]
+#[ORM\HasLifecycleCallbacks]
 class Article
 {
     #[ORM\Id]
@@ -21,22 +20,18 @@ class Article
 
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank(message: "Le titre est obligatoire.")]
-    #[Assert\Length(
-    max: 255,
-    maxMessage: "Le titre ne peut pas dépasser {{ limit }} caractères.")]
+    #[Assert\Length(max: 255, maxMessage: "Le titre ne peut pas dépasser {{ limit }} caractères.")]
     private ?string $titre = null;
 
     #[ORM\Column(type: Types::TEXT)]
     #[Assert\NotBlank(message: "Le contenu est obligatoire.")]
-    #[Assert\Length(
-    min: 20,
-    minMessage: "Le contenu doit faire au moins {{ limit }} caractères.")]
+    #[Assert\Length(min: 20, minMessage: "Le contenu doit faire au moins {{ limit }} caractères.")]
     private ?string $contenu = null;
 
     #[ORM\Column]
     private ?\DateTimeImmutable $date = null;
 
-   #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
     private ?string $image = null;
 
     #[ORM\Column(options: ["default" => false])]
@@ -44,8 +39,9 @@ class Article
 
     #[Assert\NotBlank(message: "La catégorie est obligatoire.")]
     #[Assert\Choice(
-    choices: ['Bien-être', 'Nutrition', 'Plantes', 'Conseils', 'Autre'],
-    message: "Catégorie invalide. Choisissez une valeur valide.")]
+        choices: ['Bien-être', 'Nutrition', 'Plantes', 'Conseils', 'Autre'],
+        message: "Catégorie invalide. Choisissez une valeur valide."
+    )]
     #[ORM\Column(length: 255, nullable:false)]
     private ?string $categorie = null;
 
@@ -62,129 +58,69 @@ class Article
 
     public function __construct()
     {
-    $this->commentaires = new ArrayCollection();
+        $this->commentaires = new ArrayCollection();
     }
 
-    /**
- * @return Collection<int, Commentaire>
- */
-   public function getCommentaires(): Collection
-   {
-    return $this->commentaires;
-   }
-
-   public function addCommentaire(Commentaire $commentaire): static
-   {
-    if (!$this->commentaires->contains($commentaire)) {
-        $this->commentaires->add($commentaire);
-        $commentaire->setArticle($this);
+    public function __toString(): string
+    {
+        return (string)($this->titre ?? 'Article');
     }
 
-    return $this;
-   }
-
-   public function removeCommentaire(Commentaire $commentaire): static
-   {
-    if ($this->commentaires->removeElement($commentaire)) {
-        // set the owning side to null (unless already changed)
-        if ($commentaire->getArticle() === $this) {
-            $commentaire->setArticle(null);
+    #[ORM\PrePersist]
+    public function setDefaultDate(): void
+    {
+        if ($this->date === null) {
+            $this->date = new \DateTimeImmutable();
         }
     }
 
-    return $this;
-   }
+    // --- Commentaires ---
+    /** @return Collection<int, Commentaire> */
+    public function getCommentaires(): Collection { return $this->commentaires; }
 
-    public function getId(): ?int
+    public function addCommentaire(Commentaire $commentaire): static
     {
-        return $this->id;
-    }
-
-    public function getTitre(): ?string
-    {
-        return $this->titre;
-    }
-
-    public function setTitre(string $titre): static
-    {
-        $this->titre = $titre;
+        if (!$this->commentaires->contains($commentaire)) {
+            $this->commentaires->add($commentaire);
+            $commentaire->setArticle($this);
+        }
         return $this;
     }
 
-    public function getContenu(): ?string
+    public function removeCommentaire(Commentaire $commentaire): static
     {
-        return $this->contenu;
-    }
-
-    public function setContenu(string $contenu): static
-    {
-        $this->contenu = $contenu;
+        if ($this->commentaires->removeElement($commentaire)) {
+            if ($commentaire->getArticle() === $this) {
+                $commentaire->setArticle(null);
+            }
+        }
         return $this;
     }
 
-    public function getDate(): ?\DateTimeImmutable
-    {
-        return $this->date;
-    }
+    // --- Getters / Setters ---
+    public function getId(): ?int { return $this->id; }
 
-    public function setDate(\DateTimeImmutable $date): static
-    {
-        $this->date = $date;
-        return $this;
-    }
+    public function getTitre(): ?string { return $this->titre; }
+    public function setTitre(string $titre): static { $this->titre = $titre; return $this; }
 
-    public function getImage(): ?string
-    {
-        return $this->image;
-    }
+    public function getContenu(): ?string { return $this->contenu; }
+    public function setContenu(string $contenu): static { $this->contenu = $contenu; return $this; }
 
-    public function setImage(?string $image): static
-    {
-        $this->image = $image;
-        return $this;
-    }
+    public function getDate(): ?\DateTimeImmutable { return $this->date; }
+    public function setDate(\DateTimeImmutable $date): static { $this->date = $date; return $this; }
 
-    public function isValidation(): ?bool
-    {
-        return $this->validation;
-    }
+    public function getImage(): ?string { return $this->image; }
+    public function setImage(?string $image): static { $this->image = $image; return $this; }
 
-    public function setValidation(bool $validation): static
-    {
-        $this->validation = $validation;
-        return $this;
-    }
+    public function isValidation(): ?bool { return $this->validation; }
+    public function setValidation(bool $validation): static { $this->validation = $validation; return $this; }
 
-    public function getCategorie(): ?string
-    {
-        return $this->categorie;
-    }
+    public function getCategorie(): ?string { return $this->categorie; }
+    public function setCategorie(string $categorie): static { $this->categorie = $categorie; return $this; }
 
-    public function setCategorie(?string $categorie): static
-    {
-        $this->categorie = $categorie;
-        return $this;
-    }
+    public function getUtilisateur(): ?Utilisateur { return $this->utilisateur; }
+    public function setUtilisateur(?Utilisateur $utilisateur): static { $this->utilisateur = $utilisateur; return $this; }
 
-    public function getUtilisateur(): ?Utilisateur
-    {
-        return $this->utilisateur;
-    }
-
-    public function setUtilisateur(?Utilisateur $utilisateur): static
-    {
-        $this->utilisateur = $utilisateur;
-        return $this;
-    }
-    public function getSource(): ?string
-    {
-        return $this->source;
-    }
-
-    public function setSource(?string $source): self
-    {
-        $this->source = $source;
-        return $this;
-    }
+    public function getSource(): ?string { return $this->source; }
+    public function setSource(?string $source): self { $this->source = $source; return $this; }
 }
-

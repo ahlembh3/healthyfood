@@ -19,25 +19,16 @@ class Recette
 
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank(message: "Le titre est obligatoire.")]
-    #[Assert\Length(
-        max: 255,
-        maxMessage: "Le titre ne peut pas dépasser {{ limit }} caractères."
-    )]
+    #[Assert\Length(max: 255, maxMessage: "Le titre ne peut pas dépasser {{ limit }} caractères.")]
     private ?string $titre = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
-    #[Assert\Length(
-        max: 1000,
-        maxMessage: "La description ne peut pas dépasser {{ limit }} caractères."
-    )]
+    #[Assert\Length(max: 1000, maxMessage: "La description ne peut pas dépasser {{ limit }} caractères.")]
     private ?string $description = null;
 
     #[ORM\Column(type: Types::TEXT)]
     #[Assert\NotBlank(message: "Les instructions sont obligatoires.")]
-    #[Assert\Length(
-        min: 10,
-        minMessage: "Les instructions doivent contenir au moins {{ limit }} caractères."
-    )]
+    #[Assert\Length(min: 10, minMessage: "Les instructions doivent contenir au moins {{ limit }} caractères.")]
     private ?string $instructions = null;
 
     #[ORM\Column(nullable: true)]
@@ -65,7 +56,9 @@ class Recette
     #[ORM\Column(type: 'datetime_immutable')]
     private ?\DateTimeImmutable $createdAt = null;
 
-    #[ORM\OneToMany(mappedBy: 'recette', targetEntity: RecetteIngredient::class, cascade: ['persist', 'remove'])]
+    #[ORM\OneToMany(mappedBy: 'recette', targetEntity: RecetteIngredient::class, cascade: ['persist','remove'], orphanRemoval: true)]
+    #[Assert\Valid]
+    #[Assert\Count(min: 1, minMessage: "Ajoutez au moins un ingrédient à votre recette.")]
     private Collection $recetteIngredients;
 
     #[ORM\ManyToOne(inversedBy: 'recettes')]
