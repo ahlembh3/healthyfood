@@ -4,6 +4,7 @@
 # Put parameters here that don't need to change on each machine where the app is deployed
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
+    app.contact_to: '%env(CONTACT_TO)%'
     uploads_directory: '%kernel.project_dir%/public/uploads'
     recettes_directory: '%kernel.project_dir%/public/uploads/recettes'
     articles_directory: '%kernel.project_dir%/public/uploads/articles'
@@ -13,13 +14,15 @@ parameters:
 
 
 services:
+    App\Security\LoginSuccessHandler:
+        arguments:
+            $router: '@router'            # optionnel si ton __construct type-hinte UrlGeneratorInterface/RouterInterface
+        tags:
+            - { name: 'monolog.logger', channel: 'security' }
+    App\Service\HtmlCleaner: ~
     html_sanitizer.article.content:
         alias: 'html_sanitizer.sanitizer.article.content'
         public: false
-    App\Security\LoginSuccessHandler:
-        arguments:
-            $router: '@router'
-        tags: [ 'monolog.logger' ]
     # default configuration for services in *this* file
     _defaults:
         autowire: true      # Automatically injects dependencies in your services.

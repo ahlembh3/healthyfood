@@ -1,0 +1,184 @@
+{# templates/static/mentions_legales.html.twig #}
+{% extends 'base.html.twig' %}
+
+{% block title %}Mentions légales - Santé & Nature{% endblock %}
+{% block page_title %}Mentions légales{% endblock %}
+
+{% block content %}
+    <main id="main" class="legal-page">
+        <section class="container-site py-4">
+
+            {# Fil d’Ariane #}
+            <nav aria-label="Fil d’Ariane" class="mb-3">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ path('app_home') }}">Accueil</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Mentions légales</li>
+                </ol>
+            </nav>
+
+            {# Intro #}
+            <p class="text-muted">
+                Conformément aux articles 6-III et 19 de la loi n°2004-575 du 21 juin 2004 pour la confiance dans l’économie numérique,
+                les informations légales relatives au site <strong>Santé &amp; Nature</strong> sont précisées ci-dessous.
+            </p>
+
+            {# Sommaire #}
+            <nav class="toc my-4" aria-label="Sommaire de la page">
+                <h2 class="h5 mb-2">Sommaire</h2>
+                <ul class="list-unstyled ms-0">
+                    <li><a href="#editeur">1. Éditeur du site</a></li>
+                    <li><a href="#direction">2. Direction de la publication</a></li>
+                    <li><a href="#contact">3. Contact</a></li>
+                    <li><a href="#propriete-intellectuelle">4. Propriété intellectuelle</a></li>
+                    <li><a href="#responsabilite">5. Responsabilité</a></li>
+                    <li><a href="#donnees-personnelles">6. Données personnelles (RGPD)</a></li>
+                    <li><a href="#cookies">7. Cookies</a></li>
+                    <li><a href="#liens">8. Liens hypertextes</a></li>
+                    <li><a href="#droit-applicable">9. Droit applicable • Litiges</a></li>
+                    <li><a href="#accessibilite">10. Accessibilité</a></li>
+                    <li><a href="#mise-a-jour">11. Mise à jour des mentions</a></li>
+                    <li><a href="#credits">12. Crédits</a></li>
+                </ul>
+            </nav>
+
+            <hr class="my-4"/>
+
+            <section id="editeur" class="mb-4">
+                <h2 class="h4"> Éditeur du site</h2>
+                <p>
+                    <strong>Santé &amp; Nature</strong> — Site informatif et éducatif sur l’alimentation saine, les tisanes et les plantes médicinales.<br/>
+                    <strong>Responsable légal :</strong> Ben Hamouda Ahlem
+                </p>
+            </section>
+
+            <section id="direction" class="mb-4">
+                <h2 class="h4"> Direction de la publication</h2>
+                <p>
+                    <strong>Directrice de la publication :</strong> Ben Hamouda Ahlem<br/>
+                    <strong>Contact publication :</strong>
+                    <a href="mailto:rofranebh1@gmail.com" aria-label="Envoyer un e-mail à l’éditeur">rofranebh1@gmail.com</a>
+                </p>
+            </section>
+
+
+
+            <section id="contact" class="mb-4">
+                <h2 class="h4"> Contact</h2>
+                <p>
+                    Pour toute question, utilisez la page <a href="{{ path('contact') }}">Contact</a> ou écrivez à
+                    <a href="mailto:rofranebh1@gmail.com">rofranebh1@gmail.com</a>.
+                </p>
+            </section>
+
+            <section id="propriete-intellectuelle" class="mb-4">
+                <h2 class="h4"> Propriété intellectuelle</h2>
+                <p>
+                    Les contenus du site (<em>textes, logos, images, vidéos, éléments graphiques, code et structure</em>)
+                    sont protégés par le droit d’auteur et, le cas échéant, par le droit des marques. Sauf mention contraire,
+                    ils sont la propriété de <strong>Santé &amp; Nature</strong> ou de leurs auteurs respectifs.
+                </p>
+                <p>
+                    Toute reproduction, représentation, adaptation ou réutilisation, totale ou partielle, sans autorisation écrite préalable,
+                    est interdite. Les courtes citations sont autorisées avec mention de la source et lien vers la page d’origine.
+                </p>
+            </section>
+
+            <section id="responsabilite" class="mb-4">
+                <h2 class="h4"> Responsabilité</h2>
+                <p>
+                    Les informations publiées sur <strong>Santé &amp; Nature</strong> ont une vocation <strong>informative et éducative</strong>.
+                    Elles ne constituent ni un avis médical ni une consultation personnalisée. Pour toute question de santé,
+                    consultez un·e professionnel·le qualifié·e.
+                </p>
+                <p>
+                    Malgré nos efforts de mise à jour, des erreurs peuvent subsister.
+                    <strong>Santé &amp; Nature</strong> ne saurait être tenue responsable de l’usage des informations publiées
+                    ni des dommages directs ou indirects qui en résulteraient.
+                </p>
+            </section>
+
+            <section id="donnees-personnelles" class="mb-4">
+                <h2 class="h4"> Données personnelles (RGPD)</h2>
+                <p>
+                    Les traitements de données personnels respectent le RGPD et la loi “Informatique et Libertés”.
+                    Nous traitons uniquement les données nécessaires au fonctionnement du site (ex. formulaire de contact, commentaires).
+                </p>
+                <ul>
+                    <li><strong>Base légale :</strong> consentement et/ou intérêt légitime selon le traitement.</li>
+                    <li><strong>Finalités :</strong> gestion des messages, modération, amélioration du site, statistiques.</li>
+                    <li><strong>Destinataires :</strong> équipe du site et prestataires techniques habilités.</li>
+                    <li><strong>Conservation :</strong> limitée au strict nécessaire (voir <a href="{{ path('confidentialite') }}">Confidentialité</a>).</li>
+                    <li><strong>Droits :</strong> accès, rectification, effacement, opposition, limitation, portabilité — contact :
+                        <a href="mailto:rofranebh1@gmail.com">rofranebh1@gmail.com</a>.
+                    </li>
+                    <li><strong>Autorité :</strong> CNIL — <a href="https://www.cnil.fr" target="_blank" rel="noopener noreferrer">cnil.fr</a>.</li>
+                </ul>
+            </section>
+
+            <section id="cookies" class="mb-4">
+                <h2 class="h4"> Cookies</h2>
+                <p>
+                    Le site peut déposer des cookies techniques (indispensables) et, le cas échéant, des cookies de mesure d’audience.
+                    Un bandeau/gestionnaire permet de configurer vos préférences. Vous pouvez modifier votre choix via le lien “Cookies”
+                    (pied de page) ou les paramètres du navigateur.
+                </p>
+            </section>
+
+            <section id="liens" class="mb-4">
+                <h2 class="h4"> Liens hypertextes</h2>
+                <p>
+                    Le site peut contenir des liens vers des sites tiers. <strong>Santé &amp; Nature</strong> n’exerce aucun contrôle sur ces sites
+                    et décline toute responsabilité concernant leurs contenus ou pratiques.
+                </p>
+                <p>
+                    La création de liens vers nos pages est autorisée si le lien est explicite, non trompeur, et respecte l’intégrité des contenus.
+                </p>
+            </section>
+
+            <section id="droit-applicable" class="mb-4">
+                <h2 class="h4"> Droit applicable • Litiges</h2>
+                <p>
+                    Les présentes mentions sont régies par le droit français. À défaut de résolution amiable, les tribunaux français compétents
+                    seront saisis.
+                </p>
+            </section>
+
+            <section id="accessibilite" class="mb-4">
+                <h2 class="h4"> Accessibilité</h2>
+                <p>
+                    <strong>Santé &amp; Nature</strong> s’engage à améliorer l’accessibilité de ses contenus. En cas de difficulté,
+                    contactez-nous via la page <a href="{{ path('contact') }}">Contact</a>.
+                </p>
+            </section>
+
+            <section id="mise-a-jour" class="mb-4">
+                <h2 class="h4"> Mise à jour des mentions</h2>
+                <p>Dernière mise à jour : <strong>{{ "now"|date("d/m/Y") }}</strong>.</p>
+            </section>
+
+            <section id="credits" class="mb-4">
+                <h2 class="h4"> Crédits</h2>
+                <ul>
+                    <li><strong>Édition &amp; contenus :</strong> Santé &amp; Nature.</li>
+                    <li><strong>Design &amp; intégration :</strong> Symfony (Twig), React (lecture seule), Bootstrap 5, TinyMCE.</li>
+                    <li><strong>Icônes :</strong> Bootstrap Icons (MIT) / Lucide.</li>
+                    <li><strong>Typographies :</strong> Poppins / Open Sans via Google Fonts.</li>
+                </ul>
+            </section>
+
+            <hr class="my-4"/>
+            <p class="small text-muted mb-0">© {{ "now"|date("Y") }} Santé &amp; Nature — Tous droits réservés.</p>
+        </section>
+    </main>
+{% endblock %}
+
+{# Styles locaux discrets alignés sur theme.css #}
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .legal-page .breadcrumb { --bs-breadcrumb-divider: '›'; }
+        .legal-page .toc a { text-decoration: none; }
+        .legal-page a:focus { outline: 3px solid var(--c-vert); outline-offset: 2px; border-radius: .35rem; }
+        @media (prefers-reduced-motion: reduce){ .legal-page *{ transition: none !important; } }
+    </style>
+{% endblock %}

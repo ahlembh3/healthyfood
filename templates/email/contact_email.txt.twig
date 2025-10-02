@@ -1,0 +1,10 @@
+{# templates/email/contact_email.txt.twig #}
+Santé & Nature — Nouveau message
+
+Nom : {{ name }}
+Email : {{ user_email }}
+
+Sujet : {{ subject }}
+
+----------------------------------------
+{{ message|striptags|replace({'&nbsp;':' '}) }}

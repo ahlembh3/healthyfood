@@ -1,0 +1,56 @@
+{% apply spaceless %}
+    <!doctype html>
+    <html lang="fr">
+    <head>
+        <meta charset="utf-8">
+        <meta name="x-apple-disable-message-reformatting">
+        <meta name="format-detection" content="telephone=no,address=no,email=no,date=no,url=no">
+        <title>Message de contact</title>
+    </head>
+    <body style="margin:0;padding:16px;background:#f6f3ee;font-family:Arial,Helvetica,sans-serif;color:#1B1F23;">
+
+    <!-- Table wrapper plein écran -->
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"
+           style="border-collapse:collapse;mso-table-lspace:0pt;mso-table-rspace:0pt;width:100%;">
+        <tr>
+            <td align="center" style="margin:0;padding:0;">
+
+                <!-- Table conteneur centrée (600px) -->
+                <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600"
+                       style="border-collapse:collapse;mso-table-lspace:0pt;mso-table-rspace:0pt;width:100%;
+                      max-width:600px;margin:0 auto;background:#ffffff;border:1px solid #eee;border-radius:8px;">
+
+                    <tr>
+                        <td style="padding:16px 20px;background:#5c9a74;color:#ffffff;border-radius:8px 8px 0 0;">
+                            <strong>Santé &amp; Nature — Nouveau message</strong>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="padding:20px;">
+                            <p><strong>Nom :</strong> {{ name|e }}</p>
+                            <p><strong>Email :</strong> {{ user_email|e }}</p>
+
+                            <p><strong>Sujet :</strong> {{ subject|e }}</p>
+                            <hr style="border:none;border-top:1px solid #eee;margin:16px 0;">
+                            {# Si tu as HtmlCleaner côté serveur : #}
+                            <p>{{ message|raw }}</p>
+                            {# Sinon, utilise plutôt : <p>{{ message|e|nl2br }}</p> #}
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="padding:12px 20px;color:#6B7280;font-size:12px;">
+                            Cet e-mail est généré par le formulaire de contact. Ne pas répondre à <em>no-reply</em> — utilisez “Répondre à”.
+                        </td>
+                    </tr>
+
+                </table>
+
+            </td>
+        </tr>
+    </table>
+
+    </body>
+    </html>
+{% endapply %}

@@ -2,12 +2,13 @@
     <div class="container-site">
         <div class="footer-content">
             <div>© {{ "now"|date("Y") }} Santé & Nature</div>
+
             <nav class="footer-nav" aria-label="Navigation secondaire">
-                <a href="{#  {{ path('mentions_legales') }}#}">Mentions légales</a>
-                <a href="{#  {{ path('contact') }}#}">Contact</a>
-                <a href="{#  {{ path('confidentialite') }}#}">Confidentialité</a>
-                <a href="https://instagram.com" target="_blank" rel="noopener">Instagram</a>
-                <a href="https://facebook.com" target="_blank" rel="noopener">Facebook</a>
+                <a href="{{ path('mentions_legales') }}">Mentions légales</a>
+                <a href="{{ path('contact') }}">Contact</a>
+                <a href="{{ path('confidentialite') }}">Confidentialité</a>
+                <a href="https://instagram.com" target="_blank" rel="noopener noreferrer">Instagram</a>
+                <a href="https://facebook.com"  target="_blank" rel="noopener noreferrer">Facebook</a>
             </nav>
         </div>
     </div>
