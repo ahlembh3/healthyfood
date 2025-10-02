@@ -1,29 +1,36 @@
 <?php
+declare(strict_types=1);
+
 namespace App\Security;
 
+use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Routing\RouterInterface;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Http\Authentication\AuthenticationSuccessHandlerInterface;
 
-class LoginSuccessHandler implements AuthenticationSuccessHandlerInterface
+final class LoginSuccessHandler implements AuthenticationSuccessHandlerInterface
 {
-private RouterInterface $router;
+    public function __construct(
+        private UrlGeneratorInterface $router,
+        private LoggerInterface $logger,
+    ) {}
 
-public function __construct(RouterInterface $router)
-{
-$this->router = $router;
-}
+    public function onAuthenticationSuccess(Request $request, TokenInterface $token): Response
+    {
+        $user = $token->getUser();
+        $username = $user instanceof UserInterface ? $user->getUserIdentifier() : (string) $user;
+        $roles = $user instanceof UserInterface ? $user->getRoles() : [];
 
-public function onAuthenticationSuccess(Request $request, TokenInterface $token): RedirectResponse
-{
-$user = $token->getUser();
+        if (\in_array('ROLE_ADMIN', $roles, true)) {
+            $this->logger->info('Connexion admin réussie', ['user' => $username]);
+            return new RedirectResponse($this->router->generate('admin_dashboard'));
+        }
 
-if (in_array('ROLE_ADMIN', $user->getRoles(), true)) {
-return new RedirectResponse($this->router->generate('admin_dashboard'));
-}
-
-return new RedirectResponse($this->router->generate('utilisateurs_dashboard'));
-}
+        $this->logger->info('Connexion utilisateur réussie', ['user' => $username]);
+        return new RedirectResponse($this->router->generate('utilisateurs_dashboard'));
+    }
 }

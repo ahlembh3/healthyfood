@@ -8,16 +8,6 @@ framework:
         enable_attributes: true
         email_validation_mode: 'html5'
 
-    html_sanitizer:
-        sanitizers:
-            article.content:
-                allow_safe_elements: true
-                allow_elements: ['p','ul','ol','li','strong','em','u','blockquote','a','h1','h2','h3','h4','h5','h6','table','thead','tbody','tr','th','td','br']
-                allow_attributes:
-                    a:  ['href','title','target','rel']
-                    td: ['colspan','rowspan']
-                    th: ['colspan','rowspan']
-                allowed_link_schemes: ['http','https','mailto']
 
 when@test:
     framework:

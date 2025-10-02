@@ -1,0 +1,269 @@
+{# templates/static/confidentialite.html.twig #}
+{% extends 'base.html.twig' %}
+
+{% block title %}Confidentialité (RGPD) - Santé & Nature{% endblock %}
+{% block page_title %}Confidentialité &amp; Cookies{% endblock %}
+
+{% block content %}
+    <main id="main" class="privacy-page">
+        <section class="container-site py-4">
+
+            {# Fil d’Ariane #}
+            <nav aria-label="Fil d’Ariane" class="mb-3">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ path('app_home') }}">Accueil</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Confidentialité & Cookies</li>
+                </ol>
+            </nav>
+
+            <p class="text-muted">
+                Cette page explique comment <strong>Santé &amp; Nature</strong> collecte, utilise, protège et partage vos données,
+                conformément au <abbr title="Règlement Général sur la Protection des Données">RGPD</abbr> et à la loi “Informatique et Libertés”.
+            </p>
+
+            {# Sommaire #}
+            <nav class="toc my-4" aria-label="Sommaire de la page">
+                <h2 class="h5 mb-2">Sommaire</h2>
+                <ul class="list-unstyled">
+                    <li><a href="#qui">1. Qui sommes-nous ?</a></li>
+                    <li><a href="#donnees">2. Données collectées</a></li>
+                    <li><a href="#finalites">3. Finalités & bases légales</a></li>
+                    <li><a href="#duree">4. Durées de conservation</a></li>
+                    <li><a href="#partage">5. Partage & sous-traitants</a></li>
+                    <li><a href="#securite">6. Sécurité des données</a></li>
+                    <li><a href="#droits">7. Vos droits</a></li>
+                    <li><a href="#cookies">8. Cookies & traceurs</a></li>
+                    <li><a href="#transferts">9. Transferts hors UE</a></li>
+                    <li><a href="#mineurs">10. Données des mineurs</a></li>
+                    <li><a href="#contact">11. Contact DPO/Privacy</a></li>
+                    <li><a href="#maj">12. Mises à jour</a></li>
+                </ul>
+            </nav>
+
+            <hr class="my-4"/>
+
+            <section id="qui" class="mb-4">
+                <h2 class="h4">1. Qui sommes-nous ?</h2>
+                <p>
+                    <strong>Santé &amp; Nature</strong> — site informatif sur l’alimentation saine, tisanes et plantes médicinales.<br/>
+                    <strong>Éditrice :</strong> Ben Hamouda Ahlem<br/>
+                    <strong>Contact :</strong>
+                    <a href="mailto:rofranebh1@gmail.com" aria-label="Contacter l’éditrice par e-mail">rofranebh1@gmail.com</a>
+                    — ou via la page <a href="{{ path('contact') }}">Contact</a>.
+                </p>
+            </section>
+
+            <section id="donnees" class="mb-4">
+                <h2 class="h4">2. Données collectées</h2>
+                <ul>
+                    <li><strong>Formulaire de contact :</strong> nom, e-mail, message.</li>
+                    <li><strong>Comptes & commentaires (si activés) :</strong> e-mail, pseudo, contenu.</li>
+                    <li><strong>Données techniques :</strong> logs serveurs, IP (anonymisée si mesure d’audience), user-agent.</li>
+                    <li><strong>Cookies/traceurs :</strong> préférences (thème, langue), mesure d’audience (si consentie), anti-fraude.</li>
+                </ul>
+                <p class="small text-muted mb-0">Aucune donnée “sensible” au sens du RGPD n’est collectée.</p>
+            </section>
+
+            <section id="finalites" class="mb-4">
+                <h2 class="h4">3. Finalités & bases légales</h2>
+                <div class="table-responsive" role="region" aria-label="Tableau des finalités et bases légales" tabindex="0">
+                    <table class="table table-sm align-middle">
+                        <thead>
+                        <tr>
+                            <th scope="col">Finalité</th>
+                            <th scope="col">Exemples</th>
+                            <th scope="col">Base légale</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td>Répondre à vos messages</td>
+                            <td>Traitement des demandes via le formulaire</td>
+                            <td>Intérêt légitime / Pré-contractuel</td>
+                        </tr>
+                        <tr>
+                            <td>Gestion des comptes & commentaires</td>
+                            <td>Authentification, modération, prévention des abus</td>
+                            <td>Exécution du contrat / Intérêt légitime</td>
+                        </tr>
+                        <tr>
+                            <td>Amélioration du site</td>
+                            <td>Statistiques de fréquentation (si consenties)</td>
+                            <td>Consentement</td>
+                        </tr>
+                        <tr>
+                            <td>Sécurité</td>
+                            <td>Logs, anti-spam, détection d’anomalies</td>
+                            <td>Intérêt légitime / Obligation légale</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section id="duree" class="mb-4">
+                <h2 class="h4">4. Durées de conservation</h2>
+                <div class="table-responsive" role="region" aria-label="Tableau des durées de conservation" tabindex="0">
+                    <table class="table table-sm align-middle">
+                        <thead>
+                        <tr>
+                            <th scope="col">Catégorie</th>
+                            <th scope="col">Durée</th>
+                            <th scope="col">Commentaire</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td>Messages de contact</td>
+                            <td>12 mois</td>
+                            <td>Suivi des échanges puis purge</td>
+                        </tr>
+                        <tr>
+                            <td>Comptes inactifs</td>
+                            <td>24 mois d’inactivité</td>
+                            <td>Suppression / anonymisation après relance</td>
+                        </tr>
+                        <tr>
+                            <td>Logs techniques</td>
+                            <td>6 mois</td>
+                            <td>Sécurité & diagnostic</td>
+                        </tr>
+                        <tr>
+                            <td>Cookies mesure d’audience</td>
+                            <td>13 mois max</td>
+                            <td>Selon recommandations CNIL</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p class="small text-muted mb-0">Ces durées peuvent varier si la loi impose une conservation plus longue.</p>
+            </section>
+
+            <section id="partage" class="mb-4">
+                <h2 class="h4">5. Partage & sous-traitants</h2>
+                <p>
+                    Partage limité aux prestataires techniques nécessaires au bon fonctionnement du site (hébergement, messagerie/anti-spam,
+                    mesure d’audience le cas échéant), soumis à des clauses de confidentialité et de sous-traitance.
+                </p>
+            </section>
+
+            <section id="securite" class="mb-4">
+                <h2 class="h4">6. Sécurité des données</h2>
+                <ul>
+                    <li><strong>HTTPS</strong> et configuration TLS à jour.</li>
+                    <li><strong>Sanitization serveur</strong> du HTML (ex. <code>tgalopin/html-sanitizer</code>).</li>
+                    <li><strong>Protection CSRF</strong> sur formulaires Symfony.</li>
+                    <li><strong>Mots de passe hashés</strong> (bcrypt), jamais en clair.</li>
+                    <li><strong>Journalisation</strong> des accès/erreurs avec rétention limitée.</li>
+                    <li><strong>Contrôles d’accès</strong> par rôles.</li>
+                    <li><strong>Backups</strong> réguliers (si possible chiffrés) + tests de restauration.</li>
+                    <li><strong>En-têtes sécurité</strong> (CSP, HSTS, X-Frame-Options, Referrer-Policy, X-Content-Type-Options).</li>
+                </ul>
+                <p class="small text-muted mb-0">Aucun système n’est invulnérable : signalez-nous tout incident suspect.</p>
+            </section>
+
+            <section id="droits" class="mb-4">
+                <h2 class="h4">7. Vos droits</h2>
+                <ul>
+                    <li>Accès, rectification, effacement.</li>
+                    <li>Limitation, opposition, portabilité.</li>
+                    <li>Retrait du consentement (sans effet rétroactif).</li>
+                </ul>
+                <p>
+                    Exercez vos droits via <a href="mailto:rofranebh1@gmail.com">rofranebh1@gmail.com</a> ou la page
+                    <a href="{{ path('contact') }}">Contact</a> (joindre une preuve d’identité si nécessaire).
+                    Vous pouvez saisir la <strong>CNIL</strong> :
+                    <a href="https://www.cnil.fr" target="_blank" rel="noopener noreferrer">cnil.fr</a>.
+                </p>
+            </section>
+
+            <section id="cookies" class="mb-4">
+                <h2 class="h4">8. Cookies & traceurs</h2>
+                <p>
+                    Nous utilisons des cookies nécessaires au fonctionnement et, avec votre consentement, des cookies de mesure d’audience.
+                    Gérez vos préférences à tout moment&nbsp;:
+                    <a href="#" id="open-cookie-manager" class="btn btn-sm btn-outline-secondary" role="button">Gérer mes cookies</a>
+                    <span class="visually-hidden">Ouvre le gestionnaire de consentement des cookies</span>
+                </p>
+
+                <details class="mb-2">
+                    <summary><strong>8.1. Types de cookies</strong></summary>
+                    <div class="table-responsive mt-2" role="region" aria-label="Tableau des types de cookies" tabindex="0">
+                        <table class="table table-sm align-middle">
+                            <thead>
+                            <tr>
+                                <th scope="col">Type</th>
+                                <th scope="col">Finalité</th>
+                                <th scope="col">Durée</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr>
+                                <td>Nécessaires</td>
+                                <td>Fonctions de base, sécurité, session</td>
+                                <td>Session / 12 mois</td>
+                            </tr>
+                            <tr>
+                                <td>Préférences</td>
+                                <td>Thème (clair/sombre), langue</td>
+                                <td>6–12 mois</td>
+                            </tr>
+                            <tr>
+                                <td>Mesure d’audience</td>
+                                <td>Statistiques anonymisées</td>
+                                <td>13 mois max</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </details>
+
+                <details>
+                    <summary><strong>8.2. Contrôle & paramétrage</strong></summary>
+                    <ul class="mt-2">
+                        <li>Via notre gestionnaire (bouton ci-dessus).</li>
+                        <li>Paramètres du navigateur (blocage/suppression des cookies).</li>
+                        <li>“Do Not Track” : respecté lorsque techniquement possible.</li>
+                    </ul>
+                </details>
+            </section>
+
+            <section id="transferts" class="mb-4">
+                <h2 class="h4">9. Transferts hors UE</h2>
+                <p>Si un prestataire traite des données hors UE/EEE, nous nous assurons de garanties adéquates (décision d’adéquation, CCT, etc.).</p>
+            </section>
+
+            <section id="mineurs" class="mb-4">
+                <h2 class="h4">10. Données des mineurs</h2>
+                <p>Le site s’adresse au grand public. Les mineurs doivent obtenir l’autorisation des représentants légaux pour toute fonctionnalité impliquant des données personnelles.</p>
+            </section>
+
+            <section id="contact" class="mb-4">
+                <h2 class="h4">11. Contact DPO/Privacy</h2>
+                <p>Pour toute question relative à la protection des données : <a href="mailto:rofranebh1@gmail.com">rofranebh1@gmail.com</a>.</p>
+            </section>
+
+            <section id="maj" class="mb-4">
+                <h2 class="h4">12. Mises à jour</h2>
+                <p>Dernière mise à jour : <strong>{{ "now"|date("d/m/Y") }}</strong>.</p>
+            </section>
+
+            <hr class="my-4"/>
+            <p class="small text-muted mb-0">
+                © {{ "now"|date("Y") }} Santé &amp; Nature — <a href="{{ path('mentions_legales') }}">Mentions légales</a>
+            </p>
+        </section>
+    </main>
+{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .privacy-page .breadcrumb { --bs-breadcrumb-divider: '›'; }
+        .privacy-page .table-responsive { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+        .privacy-page .toc a { text-decoration:none; }
+        .privacy-page a:focus, .privacy-page [role="button"]:focus { outline:3px solid var(--c-vert); outline-offset:2px; border-radius:.35rem; }
+        #open-cookie-manager { padding:.25rem .5rem; border-radius:.5rem; }
+        @media (prefers-reduced-motion:reduce){ .privacy-page *{ transition:none !important; } }
+    </style>
+{% endblock %}

@@ -1,0 +1,25 @@
+# config/packages/framework_html_sanitizer.yaml
+framework:
+  html_sanitizer:
+    sanitizers:
+      article.content:
+        # Point de départ sûr (pas de scripts/styles dangereux)
+        allow_safe_elements: true
+
+        # Balises autorisées (mapping: élément -> attributs autorisés)
+        allow_elements:
+          p: []
+          ul: []
+          ol: []
+          li: []
+          strong: []
+          em: []
+          h2: []
+          h3: []
+          blockquote: []
+          br: []
+          a: ['href', 'title', 'rel', 'target']
+
+        # Liens: schémas/relatifs
+        allowed_link_schemes: ['http', 'https', 'mailto']
+        allow_relative_links: true
