@@ -28,6 +28,7 @@ security:
 
     access_control:
         # --- Public (lecture seule + auth pages) ---
+        - { path: ^/reset-password, roles: PUBLIC_ACCESS }
         - { path: ^/login$, roles: PUBLIC_ACCESS }
         - { path: ^/logout$, roles: PUBLIC_ACCESS }
         - { path: ^/inscription$, roles: PUBLIC_ACCESS }
