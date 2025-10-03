@@ -153,11 +153,7 @@
       <path value="$PROJECT_DIR$/vendor/psr/http-message" />
       <path value="$PROJECT_DIR$/vendor/psr/http-factory" />
       <path value="$PROJECT_DIR$/vendor/symfony/html-sanitizer" />
-      <path value="$PROJECT_DIR$/vendor/staabm/side-effects-detector" />
-      <path value="$PROJECT_DIR$/vendor/zenstruck/assert" />
-      <path value="$PROJECT_DIR$/vendor/zenstruck/foundry" />
-      <path value="$PROJECT_DIR$/vendor/dama/doctrine-test-bundle" />
-      <path value="$PROJECT_DIR$/vendor/liip/test-fixtures-bundle" />
+      <path value="$PROJECT_DIR$/vendor/symfonycasts/reset-password-bundle" />
     </include_path>
   </component>
   <component name="PhpProjectSharedConfiguration" php_language_level="8.2" />
