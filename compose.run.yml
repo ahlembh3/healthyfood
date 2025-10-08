@@ -1,0 +1,48 @@
+services:
+  db:
+    image: mariadb:10.11
+    container_name: hf-db-run
+    environment:
+      MARIADB_ROOT_PASSWORD: root
+      MARIADB_DATABASE: healthytest
+      MARIADB_USER: hf
+      MARIADB_PASSWORD: hfpass
+    volumes:
+      - dbdata_run:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+    restart: unless-stopped
+
+  app:
+    image: ahlembh/healthyfood:1.1          # <-- même tag que WEB
+    container_name: hf-app-run
+    env_file:
+      - ./.env.run
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - uploads_run:/var/www/html/public/uploads
+    restart: unless-stopped
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+      args:
+        APP_IMAGE: ahlembh/healthyfood:1.1  # <-- même tag que APP
+    container_name: hf-web-run
+    depends_on:
+      - app
+    ports:
+      - "8082:80"
+    volumes:
+      - uploads_run:/var/www/html/public/uploads:ro
+    restart: unless-stopped
+
+volumes:
+  dbdata_run:
+  uploads_run:

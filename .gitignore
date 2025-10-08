@@ -1,26 +1,19 @@
-
-###> symfony/framework-bundle ###
-/.env.dev
-/.env.local
-/.env.local.php
-/.env.*.local
-/config/secrets/prod/prod.decrypt.private.php
-/public/bundles/
-/var/
+# Symfony/Composer
 /vendor/
-###< symfony/framework-bundle ###
+/var/
 
-###> phpunit/phpunit ###
-/phpunit.xml
-.phpunit.result.cache
-###< phpunit/phpunit ###
+# Env & secrets locaux
+.env.local
+.env.*.local
+.env.test
+.env.test.local
 
-###> symfony/phpunit-bridge ###
-.phpunit.result.cache
-/phpunit.xml
-###< symfony/phpunit-bridge ###
+# Build/Cache front (si générés localement)
+public/build/
+/public/assets/*-*.css
+public/assets/*-*.js
+public/manifest.json
 
-###> symfony/asset-mapper ###
-/public/assets/
-/assets/vendor/
-###< symfony/asset-mapper ###
+# Uploads utilisateurs (on garde un .gitkeep vide)
+public/uploads/
+!public/uploads/.gitkeep
