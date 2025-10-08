@@ -162,39 +162,42 @@
     {% endif %}
 
     {# --- Boutons bas de page (Retour / Modifier / Supprimer) --- #}
-    {% set from = app.request.get('from')|default('') %}
-    {% set backRoute = 'article_index' %}
-    {% set backParams = {} %}
 
-    {% if from == 'liste' %}
-        {% set backRoute = 'article_index' %}
-        {% set backParams = {
-            q: app.request.get('q'),
-            categorie: app.request.get('categorie'),
-            page: app.request.get('page')|default(1)
-        } %}
-    {% elseif from == 'admin' %}
-        {% set backRoute = 'article_liste_admin' %}
-    {% elseif from == 'mes' %}
-        {% set backRoute = 'article_mes_articles' %}
-    {% endif %}
+    {# 1) On privilégie l'URL calculée par le contrôleur (`backUrl`) #}
+    {# 2) Sinon, on utilise le Referer s'il est interne #}
+    {# 3) Sinon, on retombe sur la liste publique #}
 
-    {# 1) URL de repli si pas de referer exploitable #}
-    {% set defaultBackUrl = path(backRoute, backParams) %}
-
-    {# 2) Referer (si interne) sinon on garde la fallback #}
-    {% set ref  = app.request.headers.get('referer')|default('') %}
+    {% set candidate = backUrl ?? app.request.headers.get('referer') ?? '' %}
     {% set host = app.request.schemeAndHttpHost %}
-    {% set backUrl = (ref and (ref starts with host or ref starts with '/')) ? ref : defaultBackUrl %}
+    {% set urlRetour = (candidate starts with host) or (candidate starts with '/')
+        ? candidate
+        : path('article_liste')
+    %}
 
     <div class="d-flex gap-2 mt-4 flex-wrap">
-        <a href="{{ backUrl }}" class="btn btn-secondary">← Retour à la liste</a>
+        <a href="{{ urlRetour }}"
+           class="btn btn-secondary"
+           onclick="
+       try {
+         if (document.referrer) {
+           const u = new URL(document.referrer);
+           if (u.host === location.host) { history.back(); return false; }
+         }
+       } catch (_) {}
+       /* sinon, on laisse le href faire son job */
+     ">
+            ← Retour à la liste
+        </a>
 
+        {% set isOwner = app.user and article.utilisateur and app.user.id == article.utilisateur.id %}
+        {% set canEdit = is_granted('ROLE_ADMIN') or isOwner %}
         {% if canEdit %}
-            <a href="{{ path('article_edit', { id: article.id, from: from }) }}" class="btn btn-primary btn-sm">Modifier</a>
+            <a href="{{ path('article_edit', { id: article.id }) }}" class="btn btn-primary btn-sm">Modifier</a>
             {{ include('article/_delete_form.html.twig') }}
         {% endif %}
     </div>
+
+
 
 
 {% endblock %}

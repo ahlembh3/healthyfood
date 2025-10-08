@@ -1,0 +1,61 @@
+
+
+services:
+  db:
+    image: mariadb:10.11
+    container_name: hf-db
+    environment:
+      MARIADB_ROOT_PASSWORD: root
+      MARIADB_DATABASE: healthytest
+      MARIADB_USER: hf
+      MARIADB_PASSWORD: hfpass
+    ports:
+      - "3307:3306"        # MySQL accessible depuis ton hôte sur 3307 (optionnel)
+    volumes:
+      - dbdata:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    container_name: hf-phpmyadmin
+    environment:
+      PMA_HOST: db
+      PMA_USER: hf
+      PMA_PASSWORD: hfpass
+    ports:
+      - "8081:80"          # Ouvre phpMyAdmin sur http://localhost:8081
+    depends_on:
+      - db
+
+  php:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: hf-php
+    working_dir: /var/www/html
+    volumes:
+      - ./:/var/www/html:delegated    # <-- tu modifies ton code ici, visible direct dans le conteneur
+    environment:
+      APP_ENV: dev
+      APP_DEBUG: "1"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  nginx:
+    image: nginx:1.27
+    container_name: hf-nginx
+    ports:
+      - "8080:80"          # Ouvre ton site sur http://localhost:8080
+    volumes:
+      - ./:/var/www/html:ro
+      - ./docker/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - php
+
+volumes:
+  dbdata:
