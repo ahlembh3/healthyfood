@@ -17,7 +17,7 @@ services:
     restart: unless-stopped
 
   app:
-    image: ahlembh/healthyfood:1.1          # <-- même tag que WEB
+    image: ahlembh/healthyfood:1.2          # <-- même tag que WEB
     container_name: hf-app-run
     env_file:
       - ./.env.run
@@ -33,7 +33,7 @@ services:
       context: .
       dockerfile: Dockerfile.web
       args:
-        APP_IMAGE: ahlembh/healthyfood:1.1  # <-- même tag que APP
+        APP_IMAGE: ahlembh/healthyfood:1.2  # <-- même tag que APP
     container_name: hf-web-run
     depends_on:
       - app
