@@ -25,7 +25,10 @@ class PlanteRepository extends ServiceEntityRepository
     }
 
     /**
-     * Recherche approximative tolérante aux fautes sur nom commun / scientifique / description.
+     * Recherche approximative tolérante aux fautes sur :
+     * - nom commun / scientifique / description de la plante
+     * - bienfaits (nom + description)
+     *
      * 1) Préfiltre SQL avec LIKE sur des tokens normalisés (rapide)
      * 2) Reclassement côté PHP (similar_text + levenshtein) et seuil min.
      *
@@ -39,8 +42,10 @@ class PlanteRepository extends ServiceEntityRepository
         $normalized = $this->normalizeForSearch($search);
         $tokens     = preg_split('/\s+/', $normalized, -1, PREG_SPLIT_NO_EMPTY) ?: [];
 
-        // --- 1) Préfiltre SQL (LIKE) ---
-        $qb = $this->createQueryBuilder('p');
+        // --- 1) Préfiltre SQL (LIKE) + LEFT JOIN sur les bienfaits ---
+        $qb = $this->createQueryBuilder('p')
+            ->leftJoin('p.bienfaits', 'b')
+            ->addSelect('b');
 
         if ($normalized !== '') {
             $or = $qb->expr()->orX();
@@ -48,9 +53,16 @@ class PlanteRepository extends ServiceEntityRepository
 
             foreach ($tokens as $tok) {
                 $param = ':t'.$i++;
+                // Plante fields
                 $or->add($qb->expr()->like('LOWER(p.nomCommun)', $param));
                 $or->add($qb->expr()->like('LOWER(p.nomScientifique)', $param));
                 $or->add($qb->expr()->like('LOWER(p.description)', $param));
+                $or->add($qb->expr()->like('LOWER(p.partieUtilisee)', $param));
+                $or->add($qb->expr()->like('LOWER(p.precautions)', $param));
+                // Bienfaits
+                $or->add($qb->expr()->like('LOWER(b.nom)', $param));
+                $or->add($qb->expr()->like('LOWER(b.description)', $param));
+
                 $qb->setParameter(substr($param, 1), '%'.$tok.'%');
             }
 
@@ -59,7 +71,9 @@ class PlanteRepository extends ServiceEntityRepository
             }
         }
 
-        $qb->orderBy('p.nomCommun', 'ASC')
+        // éviter les doublons dus au M:N
+        $qb->groupBy('p.id')
+            ->orderBy('p.nomCommun', 'ASC')
             ->setMaxResults($limitCandidates);
 
         /** @var Plante[] $candidats */
@@ -73,21 +87,33 @@ class PlanteRepository extends ServiceEntityRepository
             $desc    = $this->normalizeForSearch(strip_tags((string) ($plante->getDescription() ?? '')));
             $desc    = mb_substr($desc, 0, 800);
 
-            $scoreNom  = max(
+            // Concatener les bienfaits (nom + desc) pour scorer dessus
+            $bienfaitParts = [];
+            foreach ($plante->getBienfaits() as $b) {
+                $bn  = $this->normalizeForSearch((string) $b->getNom());
+                $bd  = $this->normalizeForSearch(strip_tags((string) ($b->getDescription() ?? '')));
+                if ($bn !== '') { $bienfaitParts[] = $bn; }
+                if ($bd !== '') { $bienfaitParts[] = mb_substr($bd, 0, 400); }
+            }
+            $bienfaitText = trim(implode(' ', $bienfaitParts));
+
+            $scoreNom   = max(
                 $this->similarityPercent($normalized, $nomComm),
                 $this->similarityPercent($normalized, $nomSci)
             );
-            $scoreDesc = $this->similarityPercent($normalized, $desc);
-            $score     = max($scoreNom, $scoreDesc);
+            $scoreDesc  = $this->similarityPercent($normalized, $desc);
+            $scoreBien  = $this->similarityPercent($normalized, $bienfaitText);
+            $score      = max($scoreNom, $scoreDesc, $scoreBien);
 
-            // Bonus si un token apparaît (ou quasi)
+            // Bonus si un token apparaît (ou quasi) dans un champ clé
+            $haystack = trim($nomComm.' '.$nomSci.' '.$desc.' '.$bienfaitText);
             foreach ($tokens as $tok) {
                 if ($tok === '') { continue; }
 
-                if (str_contains($nomComm, $tok) || str_contains($nomSci, $tok) || str_contains($desc, $tok)) {
+                if (str_contains($haystack, $tok)) {
                     $score += 10;
                 } elseif (mb_strlen($tok, 'UTF-8') >= 4) {
-                    $closest = $this->closestWord($nomComm.' '.$nomSci.' '.$desc, $tok);
+                    $closest = $this->closestWord($haystack, $tok);
                     $dist    = levenshtein($tok, $closest);
                     if ($dist <= 2) {
                         $score += 6;
