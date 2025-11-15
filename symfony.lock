@@ -1,4 +1,16 @@
 {
+    "dama/doctrine-test-bundle": {
+        "version": "8.3",
+        "recipe": {
+            "repo": "github.com/symfony/recipes-contrib",
+            "branch": "main",
+            "version": "8.3",
+            "ref": "dfc51177476fb39d014ed89944cde53dc3326d23"
+        },
+        "files": [
+            "./config/packages/dama_doctrine_test_bundle.yaml"
+        ]
+    },
     "doctrine/deprecations": {
         "version": "1.1",
         "recipe": {
@@ -49,6 +61,9 @@
     },
     "knplabs/knp-paginator-bundle": {
         "version": "v6.9.1"
+    },
+    "liip/test-fixtures-bundle": {
+        "version": "3.5.0"
     },
     "phpunit/phpunit": {
         "version": "9.6",
@@ -346,5 +361,17 @@
     },
     "twig/extra-bundle": {
         "version": "v3.21.0"
+    },
+    "zenstruck/foundry": {
+        "version": "2.7",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "main",
+            "version": "2.0",
+            "ref": "56bc588a1b6d5d218319f70c64c2f0fbebe30ec7"
+        },
+        "files": [
+            "./config/packages/zenstruck_foundry.yaml"
+        ]
     }
 }
