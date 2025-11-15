@@ -106,7 +106,6 @@ class ArticleController extends AbstractController
     public function new(Request $request, EntityManagerInterface $em, SluggerInterface $slugger): Response
     {
         $this->denyAccessUnlessGranted('ROLE_USER');
-
         $article = new Article();
         $form    = $this->createForm(ArticleType::class, $article);
         $form->handleRequest($request);
@@ -121,7 +120,6 @@ class ArticleController extends AbstractController
             if (strip_tags($contenu) === $contenu) {
                 $article->setContenu(nl2br($contenu));
             }
-
             // Upload image
             $imageFile = $form->get('image')->getData();
             if ($imageFile instanceof UploadedFile) {
@@ -144,7 +142,7 @@ class ArticleController extends AbstractController
             return $this->redirectToRoute($route);
         }
 
-        // ✅ IMPORTANT : 422 si soumis mais invalide (Turbo)
+        //  IMPORTANT : 422 si soumis mais invalide (Turbo)
         $status = ($form->isSubmitted() && !$form->isValid()) ? 422 : 200;
 
         return $this->render('article/new.html.twig', [

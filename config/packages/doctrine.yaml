@@ -1,16 +1,16 @@
 doctrine:
     dbal:
-        default_connection: default
-        connections:
-            default:
-                url: '%env(resolve:DATABASE_URL)%'
-                server_version: '10.4.32-MariaDB'
-                profiling_collect_backtrace: '%kernel.debug%'
-                use_savepoints: true
+        url: '%env(resolve:DATABASE_URL)%'
 
+        # IMPORTANT: You MUST configure your server version,
+        # either here or in the DATABASE_URL env var (see .env file)
+        #server_version: '16'
+
+        profiling_collect_backtrace: '%kernel.debug%'
+        use_savepoints: true
     orm:
         auto_generate_proxy_classes: true
-        enable_native_lazy_objects: true
+        enable_lazy_ghost_objects: true
         report_fields_where_declared: true
         validate_xml_mapping: true
         naming_strategy: doctrine.orm.naming_strategy.underscore_number_aware
@@ -30,10 +30,8 @@ doctrine:
 when@test:
     doctrine:
         dbal:
-            connections:
-                default:
-                    # "TEST_TOKEN" is typically set by ParaTest
-                    dbname_suffix: '_test%env(default::TEST_TOKEN)%'
+            # "TEST_TOKEN" is typically set by ParaTest
+            dbname_suffix: '_test%env(default::TEST_TOKEN)%'
 
 when@prod:
     doctrine:

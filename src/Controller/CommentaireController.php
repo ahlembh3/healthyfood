@@ -44,7 +44,7 @@ class CommentaireController extends AbstractController
     }
 
     #[Route('/voir/{id}', name: 'commentaire_show', methods: ['GET'])]
-    public function show(?Commentaire $commentaire = null): Response
+    public function show(Commentaire $commentaire = null): Response
     {
         if (!$commentaire) {
             throw $this->createNotFoundException('Commentaire introuvable.');

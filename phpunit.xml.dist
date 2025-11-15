@@ -1,47 +1,38 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- https://docs.phpunit.de/en/11.5/configuration.html -->
+
+<!-- https://phpunit.readthedocs.io/en/latest/configuration.html -->
 <phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/11.5/phpunit.xsd"
+         xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
+         backupGlobals="false"
          colors="true"
          bootstrap="tests/bootstrap.php"
-         backupGlobals="false">
+         convertDeprecationsToExceptions="false"
+>
+    <php>
+        <ini name="display_errors" value="1" />
+        <ini name="error_reporting" value="-1" />
+        <server name="APP_ENV" value="test" force="true" />
+        <server name="SHELL_VERBOSITY" value="-1" />
+        <server name="SYMFONY_PHPUNIT_REMOVE" value="" />
+        <server name="SYMFONY_PHPUNIT_VERSION" value="9.5" />
+    </php>
 
-  <!-- Chemins des tests -->
-  <testsuites>
-    <testsuite name="Project Test Suite">
-      <directory>tests</directory>
-    </testsuite>
-  </testsuites>
+    <testsuites>
+        <testsuite name="Project Test Suite">
+            <directory>tests</directory>
+        </testsuite>
+    </testsuites>
 
-  <!-- Déclare le code "source" du projet (sert aussi pour la couverture) -->
-  <source>
-    <include>
-      <directory suffix=".php">src</directory>
-    </include>
-  </source>
+    <coverage processUncoveredFiles="true">
+        <include>
+            <directory suffix=".php">src</directory>
+        </include>
+    </coverage>
 
-  <!-- Couverture (optionnelle) -->
-  <coverage includeUncoveredFiles="true">
-    <!-- Tu peux ajouter un rapport si tu veux :
-    <report>
-        <html outputDirectory="var/coverage"/>
-    </report>
-    -->
-  </coverage>
+    <listeners>
+        <listener class="Symfony\Bridge\PhpUnit\SymfonyTestsListener" />
+    </listeners>
 
-  <!-- Environnement PHP au lancement -->
-  <php>
-    <ini name="display_errors" value="1" />
-    <ini name="error_reporting" value="-1" />
-    <server name="APP_ENV" value="test" force="true" />
-    <server name="SHELL_VERBOSITY" value="-1" />
-    <!-- ⚠️ Ne plus mettre SYMFONY_PHPUNIT_VERSION / SYMFONY_PHPUNIT_REMOVE ici -->
-  </php>
-
-  <!-- Enregistre l’extension PHPUnit (DAMA) pour transactions DB en test) -->
-  <extensions>
-    <bootstrap class="DAMA\DoctrineTestBundle\PHPUnit\PHPUnitExtension"/>
-  </extensions>
-
-  <!-- ⚠️ Ne PAS remettre de <listeners> : supprimé en PHPUnit 10+ -->
+    <extensions>
+    </extensions>
 </phpunit>
