@@ -7,6 +7,7 @@
     <title>{% block title %}Accueil{% endblock %} - Santé & Nature</title>
 
     {% block stylesheets %}
+            {{ encore_entry_link_tags('app') }}
         {# Fonts #}
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -65,6 +66,7 @@
 {% include 'partials/_footer.html.twig' %}
 
 {% block javascripts %}
+            {{ encore_entry_script_tags('app') }}
     {{ importmap('app', { 'data-turbo-track': 'reload' }) }}
 
     <script src="https://cdn.jsdelivr.net/npm/tinymce@6.8.3/tinymce.min.js" referrerpolicy="origin"></script>
