@@ -2,59 +2,97 @@
 
 namespace App\Tests\Functional;
 
+use App\Entity\Ingredient;
+use App\Entity\Recette;
 use App\Entity\RecetteIngredient;
-use App\Tests\Factory\IngredientFactory;
-use App\Tests\Factory\RecetteFactory;
+use App\Entity\Utilisateur;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
-use Zenstruck\Foundry\Test\ResetDatabase;
-use Zenstruck\Foundry\Test\Factories;
 
 final class RecetteListControllerTest extends WebTestCase
 {
-    use ResetDatabase;
-    use Factories;
+    private function createUser(\Doctrine\ORM\EntityManagerInterface $em): Utilisateur
+    {
+        $user = new Utilisateur();
+        $user
+            ->setEmail('test-recettes@example.test')
+            ->setPassword('dummy')              // pas besoin d’un vrai hash pour les tests
+            ->setRoles(['ROLE_USER'])
+            ->setNom('Test Recettes')          // <-- IMPORTANT
+            ->setPrenom('Utilisateur');        // <-- si ta colonne est NOT NULL
+
+        $em->persist($user);
+
+        return $user;
+    }
 
     public function test_liste_publique_filtre_calMax_en_phpp(): void
     {
-        // Toujours créer le client avant d'utiliser Foundry en WebTestCase
+        // Toujours créer le client avant les requêtes HTTP
         $client = static::createClient();
         $em = static::getContainer()->get('doctrine')->getManager();
 
-        // Arrange
-        $ingCal   = IngredientFactory::new(['nom' => 'Beurre',    'unite' => 'g', 'calories' => 720])->create();
-        $ingLight = IngredientFactory::new(['nom' => 'Courgette', 'unite' => 'g', 'calories' => 17])->create();
+        // ----- Utilisateur obligatoire pour les recettes -----
+        $user = $this->createUser($em);
 
-        $rBeurre = RecetteFactory::new(['titre' => 'Beurrée'])->create();
-        $rLight  = RecetteFactory::new(['titre' => 'Légère'])->create();
+        // ----- Ingrédients -----
+        $ingCal = (new Ingredient())
+            ->setNom('Beurre')
+            ->setType('Matière grasse')
+            ->setUnite('g')
+            ->setCalories(720);
 
-        // ✅ Important : ajouter les liaisons via la méthode addRecetteIngredient()
-        // pour tenir à jour la collection et le côté "owning" de l'association.
+        $ingLight = (new Ingredient())
+            ->setNom('Courgette')
+            ->setType('Légume')
+            ->setUnite('g')
+            ->setCalories(17);
+
+        $em->persist($ingCal);
+        $em->persist($ingLight);
+
+        // ----- Recettes -----
+        $rBeurre = (new Recette())
+            ->setTitre('Beurrée')
+            ->setInstructions('Une recette très riche en beurre.')
+            ->setValidation(true)
+            ->setUtilisateur($user);
+
+        $rLight = (new Recette())
+            ->setTitre('Légère')
+            ->setInstructions('Une recette très légère à base de courgette.')
+            ->setValidation(true)
+            ->setUtilisateur($user);
+
+        $em->persist($rBeurre);
+        $em->persist($rLight);
+
+        // ----- Liaisons Recette ↔ RecetteIngredient ↔ Ingredient -----
         $ri1 = (new RecetteIngredient())
+            ->setRecette($rBeurre)
             ->setIngredient($ingCal)
-            ->setQuantite(100);
-        $rBeurre->addRecetteIngredient($ri1);
+            ->setQuantite(100); // 720 kcal
 
         $ri2 = (new RecetteIngredient())
+            ->setRecette($rLight)
             ->setIngredient($ingLight)
-            ->setQuantite(200);
-        $rLight->addRecetteIngredient($ri2);
+            ->setQuantite(200); // 17 * 200 / 100 ≈ 34 kcal
 
-        // Persister (les RI ne sont pas en cascade côté Recette chez toi)
         $em->persist($ri1);
         $em->persist($ri2);
+
         $em->flush();
         $em->clear(); // on repart propre pour la requête HTTP
 
-        // Act
+        // ----- Act -----
         $client->request('GET', '/recettes/liste?calMax=50');
 
-        // Assert
+        // ----- Assert -----
         $this->assertResponseIsSuccessful();
         $html = $client->getResponse()->getContent();
 
-        // “Légère” (17 kcal/100g * 200g = ~34) doit être présente…
+        // “Légère” doit apparaître…
         $this->assertStringContainsString('Légère', $html);
-        // …et “Beurrée” (720 kcal/100g * 100g = 720) doit être filtrée.
+        // …et “Beurrée” doit être filtrée.
         $this->assertStringNotContainsString('Beurrée', $html);
     }
 }

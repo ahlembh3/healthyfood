@@ -2,46 +2,95 @@
 
 namespace App\Tests\Integration\Repository;
 
+use App\Entity\Ingredient;
 use App\Entity\Recette;
 use App\Entity\RecetteIngredient;
+use App\Entity\Utilisateur;
 use App\Repository\RecetteRepository;
-use App\Tests\Factory\IngredientFactory;
-use App\Tests\Factory\RecetteFactory;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
-use Zenstruck\Foundry\Test\ResetDatabase;
-use Zenstruck\Foundry\Test\Factories;
 
 final class RecetteRepositoryTest extends KernelTestCase
 {
-    use ResetDatabase;
-    use Factories;
+    private function createUser(\Doctrine\ORM\EntityManagerInterface $em, string $email): Utilisateur
+    {
+        $u = new Utilisateur();
+        $u
+            ->setEmail($email)
+            ->setPassword('dummy')
+            ->setRoles(['ROLE_USER'])
+            ->setNom('User Recette')   // <-- IMPORTANT
+            ->setPrenom('Test');
+
+        $em->persist($u);
+
+        return $u;
+    }
+
 
     public function test_queryPublicWithFilters_par_ingredient_type_saison(): void
     {
         self::bootKernel();
         $em = self::getContainer()->get('doctrine')->getManager();
 
-        // Arrange
-        $ingPoisson  = IngredientFactory::new(['nom' => 'Saumon', 'type' => 'Poisson',  'saisonnalite' => 'Printemps'])->create();
-        $ingVolaille = IngredientFactory::new(['nom' => 'Poulet', 'type' => 'Volaille', 'saisonnalite' => 'Hiver'])->create();
+        $user = $this->createUser($em, 'recette-filters@example.test');
 
-        $r1 = RecetteFactory::new(['titre' => 'Tartare', 'validation' => true])->create();
-        $r2 = RecetteFactory::new(['titre' => 'Rôti',    'validation' => true])->create();
+        // Ingrédients
+        $ingPoisson = (new Ingredient())
+            ->setNom('Saumon')
+            ->setType('Poisson')
+            ->setUnite('g')
+            ->setSaisonnalite('Printemps');
 
-        // Relie & persiste explicitement
-        $em->persist((new RecetteIngredient())->setRecette($r1)->setIngredient($ingPoisson)->setQuantite(100));
-        $em->persist((new RecetteIngredient())->setRecette($r2)->setIngredient($ingVolaille)->setQuantite(150));
+        $ingVolaille = (new Ingredient())
+            ->setNom('Poulet')
+            ->setType('Volaille')
+            ->setUnite('g')
+            ->setSaisonnalite('Hiver');
+
+        $em->persist($ingPoisson);
+        $em->persist($ingVolaille);
+
+        // Recettes
+        $r1 = (new Recette())
+            ->setTitre('Tartare')
+            ->setInstructions('Tartare de saumon.')
+            ->setValidation(true)
+            ->setUtilisateur($user);
+
+        $r2 = (new Recette())
+            ->setTitre('Rôti')
+            ->setInstructions('Rôti de poulet.')
+            ->setValidation(true)
+            ->setUtilisateur($user);
+
+        $em->persist($r1);
+        $em->persist($r2);
+
+        // Liaisons
+        $em->persist(
+            (new RecetteIngredient())
+                ->setRecette($r1)
+                ->setIngredient($ingPoisson)
+                ->setQuantite(100)
+        );
+
+        $em->persist(
+            (new RecetteIngredient())
+                ->setRecette($r2)
+                ->setIngredient($ingVolaille)
+                ->setQuantite(150)
+        );
+
         $em->flush();
+        $em->clear();
 
         /** @var RecetteRepository $repo */
         $repo = self::getContainer()->get(RecetteRepository::class);
 
-        // Act
         $byIng    = $repo->queryPublicWithFilters(['ingredient' => 'Saumon'])->getResult();
         $byType   = $repo->queryPublicWithFilters(['type' => 'volaille'])->getResult();
         $bySaison = $repo->queryPublicWithFilters(['saison' => 'Print'])->getResult();
 
-        // Assert
         $this->assertSame('Tartare', $byIng[0]->getTitre());
         $this->assertSame('Rôti',    $byType[0]->getTitre());
         $this->assertCount(1, $bySaison);
@@ -51,17 +100,25 @@ final class RecetteRepositoryTest extends KernelTestCase
     public function test_fuzzySearchPublic_retrouve_par_faute_orthographe(): void
     {
         self::bootKernel();
+        $em = self::getContainer()->get('doctrine')->getManager();
 
-        // Arrange : aucune liaison nécessaire ici
-        RecetteFactory::new(['titre' => 'Soupe de carottes'])->create();
+        $user = $this->createUser($em, 'recette-fuzzy@example.test');
+
+        $r = (new Recette())
+            ->setTitre('Soupe de carottes')
+            ->setInstructions('Mixer les carottes.')
+            ->setValidation(true)
+            ->setUtilisateur($user);
+
+        $em->persist($r);
+        $em->flush();
+        $em->clear();
 
         /** @var RecetteRepository $repo */
         $repo = self::getContainer()->get(RecetteRepository::class);
 
-        // Act (on reste tolérant à l’implémentation: cherche “carotte”)
         $results = $repo->fuzzySearchPublic('carotte', []);
 
-        // Assert
         $this->assertNotEmpty($results);
         $this->assertInstanceOf(Recette::class, $results[0]);
     }
