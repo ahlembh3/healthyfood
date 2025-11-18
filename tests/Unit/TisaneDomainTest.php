@@ -2,30 +2,44 @@
 
 namespace App\Tests\Unit;
 
-use App\Tests\Factory\PlanteFactory;
+use App\Entity\Plante;
 use App\Entity\Tisane;
-use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
-use Zenstruck\Foundry\Test\Factories;
+use PHPUnit\Framework\TestCase;
 
-final class TisaneDomainTest extends KernelTestCase
+final class TisaneDomainTest extends TestCase
 {
-    use Factories;
-
     public function test_precautions_effectives_agrege_celles_des_plantes_si_absentes_sur_tisane(): void
     {
-        // Ici on persiste (create) — OK pour un test simple
-        $p1 = PlanteFactory::new(['precautions' => 'Déconseillé aux enfants.'])->create();
-        $p2 = PlanteFactory::new(['precautions' => 'Éviter pendant la grossesse.'])->create();
+        // On crée deux plantes "en mémoire", sans base de données
+        $p1 = (new Plante())
+            ->setNomCommun('Plante 1')
+            ->setNomScientifique('Plantae uno')
+            ->setDescription('Une plante test.')
+            ->setPartieUtilisee('Feuilles')
+            ->setPrecautions('Déconseillé aux enfants.');
 
+        $p2 = (new Plante())
+            ->setNomCommun('Plante 2')
+            ->setNomScientifique('Plantae duo')
+            ->setDescription('Une autre plante test.')
+            ->setPartieUtilisee('Fleurs')
+            ->setPrecautions('Éviter pendant la grossesse.');
+
+        // On crée la tisane et on lui associe les plantes
         $t = new Tisane();
-        $t->setNom('Calmante');
-        $t->setModePreparation('Infuser.');
-        $t->addPlante($p1)->addPlante($p2);
+        $t->setNom('Tisane calmante');
+        $t->setModePreparation('Infuser 10 minutes dans une eau frémissante.');
+        // IMPORTANT : on ne définit PAS de précautions sur la tisane
+        // pour vérifier que la méthode agrège celles des plantes.
+        $t->addPlante($p1);
+        $t->addPlante($p2);
 
+        // Act : on récupère les précautions « effectives »
         $eff = $t->getPrecautionsEffectives();
 
-        $this->assertNotNull($eff);
-        $this->assertStringContainsString('Déconseillé', $eff);
-        $this->assertStringContainsString('grossesse', $eff);
+        // Assert : on vérifie que le texte est bien construit
+        self::assertNotNull($eff, 'Les précautions effectives ne doivent pas être nulles.');
+        self::assertStringContainsString('Déconseillé aux enfants', $eff);
+        self::assertStringContainsString('grossesse', $eff);
     }
 }

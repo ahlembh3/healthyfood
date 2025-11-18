@@ -1,5 +1,0 @@
-zenstruck_foundry:
-  enable_auto_refresh_with_lazy_objects: true
-  persistence:
-    flush_once: true
-

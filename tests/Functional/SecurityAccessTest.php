@@ -2,37 +2,44 @@
 
 namespace App\Tests\Functional;
 
-use App\Tests\Factory\UtilisateurFactory;
+use App\Entity\Utilisateur;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
-use Zenstruck\Foundry\Test\Factories;
 
 final class SecurityAccessTest extends WebTestCase
 {
-    use Factories;
-
     public function test_admin_dashboard_interdit_aux_anonymes(): void
     {
-        // Arrange
         $client = static::createClient();
 
-        // Act
         $client->request('GET', '/admin/dashboard');
 
-        // Assert
-        $this->assertTrue($client->getResponse()->isRedirection(), 'Devrait rediriger vers /login');
+        $this->assertTrue(
+            $client->getResponse()->isRedirection(),
+            'Un anonyme doit être redirigé (vers /login).'
+        );
     }
 
     public function test_admin_dashboard_acces_admin_ok(): void
     {
-        // Arrange
         $client = static::createClient();
-        $admin = UtilisateurFactory::new()->asAdmin()->create();
+        $em = static::getContainer()->get('doctrine')->getManager();
+
+        $admin = new Utilisateur();
+        $admin
+            ->setEmail('admin@test.local')
+            ->setPassword('dummy')
+            ->setRoles(['ROLE_ADMIN'])
+            ->setNom('Admin Test')          // <-- IMPORTANT
+            ->setPrenom('Superadmin');      // <-- idem
+
+
+        $em->persist($admin);
+        $em->flush();
+
         $client->loginUser($admin);
 
-        // Act
         $client->request('GET', '/admin/dashboard');
 
-        // Assert
         $this->assertTrue($client->getResponse()->isOk());
     }
 }
