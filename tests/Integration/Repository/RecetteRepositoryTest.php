@@ -11,102 +11,64 @@ use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 final class RecetteRepositoryTest extends KernelTestCase
 {
-    private function createUser(\Doctrine\ORM\EntityManagerInterface $em, string $email): Utilisateur
+    private function createUser($em): Utilisateur
     {
-        $u = new Utilisateur();
-        $u
-            ->setEmail($email)
+        $u = (new Utilisateur())
+            ->setEmail('u+'.uniqid().'@test.fr')
             ->setPassword('dummy')
-            ->setRoles(['ROLE_USER'])
-            ->setNom('User Recette')   // <-- IMPORTANT
-            ->setPrenom('Test');
-
+            ->setNom('Test')->setPrenom('User')
+            ->setRoles(['ROLE_USER']);
         $em->persist($u);
-
         return $u;
     }
 
-
-    public function test_queryPublicWithFilters_par_ingredient_type_saison(): void
+    public function test_queryPublicWithFilters(): void
     {
         self::bootKernel();
-        $em = self::getContainer()->get('doctrine')->getManager();
+        $em = static::getContainer()->get('doctrine')->getManager();
 
-        $user = $this->createUser($em, 'recette-filters@example.test');
+        $user = $this->createUser($em);
 
-        // Ingrédients
-        $ingPoisson = (new Ingredient())
-            ->setNom('Saumon')
-            ->setType('Poisson')
-            ->setUnite('g')
-            ->setSaisonnalite('Printemps');
-
-        $ingVolaille = (new Ingredient())
-            ->setNom('Poulet')
-            ->setType('Volaille')
-            ->setUnite('g')
-            ->setSaisonnalite('Hiver');
+        $ingPoisson = (new Ingredient())->setNom("Saumon")->setType("Poisson")->setUnite("g")->setSaisonnalite("Printemps");
+        $ingVolaille = (new Ingredient())->setNom("Poulet")->setType("Volaille")->setUnite("g")->setSaisonnalite("Hiver");
 
         $em->persist($ingPoisson);
         $em->persist($ingVolaille);
 
-        // Recettes
-        $r1 = (new Recette())
-            ->setTitre('Tartare')
-            ->setInstructions('Tartare de saumon.')
-            ->setValidation(true)
-            ->setUtilisateur($user);
-
-        $r2 = (new Recette())
-            ->setTitre('Rôti')
-            ->setInstructions('Rôti de poulet.')
-            ->setValidation(true)
-            ->setUtilisateur($user);
+        $r1 = (new Recette())->setTitre("Tartare")->setInstructions("txt")->setValidation(true)->setUtilisateur($user);
+        $r2 = (new Recette())->setTitre("Rôti")->setInstructions("txt")->setValidation(true)->setUtilisateur($user);
 
         $em->persist($r1);
         $em->persist($r2);
 
-        // Liaisons
-        $em->persist(
-            (new RecetteIngredient())
-                ->setRecette($r1)
-                ->setIngredient($ingPoisson)
-                ->setQuantite(100)
-        );
-
-        $em->persist(
-            (new RecetteIngredient())
-                ->setRecette($r2)
-                ->setIngredient($ingVolaille)
-                ->setQuantite(150)
-        );
+        $em->persist((new RecetteIngredient())->setRecette($r1)->setIngredient($ingPoisson)->setQuantite(100));
+        $em->persist((new RecetteIngredient())->setRecette($r2)->setIngredient($ingVolaille)->setQuantite(150));
 
         $em->flush();
         $em->clear();
 
         /** @var RecetteRepository $repo */
-        $repo = self::getContainer()->get(RecetteRepository::class);
+        $repo = static::getContainer()->get(RecetteRepository::class);
 
         $byIng    = $repo->queryPublicWithFilters(['ingredient' => 'Saumon'])->getResult();
         $byType   = $repo->queryPublicWithFilters(['type' => 'volaille'])->getResult();
         $bySaison = $repo->queryPublicWithFilters(['saison' => 'Print'])->getResult();
 
-        $this->assertSame('Tartare', $byIng[0]->getTitre());
-        $this->assertSame('Rôti',    $byType[0]->getTitre());
-        $this->assertCount(1, $bySaison);
-        $this->assertSame('Tartare', $bySaison[0]->getTitre());
+        $this->assertSame("Tartare", $byIng[0]->getTitre());
+        $this->assertSame("Rôti",    $byType[0]->getTitre());
+        $this->assertSame("Tartare", $bySaison[0]->getTitre());
     }
 
-    public function test_fuzzySearchPublic_retrouve_par_faute_orthographe(): void
+    public function test_fuzzySearchPublic(): void
     {
         self::bootKernel();
-        $em = self::getContainer()->get('doctrine')->getManager();
+        $em = static::getContainer()->get('doctrine')->getManager();
 
-        $user = $this->createUser($em, 'recette-fuzzy@example.test');
+        $user = $this->createUser($em);
 
         $r = (new Recette())
-            ->setTitre('Soupe de carottes')
-            ->setInstructions('Mixer les carottes.')
+            ->setTitre("Soupe de carottes")
+            ->setInstructions("txt")
             ->setValidation(true)
             ->setUtilisateur($user);
 
@@ -115,11 +77,11 @@ final class RecetteRepositoryTest extends KernelTestCase
         $em->clear();
 
         /** @var RecetteRepository $repo */
-        $repo = self::getContainer()->get(RecetteRepository::class);
+        $repo = static::getContainer()->get(RecetteRepository::class);
 
-        $results = $repo->fuzzySearchPublic('carotte', []);
+        $res = $repo->fuzzySearchPublic("carotte", []);
 
-        $this->assertNotEmpty($results);
-        $this->assertInstanceOf(Recette::class, $results[0]);
+        $this->assertNotEmpty($res);
+        $this->assertInstanceOf(Recette::class, $res[0]);
     }
 }

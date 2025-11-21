@@ -9,20 +9,22 @@ use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 final class ArticleRepositoryTest extends KernelTestCase
 {
-    private function createUser(\Doctrine\ORM\EntityManagerInterface $em, string $email): Utilisateur
+    private function createUser(\Doctrine\ORM\EntityManagerInterface $em, string $prefixEmail = 'user'): Utilisateur
     {
         $u = new Utilisateur();
-        $u
-            ->setEmail($email)
+        $email = $prefixEmail . '+' . uniqid() . '@example.test';
+
+        $u->setEmail($email)
             ->setPassword('dummy')
             ->setRoles(['ROLE_USER'])
-            ->setNom('User Article')   // <-- IMPORTANT
-            ->setPrenom('Test');
+            ->setNom('Test')
+            ->setPrenom('User');
 
         $em->persist($u);
 
         return $u;
     }
+
 
 
     public function test_findLatestValidated_ne_retourne_que_valides_ordonnees_par_date_desc(): void
