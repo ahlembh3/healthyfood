@@ -17,7 +17,7 @@ services:
     restart: unless-stopped
 
   app:
-    image: ahlembh/healthyfood:1.3        # image PHP-FPM + Symfony (déjà sur Docker Hub)
+    image: ahlembh/healthyfood:1.4        # image PHP-FPM + Symfony (déjà sur Docker Hub)
     container_name: hf-app-run
     env_file:
       - ./.env.run
@@ -29,7 +29,7 @@ services:
     restart: unless-stopped
 
   web:
-    image: ahlembh/healthyfood-web:1.3    # image Nginx (prébuild, déjà sur Docker Hub)
+    image: ahlembh/healthyfood-web:1.4    # image Nginx (prébuild, déjà sur Docker Hub)
     container_name: hf-web-run
     depends_on:
       - app
