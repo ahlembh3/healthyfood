@@ -14,13 +14,20 @@
 .phpunit.result.cache
 ###< phpunit/phpunit ###
 
-###> symfony/phpunit-bridge ###
-.phpunit.result.cache
-/phpunit.xml
+
+
 ###< symfony/phpunit-bridge ###
 
 ###> symfony/asset-mapper ###
 /public/assets/
 /assets/vendor/
 ###< symfony/asset-mapper ###
-.phpunit.result.cache
+
+/node_modules/
+/public/build/
+/public/uploads/
+/.idea/
+/docker/*.log
+.env.local
+.env.test.local
+
