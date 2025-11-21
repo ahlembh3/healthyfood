@@ -1,26 +1,29 @@
-# Symfony/Composer
+# Symfony / Composer
 /vendor/
-/var/
+\var/
 
-# Env & secrets locaux
+# Environment files
 .env.local
 .env.*.local
 .env.test
 .env.test.local
 
-# Build/Cache front (si générés localement)
-public/build/
-/public/assets/*-*.css
-public/assets/*-*.js
-public/manifest.json
+# Symfony Asset Mapper
+/public/assets/
+/assets/vendor/
 
-# Uploads utilisateurs (on garde un .gitkeep vide)
-public/uploads/
-!public/uploads/.gitkeep
-.idea/
-###> symfony/webpack-encore-bundle ###
+# Webpack Encore (si présent)
 /node_modules/
 /public/build/
 npm-debug.log
 yarn-error.log
-###< symfony/webpack-encore-bundle ###
+
+# Uploads
+/public/uploads/
+!public/uploads/.gitkeep
+
+# IDE
+.idea/
+
+# Docker logs
+/docker/*.log

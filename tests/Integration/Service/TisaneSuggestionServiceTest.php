@@ -19,6 +19,11 @@ final class TisaneSuggestionServiceTest extends KernelTestCase
     private EntityManagerInterface $em;
     private TisaneRepository $tisaneRepo;
 
+    private function uniqueEmail(string $prefix): string
+    {
+        return $prefix . '+' . uniqid() . '@example.test';
+    }
+
     protected function setUp(): void
     {
         self::bootKernel();
@@ -28,21 +33,21 @@ final class TisaneSuggestionServiceTest extends KernelTestCase
 
     public function test_findSuggestions_prend_en_compte_bienfaits_et_accords_aromatiques(): void
     {
-        // 1) Utilisateur
+        // ✔️ Email unique
         $user = (new Utilisateur())
-            ->setEmail('tisane-user@example.test')
+            ->setEmail($this->uniqueEmail('tisane-user'))
             ->setPassword('dummy')
             ->setRoles(['ROLE_USER'])
             ->setNom('User Tisane')
             ->setPrenom('Test');
         $this->em->persist($user);
 
-        // 2) Recette + ingrédient
         $recette = (new Recette())
             ->setTitre('Saumon vapeur')
             ->setInstructions('Cuire le saumon à la vapeur.')
             ->setUtilisateur($user)
             ->setValidation(true);
+
         $this->em->persist($recette);
 
         $ingSaumon = (new Ingredient())
@@ -59,7 +64,6 @@ final class TisaneSuggestionServiceTest extends KernelTestCase
             ->setQuantite(100);
         $this->em->persist($ri);
 
-        // 3) Plante + tisane
         $plante = (new Plante())
             ->setNomCommun('Algue détox')
             ->setNomScientifique('Algua detoxus')
@@ -72,9 +76,9 @@ final class TisaneSuggestionServiceTest extends KernelTestCase
             ->setNom('Détox Marine')
             ->setModePreparation('Infuser 5 minutes.');
         $tisane->addPlante($plante);
+
         $this->em->persist($tisane);
 
-        // 4) Accord aromatique Poisson <-> Plante
         $accord = (new AccordAromatique())
             ->setPlante($plante)
             ->setIngredientType('Poisson')
@@ -83,18 +87,13 @@ final class TisaneSuggestionServiceTest extends KernelTestCase
 
         $this->em->flush();
 
-        // 5) Service à tester
         $service = new TisaneSuggestionService($this->tisaneRepo, $this->em);
 
         $rows = $service->suggestForRecette($recette, limit: 3, wB: 2.0, wA: 1.0);
 
-        // 6) Asserts
-        $this->assertNotEmpty($rows, 'On doit obtenir au moins une tisane suggérée.');
+        $this->assertNotEmpty($rows);
         $this->assertSame('Détox Marine', $rows[0]['tisane']->getNom());
-
-        // Vérifier que scoreA est présent et numérique (mais pas forcément > 0)
-        $this->assertArrayHasKey('scoreA', $rows[0], 'scoreA doit exister dans les résultats.');
-        $this->assertIsNumeric($rows[0]['scoreA'], 'scoreA doit être numérique.');
+        $this->assertArrayHasKey('scoreA', $rows[0]);
+        $this->assertIsNumeric($rows[0]['scoreA']);
     }
-
 }

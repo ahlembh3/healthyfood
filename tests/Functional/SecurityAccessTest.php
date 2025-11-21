@@ -13,10 +13,7 @@ final class SecurityAccessTest extends WebTestCase
 
         $client->request('GET', '/admin/dashboard');
 
-        $this->assertTrue(
-            $client->getResponse()->isRedirection(),
-            'Un anonyme doit être redirigé (vers /login).'
-        );
+        $this->assertTrue($client->getResponse()->isRedirection());
     }
 
     public function test_admin_dashboard_acces_admin_ok(): void
@@ -24,14 +21,11 @@ final class SecurityAccessTest extends WebTestCase
         $client = static::createClient();
         $em = static::getContainer()->get('doctrine')->getManager();
 
-        $admin = new Utilisateur();
-        $admin
-            ->setEmail('admin@test.local')
+        $admin = (new Utilisateur())
+            ->setEmail('admin+'.uniqid().'@test.fr')
             ->setPassword('dummy')
-            ->setRoles(['ROLE_ADMIN'])
-            ->setNom('Admin Test')          // <-- IMPORTANT
-            ->setPrenom('Superadmin');      // <-- idem
-
+            ->setNom('Admin')->setPrenom('Super')
+            ->setRoles(['ROLE_ADMIN']);
 
         $em->persist($admin);
         $em->flush();
@@ -40,6 +34,6 @@ final class SecurityAccessTest extends WebTestCase
 
         $client->request('GET', '/admin/dashboard');
 
-        $this->assertTrue($client->getResponse()->isOk());
+        $this->assertResponseIsSuccessful();
     }
 }
