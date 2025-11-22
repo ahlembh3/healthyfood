@@ -27,3 +27,11 @@ yarn-error.log
 
 # Docker logs
 /docker/*.log
+# PHPUnit cache
+.phpunit.result.cache
+
+# Test config (recréé automatiquement, pas à versionner)
+config/packages/test/
+
+# SQL dumps
+*.sql
